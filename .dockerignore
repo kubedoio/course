@@ -1,0 +1,16 @@
+.git
+.agents
+.codex
+content/
+docs/
+scripts/
+*.pem
+server.py
+server-http.py
+lab.html
+wasm_lab.html
+DOWNLOADS.md
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store

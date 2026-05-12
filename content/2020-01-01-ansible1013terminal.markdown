@@ -1,0 +1,413 @@
+---
+layout: post
+title: "Ansible 101 - nasıl otomasyon yapabiliriz?"
+date: 2021-01-01
+author: "@senolcolak"
+tags: [ansible101,otomasyon]
+categories:
+terms: 3
+---
+
+
+> **Ansible eğitimi içersinde aşağıdaki konular işlenecektir:**
+> * Table of contents
+> {:toc}
+
+---
+
+## 0. Ansible eğitimi  
+Bu eğitim ile aşağıdaki konularda bilgi alacaksınız
+  
+* Ansible otomasyon eğitimi  
+  
+Konfigürasyon yönetim sistemleri, yöneticiler ve operasyon ekipleri için çok sayıda sunucuyu kontrol etme sürecini kolaylaştırmak üzere tasarlanmıştır. Tek bir merkezi konumdan otomatik bir şekilde birçok farklı sistemi kontrol etmenize olanak tanırlar.  
+  
+Chef ve Puppet gibi Linux sistemleri için pek çok popüler yapılandırma yönetimi aracı bulunsa da, bunlar çoğu insanın istediğinden veya ihtiyaç duyduğundan genellikle daha karmaşıktır. Ansible, bu seçeneklere harika bir alternatiftir çünkü yönetilecek sunuculara özel bir yazılımın kurulmasını gerektirmeyen, otomasyon görevlerini yürütmek için SSH'yi ve provizyon ayrıntılarını tanımlamak için YAML dosyalarını kullanan bir mimari sunar.  
+  
+Bu kılavuzda, Ansible'ın Ubuntu 16.04 sunucusuna nasıl kurulacağını göstereceğiz ve bu yazılımın nasıl kullanılacağına dair bazı temel bilgileri gözden geçireceğiz. Konfigürasyon yönetim aracı olarak Ansible'a daha ileri konuları işlemek için internetteki farklı makaleleri kullanabilirsiniz. Eğitimimizin amacı temel bilgileri vermek ve sizin bir başlangıç yapmanızı sağlamaktır.   
+
+Ansible konfigürasyon yönetimi ile binlerce sunucuyu tek bir merkezden kolaylıkla yönetebilirsiniz. Sunucular üzerindeki paketlerin yönetilmesini ve senkron bir şekilde istediğiniz tüm oparasyonları yapabilirsiniz.
+
+Örnek kullanımlar:
+1. Kullanıcı yönetimi ve SSH key yönetimi.
+2. Paket kullanımı ve yönetimi
+3. interaktif monitoring çözümleri ()
+4. Cloud sunucularını hazırlamak ve gerekli güvenlik sıkılaştırmalarını yapmak
+
+Ortamınızda yüzlerce sunucu varsa mutlaka bir otomasyon çözümü kullanmalısınız, aksi taktirde aşağıdaki gibi komutlar yazmaya başlarsınız ve durum yönetilebilir olmaktan çıkar.
+
+```` # ssh for s in server{1..4}.acikkaynakfikirler.com do ssh senol@${s} 'bash -s' < /home/senol/deneme.sh son````  
+
+veya tmux ile paralel bağlantılar kurmaya başlarsınız. Otomasyon kullanmanız durumunda, yönetilebilir bir şekilde çalıştırdığınız komutları merkezi bir yerde tutabilirsiniz ve değişiklikleri kolaylıkla takip edebilirsiniz.   
+
+
+
+## 1. Ortamın tanıtılması
+
+**Sağ tarafta 3 tane temsili sunucumuz var**
+
+Bu sunucularımız sırasıyla aşağıdaki özelliklere sahip sunuculardır.  
+  
+### 1 web sunucusu(üstteki)  
+(temsili) web hizmetleri çalışan sunucu  
+ansible ile sunucu üzerine apache ve php paketlerini kuracağız
+
+### 2 dosya paylaşımı sunucusu (ortadaki)
+(temsili) dosya paylaşımı sunucusu
+Ansible ile üzerine samba paketleri kuracağız
+
+### 3 otomasyon sunucumuz (alttaki)
+yukarıdaki iki sunucuyu yöneteceğimiz ana sunucu  
+
+
+Ansible kurulumu için ihtiyacımız olan uygulamalar.
+
+1. ansible merkezi sunucusu (en altta duran sunucu)
+2. sunucuların üzerinde ssh servisi ile erişilebilirlik
+3. ssh keylerinin parolasız erişim için konfigüre edilmesi
+
+## 2. Sunucuların hazırlanması
+Web sunucusunun hazırlanması için aşağıdaki komutları çalıştırmalısınız (Üzerini tıklarsanız kurulum gerçekleşir)  
+  
+```!!! Aşağıdaki sunucuların kurulumlarını tek tek yapın lütfen, web sunucusunun kurulumu bittikten sonra dosya paylaşımı sunucusu sonra da otomasyon sunucusu kurulumunu yapın  ```  
+    
+**1. Web sunucusu kuruluyor**
+```.term1
+apt-get update
+apt install ssh -y
+```
+  
+şimdi ssh anahtarları oluşturalım ve host ismini ayarlayalım  
+```.term1
+ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa <<< y
+echo "web">/etc/hostname
+/etc/init.d/ssh start
+/etc/init.d/hostname.sh stop
+/etc/init.d/hostname.sh start
+bash
+clear
+```
+
+Dosya paylaşım sunucusunun hazırlanması için aşağıdaki komutları çalıştırmalısınız (Üzerini tıklarsanız kurulum gerçekleşir)  
+  
+**2. Dosya paylaşım sunucusu kuruluyor**
+```.term2
+apt-get update
+apt install ssh -y
+```
+    
+şimdi ssh anahtarları oluşturalım ve host ismini ayarlayalım  
+```.term2
+ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa <<< y
+echo "dosya">/etc/hostname
+/etc/init.d/ssh start
+/etc/init.d/hostname.sh stop
+/etc/init.d/hostname.sh start
+bash
+clear
+```
+
+Ansible (otomasyon) sunucusunun hazırlanması için aşağıdaki komutları çalıştırmalısınız (Üzerini tıklarsanız kurulum gerçekleşir)  
+  
+**3. Otomasyon için kullanacağımız sunucu kuruluyor**  
+```.term3
+apt-get update
+apt install ssh -y
+```
+  
+şimdi ssh anahtarları oluşturalım ve host ismini ayarlayalım  
+```.term3
+ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa <<< y
+echo "otomasyon">/etc/hostname
+/etc/init.d/hostname.sh stop
+/etc/init.d/hostname.sh start
+bash
+clear
+```
+
+
+Normal şartlar altında yukarıda bahsettiğimiz işlemleri siz kendi ortamınızda farklı şekillerde gerçekleştirirsiniz. AWS üzerinden sunucular oluşturabilirsiniz, Vmware üzerinde veya KVM üzerinde yeni sunucu oluşturabilirsiniz. Bu sunuculara ip tanımlayıp sunucuların hostlarını tanımlamanız gerekmekte.  
+
+Varsaydığımız durum 3 tane sunucu üzerine ssh servisi çalışır durumda, bundan sonra ansible ile ilgili ayarlamaları yapacağız.  
+
+## 3. Ayarlamalar (Ansible konfigürasyonu)
+
+Ansible kullanımının en büyük kolaylığı, yöneteceğiniz sunucular üzerine herhangi bir paket kurmanıza ihtiyaç olmamasıdır. Yani ansible kurulumu sadece otomasyon sunucusu üzerine yapılacaktır.  
+
+eğitim içerisinde ubuntu üzerindeki **ansible** paket kurulumunu işledik, bunun dışında çok kurulum şekilleri mevcuttur. pip ile kurulum veya repository üzerinden paket kurulumu gibi seçenekler de vardır.  
+
+```.term3
+apt-get update&&apt install ansible -y
+```
+
+### a. Sunucuların IP adreslerini almak
+
+**``web``** sunucusunun ip adresini almak için aşağıdaki komutu çalıştırın
+```.term1
+ip a|grep eth0
+```
+  
+**``Dosya paylaşım``** sunucusunun ip adresini almak için aşağıdaki komutu çalıştırın
+```.term2
+ip a|grep eth0
+```
+çıktı olarak aşağıdaki gibi bir satır gelecektir,  
+
+````
+örn. inet 10.0.152.2/24 brd 10.0.152.255 scope global eth0
+````
+Çıkan sonuç içersindeki örn. 10.0.152.2 aradığımız ip adresidir.  
+ 
+  
+şimdi bulduğumuz iki ip adresini **otomasyon** sunucusu üzerinde tanımlıyoruz.  
+  
+```.term3
+cat << EOF >> /etc/ansible/hosts
+## 
+web   ansible_host=10.0.152.3
+dosya ansible_host=10.0.152.4
+EOF
+```
+
+``yukarıdaki komutu çalıştırıp "vi /etc/ansible/hosts" dosyası içinde gerçek ip bilgilerini güncelleyebilirsiniz.  ``
+
+ayrıca diğer bilgisayarları isimleri ile kullanabilmek için ``/etc/hosts`` dosya`sı içersine de eklemeliyiz.  
+
+```.term3
+cat << EOF >> /etc/hosts
+## 
+10.0.152.3 web
+10.0.152.4 dosya
+EOF
+```
+  
+### b. Sunuculara SSH erişimi sağlamak
+
+sunucuların üzerinde ssh keyler "ssh-keygen" komutu ile oluşturuldular. Bulunduğunuz home dizinin içersinde .ssh isminde bir klasörde id_rsa ve id_rsa.pub isminde iki tane dosya oluştu. Bu dosyalardan pub ile biten dosya bizim paylaşabileceğimiz key dosyasıdır, id_rsa dosyasının içinde ise kimseyle paylaşmamamız gereken anahtar bilgisi vardır.  
+
+Otomasyon sunucusu üzerindend diğer sunucuları yöneteceğimiz için otomasyon sunucumuzun public ssh anahtarını diğer sunucuların ~/.ssh/autherized_keys dosyası içine kopyalamamız gerekiyor.  
+
+Otomasyon sunucusu içinde ssh-keygen çalıştırarak id_rsa ve id_rsa.pub dosyaları oluşturulur. Daha sonra id_rsa.pub içeriği diğer bilgisayarlara (Dosya, Web) ~/.ssh/authorized_keys dosyası içersine bir satır olarak kopyalanır.  
+  
+```.term3
+cat /root/.ssh/id_rsa.pub
+```
+  
+**yukarıda cat ile görüntülediğimiz paylaşılmış anahtar bilgisini diğer sunucularımıza kopyalıyoruz**  
+  
+  
+Paylaşılan anahtar bilgisini web sunucusu üzerine kopyalayalım  
+```.term1
+echo "ssh-rsa AAAA......" >> ~/.ssh/authorized_keys
+```
+``yukarıdaki komutu çalıştırıp vi ~/.ssh/authorized_keys yaparak dosyanın içindeki satıra doğru key bilgisini girebilirsiniz``
+Paylaşılan anahtar bilgisini Dosya paylaşımı sunucusu üzerine kopyalayalım  
+```.term2
+echo "ssh-rsa AAAA......" >> ~/.ssh/authorized_keys
+```
+``yukarıdaki komutu çalıştırıp vi ~/.ssh/authorized_keys yaparak dosyanın içindeki satıra doğru key bilgisini girebilirsiniz``
+  
+şimdi otomasyon sunucumuz üzerinden diğer sunuculara ssh üzerinden erişmeye çalışalım  
+
+**web sunucusunda hostname dosyasını görüntüleyelim**
+```.term3
+ssh web cat /etc/hostname
+```
+*(ssh key known-hosts dosyasına eklenecektir y harfine basıp onaylayabilirsiniz)*
+
+**dosya sunucusunda hostname dosyasını görüntüleyelim**
+```.term3
+ssh dosya cat /etc/hostname
+```
+*(ssh key known-hosts dosyasına eklenecektir y harfine basıp onaylayabilirsiniz)*
+
+## 4. Sunucuların üzerinede komut çalıştırmak  
+
+### a. sunuculara erişimi ansible üzerinden kontrol edelim  
+
+burada ansible sonrası yazılan ``all`` komutu /etc/ansible/hosts dosyası içindeki tüm sunucularda komutu çalıştır anlamına gelmektedir. ``-m`` modül tercihi anlamına gelir, burada **ping** modülü kullanılmış. ``-u root`` ise, isminden de tahmin edilebileceği gibi komutları root kullanıcısı olarak çalıştır anlamına gelir.
+
+```.term3
+ansible all -m ping -u root
+```
+
+gördüğünüz çıktı sunuculara erişilebildiği anlamına gelir.
+
+### b. sunucular üzerinde "df -h" komutunu çalıştıralım  
+
+``-a`` parametresi ad-hoc (özel amaçlı, tek kullanımlık) kullanmak içindir. Yani yazdığınız komut direkt olarak sunucularda çalışacaktır.
+```.term3
+ansible all -a "df -h" -u root
+```
+
+### c. Ansible playbook kullanımı
+
+Bu konuyu anlayabilmemiz için **imperative** ve **declarative** komut çalıştırmanın ne olduğunu bilmemiz gerekiyor. Şimdiye kadar çalıştırdığımız komutlar imperative komutlardı, yani komut satırında yazdığımız komutlar içinde gerekli tercihleri yaparak komutları çalıştırdık. Declarative tanımlar ise dosyaların içine kaydedilmiş konfigürasyon tercihleri çalıştırılarak yapılır.  
+
+Ansible içersinde yaml veya json formatlı dosyalar kullanarak deklarasyon yapabilirsiniz. Ansible için çoğunlukla ``.yaml`` dosya formatı ile tnaımlanmış configürasyon dosyaları kullanılır.  
+
+Aşağıda **declarative** configürasyon için web ve dosya sunucuları için birer örnek görebilirsiniz.  
+
+```.term3
+cat <<EOL> web-ornek.yaml
+---
+
+- name: Ansible basit Playbook ornegi
+  gather_facts: True
+  hosts: web
+  tasks:
+
+    - name: Sunucular uzerindeki disk doluluk 
+      shell: df -h
+      
+    - name: ihtiyaca gore paket kurulumu web (apache)
+      apt:
+        name: ['apache2']
+        update_cache: true
+        state: present
+        
+EOL
+```
+
+```.term3
+cat <<EOL> dosya-ornek.yaml
+---
+
+- name: Ansible basit Playbook ornegi
+  gather_facts: True
+  hosts: dosya
+  tasks:
+
+    - name: ihtiyaca gore paket kurulumu dosya sunucusu (samba)
+      apt:
+        name: ['samba']
+        update_cache: true
+        state: present
+           
+EOL
+```
+  
+  
+burada ``gather_facts``, bağlanılan sunucu üzerindeki duruma ilişkin bilgilerin toplanmasını/toplanmamasını belirtir. ``hosts`` hangi sunucularda bu playbook'un çalıştırılacağını belirtir. (üstteki)``name`` playbook açıklamasını belirtir. ``taks``, çalıştırılacak görevlerin listesini içerir, yine ``name`` çalıştırılacak görevin açıklaması, sonraki kısımda ise ``shell`` veya ``ping`` gibi modüller kullanılacak modülleri belirtir. Örnek içersinde ``apt`` modülü kullanılmıştır  
+
+
+buradaki dosyaları çalıştırmak ve komutları uygulamak için aşağıdaki şekilde komutları çalıştırabilirsiniz.
+
+**web** sunucusu için
+```.term3
+ansible-playbook web-ornek.yaml
+```
+
+**dosya paylaşım**(samba) sunucusu için
+```.term3
+ansible-playbook dosya-ornek.yaml
+```
+  
+Burada yazdığımız modül içerinsde ``apt`` modülünü kullandık, bu modülü kullanmak yerine ``shell`` modülünü kullanıp komut satırından yazacaklarımızı doğrudan playbook içersine yazabiliriz.
+
+web-ornek.yaml dosyasına alternatif olarak aşağıdaki komut yazılabilir
+
+```.term3
+cat <<EOL> web-ornek-komut-ile.yaml
+---
+
+- name: Ansible basit Playbook ornegi
+  gather_facts: True
+  hosts: web
+  tasks:
+
+    - name: ihtiyaca gore paket kurulumu web sunucusu (apache2)
+      shell: apt update&&apt install apache2
+           
+EOL
+```
+
+**web** alternatif kurulum için
+```.term3
+ansible-playbook web-ornek-komut-ile.yaml
+```
+
+gödüğünüz gibi komut satırı bilgisini ``shell`` modülüne direkt verebiliyoruz, böylece sunucuya bağlanıp çalıştırmış oluyoruz. Burada ``apt`` modülünü kullanmadığımız için, bize sağladığı olanaklardan (güvenlik, sonuç çevirme, hata ayıklama gibi) faydalanamıyoruz.  
+
+
+
+
+Farklı modül ve komutlar için daha güncel bir listeye [buradan](https://docs.ansible.com/) erişebilirsiniz.
+
+
+
+
+
+### ad-hoc Komutunun sunucularda nasıl çalıştığını gösterilmesi
+Şöyle bir senaryo çalıştıralım, ilk iki sunucu içersinde bir dosyanın durumunu ``watch`` ve ``cat`` komutları ile sürekli gösterelim, ansible ile bu dosyaları değiştirdiğimizde otomasyon sisteminin çalışmasını daha net bir şekilde görmüş oluruz.  
+  
+önce bu komutu web sunucusunda çalıştıralım  
+```.term1
+watch -n1 cat /tmp/DURUM
+```
+  
+sonra bu komutu dosya sunucusunda çalıştıralım  
+```.term2
+watch -n1 cat /tmp/DURUM
+```
+
+
+şimdi otomasyon sunucusu üzerinden her iki sunucuya dosya oluşturma komutu gönderelim.
+
+```.term3
+ansible all -a "touch /tmp/DURUM" -u root
+```
+
+şimdide içlerine istediğimiz şeyleri yazalım.
+
+```.term3
+ansible all -a "cp /etc/hostname  /tmp/DURUM" -u root
+```
+  
+  
+
+
+Bundan sonra öğrenmeye devam etmek, ve daha fazla konu işlemek isterseniz [buradaki link](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) üzerinden devam etmenizi tavsiye ederim.  
+
+-----
+<!-- Quiz bölümünü diğer quizlerde aynen kopyalayıp değiştirmemiz gerek.-->
+
+**[Açık Kaynak Fikirler - Ana Sayfa](/)**  
+ 
+
+-----
+## Konu tekrarı, kısa sınav
+>seçeneklerden doğru olanları seçtikten sonra **Gönder** butonuna basınız. Sonuçları <span style="color:green">**doğru**</span> ve <span style="color:red">**yanlış**</span> görebilirsiniz.
+
+
+
+
+{:.quiz}
+Aşağıdaki komutlardan hangisi ile ssh anahtarı oluşturabilirsiniz? (pub ve key dosyaları)
+
+- (x) ssh-keygen
+- ( ) ssh
+- ( ) ssh >> ~/.ssh/authorized_keys
+- ( ) ssh-keygen > .ssh/id_rsa
+
+{:.quiz}
+Aşağıdaki hangi klasör ssh anahtarlarının varsayılan dizinidir?
+
+- ( ) .ssh/
+- (x) ~/./ssh
+- ( ) /root/.ssh/
+
+{:.quiz}
+Yönetilen sunucuların ip bilgileri hangi dosya içersinde bulunur?
+
+- ( ) /etc/hosts
+- (x) /etc/ansible/hosts
+- ( ) web-ornek.yaml
+
+{:.quiz}
+Aşağıdaki komutlardan hangisi declarative komutlara bir örnektir?  
+  
+- ( ) ansible all -a "df -h" -u root
+- ( ) ansible all -a "apt update&&apt install apache2 -y" -u root
+- (x) ansible-playbook -i /etc/ansible/hosts web-uninstall.yaml   
+- ( ) ansible all -a "apt update&&apt remove apache2 -y" -u root

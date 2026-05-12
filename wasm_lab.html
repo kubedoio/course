@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wasm Cloud Lab - Buildroot Linux</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --sidebar-color: #1e293b;
+            --accent-color: #38bdf8;
+            --text-color: #f1f5f9;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        .layout {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Sidebar / Instructions */
+        .sidebar {
+            width: 350px;
+            background-color: var(--sidebar-color);
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            color: var(--accent-color);
+            font-size: 1.25rem;
+            margin-top: 0;
+        }
+
+        .lab-step {
+            background: #334155;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        code {
+            background: #000;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #fbbf24;
+            font-family: monospace;
+        }
+
+        /* Main Lab Area */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        header {
+            height: 50px;
+            background: #1e293b;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 1px solid #334155;
+            justify-content: space-between;
+        }
+
+        .status-pill {
+            background: #064e3b;
+            color: #34d399;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Terminal Container */
+        #screen_container {
+            flex-grow: 1;
+            background-color: black;
+            position: relative;
+        }
+
+        #screen_container canvas {
+            display: block;
+        }
+
+        .boot-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .btn-start {
+            background: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-start:hover {
+            background: #7dd3fc;
+        }
+
+        footer {
+            height: 30px;
+            background: #0f172a;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="layout">
+        <!-- Lab Guide -->
+        <aside class="sidebar">
+            <h2>Linux Lab</h2>
+            <p>Welcome to your Wasm-powered Buildroot Linux environment.</p>
+            
+            <div class="lab-step">
+                <strong>Step 1: Check Kernel</strong><br>
+                Type <code>uname -a</code> to verify the running kernel.
+            </div>
+
+            <div class="lab-step">
+                <strong>Step 2: Explore Userspace</strong><br>
+                Try <code>ls /bin</code> and <code>busybox --list</code> to see available tools.
+            </div>
+
+            <div class="lab-step">
+                <strong>Step 3: Network Test</strong><br>
+                Test internet access via <code>ping google.com</code>.
+            </div>
+
+            <p style="font-size: 0.8rem; color: #94a3b8;">
+                Note: This uses <strong>v86</strong> to emulate x86 hardware in your browser. No server-side resources are used.
+            </p>
+        </aside>
+
+        <!-- Lab UI -->
+        <main class="main-content">
+            <header>
+                <div style="font-weight: bold;">Buildroot-v86-Virtual-Machine</div>
+                <div class="status-pill" id="status">READY</div>
+            </header>
+
+            <div id="screen_container">
+                <div class="boot-overlay" id="overlay">
+                    <button class="btn-start" id="start-button">Start Lab Session</button>
+                    <p style="margin-top: 15px; font-size: 0.8rem;">Initial boot may take 30-60 seconds</p>
+                </div>
+                <!-- v86 will render the terminal here -->
+                <div id="terminal"></div>
+                <canvas style="display: none;"></canvas>
+            </div>
+
+            <footer>
+                Powered by v86 WebAssembly Engine | Memory: 512MB | Network: disabled
+            </footer>
+        </main>
+    </div>
+
+    <!-- Load v86 engine locally -->
+    <script src="v86/build/libv86.js"></script>
+
+    <script>
+    window.onload = function() {
+        const startBtn = document.getElementById("start-button");
+        const overlay = document.getElementById("overlay");
+        const statusPill = document.getElementById("status");
+
+        startBtn.addEventListener("click", function() {
+            overlay.style.display = "none";
+            statusPill.innerText = "BOOTING...";
+            statusPill.style.background = "#92400e";
+            statusPill.style.color = "#fef3c7";
+
+            // Initialize v86
+            // We use a locally served Buildroot Linux kernel from the v86 project
+            var emulator = new V86({
+                wasm_path: "v86/build/v86.wasm",
+                memory_size: 512 * 1024 * 1024,
+                screen_container: document.getElementById("screen_container"),
+                bios: {
+                    url: "v86/bios/seabios.bin",
+                },
+                vga_bios: {
+                    url: "v86/bios/vgabios.bin",
+                },
+                bzimage: {
+                    url: "v86/images/binaries/buildroot-bzimage68.bin",
+                },
+                autostart: true,
+            });
+
+            emulator.add_listener("emulator-ready", function() {
+                statusPill.innerText = "RUNNING";
+                statusPill.style.background = "#064e3b";
+                statusPill.style.color = "#34d399";
+                console.log("Emulator is ready");
+            });
+        });
+    };
+    </script>
+</body>
+</html>

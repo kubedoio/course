@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Linux + Docker Lab</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Capability check warnings injected here before layout -->
+    <div id="capability-warnings"></div>
+
+    <div class="layout">
+        <!-- Left Panel: Course navigation and lesson content -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div>
+                    <h2 id="course-title">Browser Lab</h2>
+                    <p id="course-description">Loading course...</p>
+                </div>
+            </div>
+
+            <nav class="course-tree" id="course-tree" aria-label="Course lessons"></nav>
+            <section class="lesson-viewer" id="lesson-viewer" aria-live="polite"></section>
+        </aside>
+
+        <!-- Right Panel: Terminal & Controls -->
+        <main class="main-content">
+            <header>
+                <div class="product-name">Browser Linux + Docker Lab</div>
+                <div class="header-right">
+                    <div class="status-pill" id="status-pill">Not booted</div>
+                    <div class="header-buttons">
+                        <button class="btn" id="btn-boot" title="Start the Alpine Linux virtual machine">Boot VM</button>
+                        <button class="btn btn-danger" id="btn-reset" title="Force restart the virtual machine">Reset VM</button>
+                        <button class="btn btn-secondary" id="btn-save" title="Save current VM state to browser storage">Save State</button>
+                        <button class="btn btn-secondary" id="btn-restore" title="Restore previously saved VM state">Restore State</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="terminal-wrapper">
+                <div id="screen_container">
+                    <div class="terminal-placeholder">VM not running.<br>Click <strong>Boot VM</strong> to start Alpine Linux.</div>
+                </div>
+
+                <div class="boot-log-panel">
+                    <h4>Boot Log</h4>
+                    <div id="boot-log" class="boot-log-content"></div>
+                </div>
+            </div>
+
+            <div class="architecture-panel">
+                <div class="arch-item">
+                    <span class="arch-label">Browser</span>
+                    <span class="arch-arrow">&rarr;</span>
+                </div>
+                <div class="arch-item">
+                    <span class="arch-label">v86</span>
+                    <span class="arch-arrow">&rarr;</span>
+                </div>
+                <div class="arch-item">
+                    <span class="arch-label">Alpine</span>
+                    <span class="arch-arrow">&rarr;</span>
+                </div>
+                <div class="arch-item">
+                    <span class="arch-label">Docker</span>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- v86 engine must load before our application scripts -->
+    <script src="v86/build/libv86.js"></script>
+
+    <!-- Application scripts -->
+    <script src="src/lab-state.js"></script>
+    <script src="src/capability-checks.js"></script>
+    <script src="src/v86-runtime.js"></script>
+    <script src="src/course-player.js"></script>
+    <script src="src/main.js"></script>
+</body>
+</html>

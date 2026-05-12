@@ -1,0 +1,2352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Linux + Docker Lab — Full Course</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --accent-dim: #1f6feb;
+            --success: #3fb950;
+            --warning: #d29922;
+            --danger: #f85149;
+            --code-bg: #161b22;
+            --font-mono: "SFMono-Regular", "Consolas", "Liberation Mono", "Menlo", monospace;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0; padding: 0;
+            font-family: var(--font-sans);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        /* Layout */
+        .page-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        .nav-sidebar {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            overflow-y: auto;
+            padding: 20px 0;
+            z-index: 10;
+        }
+        .nav-sidebar h1 {
+            font-size: 16px;
+            padding: 0 20px 12px;
+            margin: 0 0 12px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        .nav-sidebar .subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            padding: 0 20px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .nav-group {
+            margin-bottom: 8px;
+        }
+        .nav-group-title {
+            display: block;
+            padding: 8px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .nav-group-title:hover { color: var(--text); }
+        .nav-link {
+            display: block;
+            padding: 5px 20px 5px 32px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-left: 2px solid transparent;
+        }
+        .nav-link:hover { color: var(--text); background: var(--bg-tertiary); }
+        .nav-link.active { color: var(--accent); border-left-color: var(--accent); background: rgba(88,166,255,0.08); }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            max-width: 900px;
+            padding: 40px 48px;
+        }
+
+        /* Typography */
+        h1.content-h1 { font-size: 32px; font-weight: 700; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        h2 { font-size: 24px; font-weight: 600; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        h3 { font-size: 18px; font-weight: 600; margin: 32px 0 12px; color: var(--accent); }
+        h4 { font-size: 15px; font-weight: 600; margin: 24px 0 8px; color: var(--text); }
+        p { margin: 0 0 16px; }
+        ul, ol { margin: 0 0 16px; padding-left: 24px; }
+        li { margin-bottom: 6px; }
+        strong { color: #e6edf3; }
+
+        /* Callouts */
+        .callout {
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 20px 0;
+            border-left: 4px solid;
+            background: var(--bg-secondary);
+        }
+        .callout.info { border-left-color: var(--accent); }
+        .callout.warning { border-left-color: var(--warning); }
+        .callout.danger { border-left-color: var(--danger); }
+        .callout.success { border-left-color: var(--success); }
+        .callout-title { font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+        .callout p:last-child { margin-bottom: 0; }
+
+        /* Code blocks */
+        .code-block {
+            position: relative;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        .code-header .lang { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .copy-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: var(--font-sans);
+        }
+        .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .copy-btn.copied { color: var(--success); border-color: var(--success); }
+        pre {
+            margin: 0;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text);
+        }
+        code {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            background: var(--bg-tertiary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #ff7b72;
+        }
+        pre code { background: none; padding: 0; color: inherit; }
+
+        /* Inline highlights */
+        .highlight { background: rgba(88,166,255,0.12); padding: 1px 4px; border-radius: 3px; }
+        .cmd { color: #7ee787; }
+        .output { color: var(--text-secondary); font-style: italic; }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 10px 14px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+        th { background: var(--bg-tertiary); font-weight: 600; }
+        tr:nth-child(even) { background: var(--bg-secondary); }
+
+        /* Exercise box */
+        .exercise {
+            background: linear-gradient(135deg, rgba(88,166,255,0.08) 0%, rgba(63,185,80,0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px 24px;
+            margin: 24px 0;
+        }
+        .exercise-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Toggle for long sections */
+        .toggle-section {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin: 16px 0;
+            overflow: hidden;
+        }
+        .toggle-header {
+            background: var(--bg-tertiary);
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            user-select: none;
+        }
+        .toggle-header:hover { background: var(--border); }
+        .toggle-content {
+            padding: 16px;
+            display: none;
+        }
+        .toggle-content.open { display: block; }
+        .toggle-icon { transition: transform 0.2s; }
+        .toggle-icon.open { transform: rotate(90deg); }
+
+        /* Progress indicator */
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 280px; right: 0;
+            height: 3px;
+            background: var(--bg-tertiary);
+            z-index: 20;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--success));
+            width: 0%;
+            transition: width 0.2s;
+        }
+
+        /* Top bar */
+        .top-bar {
+            display: none;
+        }
+
+        .nav-toggle-btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: var(--font-sans);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            user-select: none;
+        }
+
+        .nav-toggle-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        a:focus-visible,
+        .nav-toggle-btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 900px) {
+            .nav-sidebar { width: 240px; }
+            .main-content { margin-left: 240px; padding: 24px; }
+            .progress-bar { left: 240px; }
+        }
+
+        @media (max-width: 700px) {
+            .nav-sidebar {
+                display: block;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease;
+                width: 260px;
+                left: 0;
+            }
+
+            #nav-toggle:checked ~ .nav-sidebar {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+                padding-top: 64px;
+            }
+
+            .progress-bar {
+                left: 0;
+                top: 49px;
+            }
+
+            .top-bar {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: var(--bg-secondary);
+                border-bottom: 1px solid var(--border);
+                padding: 12px 16px;
+                align-items: center;
+                justify-content: space-between;
+                z-index: 15;
+            }
+
+            h1.content-h1 { font-size: 26px; }
+            h2 { font-size: 20px; }
+            h3 { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+    <div class="page-layout">
+        <input type="checkbox" id="nav-toggle" hidden>
+        <nav class="nav-sidebar" id="nav-sidebar">
+            <h1>🐧 Linux + Docker Lab</h1>
+            <div class="subtitle">Full Course Curriculum</div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Getting Started</span>
+                <a class="nav-link" href="#intro">Introduction</a>
+                <a class="nav-link" href="#environment">Your Environment</a>
+                <a class="nav-link" href="#first-commands">First Commands</a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Module 1: Linux Basics</span>
+                <a class="nav-link" href="#m1-shell">Shell & Navigation</a>
+                <a class="nav-link" href="#m1-files">Files & Permissions</a>
+                <a class="nav-link" href="#m1-pipes">Pipes & Redirection</a>
+                <a class="nav-link" href="#m1-env">Environment Variables</a>
+                <a class="nav-link" href="#m1-packages">Package Management</a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Module 2: System Admin</span>
+                <a class="nav-link" href="#m2-users">Users & Groups</a>
+                <a class="nav-link" href="#m2-processes">Process Management</a>
+                <a class="nav-link" href="#m2-disk">Disk & Filesystems</a>
+                <a class="nav-link" href="#m2-network">Network Basics</a>
+                <a class="nav-link" href="#m2-firewall">Firewall (iptables)</a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Module 3: Shell Scripting</span>
+                <a class="nav-link" href="#m3-intro">Script Basics</a>
+                <a class="nav-link" href="#m3-variables">Variables & Arguments</a>
+                <a class="nav-link" href="#m3-conditions">Conditionals</a>
+                <a class="nav-link" href="#m3-loops">Loops</a>
+                <a class="nav-link" href="#m3-functions">Functions</a>
+                <a class="nav-link" href="#m3-text">Text Processing</a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Module 4: Docker</span>
+                <a class="nav-link" href="#m4-containers">Containers</a>
+                <a class="nav-link" href="#m4-images">Images & Dockerfile</a>
+                <a class="nav-link" href="#m4-networking">Docker Networking</a>
+                <a class="nav-link" href="#m4-compose">Docker Compose</a>
+                <a class="nav-link" href="#m4-microservices">Microservices Lab</a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Module 5: Database</span>
+                <a class="nav-link" href="#m5-mysql">MySQL with Docker</a>
+                <a class="nav-link" href="#m5-sql">SQL Basics</a>
+                <a class="nav-link" href="#m5-joins">JOINs & Queries</a>
+            </div>
+
+            <div class="nav-group">
+                <span class="nav-group-title">Module 6: Kubernetes</span>
+                <a class="nav-link" href="#m6-concepts">Core Concepts</a>
+                <a class="nav-link" href="#m6-resources">Resources & kubectl</a>
+                <a class="nav-link" href="#m6-yaml">YAML Manifests</a>
+            </div>
+        </nav>
+
+        <main class="main-content" id="main-content">
+            <div class="top-bar">
+                <label for="nav-toggle" class="nav-toggle-btn">☰ Menu</label>
+                <span style="font-weight:600;font-size:14px;">Linux + Docker Lab</span>
+            </div>
+
+            <!-- INTRODUCTION -->
+            <h1 class="content-h1" id="intro">Browser Linux + Docker Lab</h1>
+            <p>Welcome to the <strong>unified hands-on lab</strong> for Linux system administration, shell scripting, Docker containerization, and database management. Everything in this course runs inside a real Alpine Linux virtual machine that boots directly in your browser.</p>
+
+            <div class="callout info">
+                <div class="callout-title">ℹ️ What makes this lab special</div>
+                <p>You are running a <strong>real 32-bit x86 Alpine Linux</strong> system with a real Linux kernel, Docker daemon, and full network access — all inside your browser via the <a href="https://github.com/copy/v86" target="_blank">v86 emulator</a>. There is no simulation; every command you run executes on a genuine Linux kernel.</p>
+            </div>
+
+            <h2 id="environment">Your Environment</h2>
+            <table>
+                <tr><th>Component</th><th>Version / Details</th></tr>
+                <tr><td>Operating System</td><td>Alpine Linux 3.21 (x86, 32-bit)</td></tr>
+                <tr><td>Kernel</td><td>linux-virt 6.12.87</td></tr>
+                <tr><td>Docker</td><td>27.3.1 (pre-installed)</td></tr>
+                <tr><td>Package Manager</td><td><code>apk</code> (Alpine Package Keeper)</td></tr>
+                <tr><td>Shell</td><td><code>bash</code> and <code>ash</code> (BusyBox)</td></tr>
+                <tr><td>Init System</td><td>OpenRC</td></tr>
+                <tr><td>Network</td><td>DHCP via virtio-net, NAT to internet</td></tr>
+                <tr><td>Preloaded Image</td><td><code>i386/alpine:3.22</code> tar archive</td></tr>
+            </table>
+
+            <div class="callout warning">
+                <div class="callout-title">⚠️ Architecture Note</div>
+                <p>This VM runs on a <strong>32-bit x86 (i386/i686)</strong> CPU. Docker images must use the <code>i386/...</code> prefix or be multi-arch. Running <code>amd64</code> images will produce <code>exec format error</code>. Alpine-based images work best: <code>i386/alpine:3.22</code>, <code>i386/nginx</code>, etc.</p>
+            </div>
+
+            <h2 id="first-commands">First Commands</h2>
+            <p>After the VM boots and the status shows <strong>"Docker Ready"</strong>, try these commands to verify your environment:</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Show Alpine version
+cat /etc/alpine-release
+
+# Show architecture
+uname -m
+
+# Show running kernel version
+uname -r
+
+# Check Docker is running
+docker version
+
+# Run your first container
+docker run --rm i386/alpine:3.22 echo "Hello from Docker inside browser!"</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 0: Verify Environment</div>
+                <p>Run each command above. Confirm you see <code>i686</code> or <code>i386</code> from <code>uname -m</code>, and that Docker responds with both Client and Server versions. If Docker is not ready, wait for the boot log to show <em>"Docker: daemon is running"</em>.</p>
+            </div>
+
+            <hr style="border-color: var(--border); margin: 48px 0;">
+
+            <!-- MODULE 1: LINUX BASICS -->
+            <h1 class="content-h1" id="m1-shell">Module 1: Linux Fundamentals</h1>
+            <p>This module covers the essential skills every Linux user needs: navigating the filesystem, managing files, understanding permissions, and controlling input/output streams.</p>
+
+            <h2>1.1 Shell & Navigation</h2>
+            <p>The <strong>shell</strong> is the command-line interpreter that takes your typed commands and translates them into instructions for the computer. On Alpine, the default shell is <code>ash</code> (BusyBox), but <code>bash</code> is also installed.</p>
+
+            <h3>Basic Navigation Commands</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Print Working Directory — show where you are
+pwd
+
+# List files and directories
+ls
+ls -l          # Long format with permissions
+ls -la         # Include hidden files
+ls -lh         # Human-readable sizes
+
+# Change directory
+cd /           # Go to root
+cd ~           # Go to home directory
+cd ..          # Go up one level
+cd -           # Go to previous directory
+
+# Create and remove directories
+mkdir mydir
+mkdir -p mydir/subdir/nested    # Create nested directories
+rmdir mydir                     # Remove empty directory
+rm -r mydir                     # Remove directory and contents
+
+# Current shell type
+echo $SHELL
+# Show available shells
+cat /etc/shells</code></pre>
+            </div>
+
+            <h3>Directory Structure</h3>
+            <p>Linux organizes all files in a single tree starting at <code>/</code> (root). Key directories on Alpine:</p>
+            <table>
+                <tr><th>Directory</th><th>Purpose</th></tr>
+                <tr><td><code>/bin</code></td><td>Essential user commands (busybox binaries)</td></tr>
+                <tr><td><code>/sbin</code></td><td>System administration binaries</td></tr>
+                <tr><td><code>/etc</code></td><td>System configuration files</td></tr>
+                <tr><td><code>/home</code></td><td>User home directories</td></tr>
+                <tr><td><code>/root</code></td><td>Home directory for root user</td></tr>
+                <tr><td><code>/var</code></td><td>Variable data (logs, caches, mail)</td></tr>
+                <tr><td><code>/tmp</code></td><td>Temporary files</td></tr>
+                <tr><td><code>/proc</code></td><td>Virtual filesystem for process/kernel info</td></tr>
+                <tr><td><code>/sys</code></td><td>Virtual filesystem for system info</td></tr>
+                <tr><td><code>/dev</code></td><td>Device files</td></tr>
+                <tr><td><code>/usr</code></td><td>User programs and data</td></tr>
+                <tr><td><code>/lib</code></td><td>Essential shared libraries</td></tr>
+                <tr><td><code>/mnt</code></td><td>Temporary mount points</td></tr>
+                <tr><td><code>/media</code></td><td>Removable media mount points</td></tr>
+            </table>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 1.1: Explore the Filesystem</div>
+                <ol>
+                    <li>Navigate to <code>/bin</code> and list its contents. How many commands are there?</li>
+                    <li>Check what <code>ls</code> really is: <code>ls -l /bin/ls</code> and <code>file /bin/ls</code></li>
+                    <li>On Alpine, most binaries are symlinks to <code>/bin/busybox</code>. Verify: <code>ls -l /bin/cat /bin/ls /bin/grep</code></li>
+                    <li>Count total commands: <code>ls /bin | wc -l</code></li>
+                </ol>
+            </div>
+
+            <h2 id="m1-files">1.2 Files & Permissions</h2>
+            <p>Everything in Linux is a file. Understanding file permissions is critical for system security.</p>
+
+            <h3>File Operations</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Create files
+touch newfile.txt
+
+# View file contents
+cat file.txt              # Print entire file
+head -20 file.txt         # First 20 lines
+tail -20 file.txt         # Last 20 lines
+less file.txt             # Paginated view (q to quit)
+
+# Copy, move, delete
+cp file.txt backup.txt
+mv file.txt renamed.txt
+rm file.txt
+rm -i file.txt            # Confirm before deleting
+
+# Search inside files
+grep "pattern" file.txt
+grep -i "pattern" file.txt       # Case-insensitive
+grep -r "pattern" /etc/         # Recursive search
+grep -n "pattern" file.txt      # Show line numbers
+
+# File type and size
+file /bin/sh
+stat /etc/passwd
+du -sh /var/log               # Disk usage
+df -h                         # Free disk space</code></pre>
+            </div>
+
+            <h3>Understanding Permissions</h3>
+            <p>Run <code>ls -l</code> and you will see lines like:</p>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>-rw-r--r-- 1 root root 1234 Jan 15 10:00 file.txt
+drwxr-xr-x 2 root root 4096 Jan 15 09:30 mydir
+lrwxrwxrwx 1 root root    4 Jan 15 08:00 link -> file</code></pre>
+            </div>
+
+            <table>
+                <tr><th>Position</th><th>Meaning</th></tr>
+                <tr><td>1st char</td><td><code>-</code> file, <code>d</code> directory, <code>l</code> symlink</td></tr>
+                <tr><td>2-4</td><td>Owner permissions: read (r), write (w), execute (x)</td></tr>
+                <tr><td>5-7</td><td>Group permissions</td></tr>
+                <tr><td>8-10</td><td>Others (world) permissions</td></tr>
+            </table>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Change permissions
+chmod 755 script.sh         # rwxr-xr-x
+chmod u+x script.sh         # Add execute for owner
+chmod go-w file.txt         # Remove write for group and others
+
+# Change owner
+chown user:group file.txt
+chown -R user:group /mydir  # Recursive
+
+# Symbolic notation reference
+# u = user (owner), g = group, o = others, a = all
+# + = add, - = remove, = = set exactly
+chmod u=rwx,go=rx file</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 1.2: Permission Practice</div>
+                <ol>
+                    <li>Create a file: <code>touch /tmp/myfile</code> and check its permissions with <code>ls -l /tmp/myfile</code></li>
+                    <li>Create a script: <code>echo '#!/bin/sh' > /tmp/hello.sh &amp;&amp; echo 'echo Hello' >> /tmp/hello.sh</code></li>
+                    <li>Try to run it: <code>/tmp/hello.sh</code> — it should fail with "Permission denied"</li>
+                    <li>Make it executable: <code>chmod +x /tmp/hello.sh</code> and run again</li>
+                    <li>Remove execute permission from others: <code>chmod o-x /tmp/hello.sh</code></li>
+                </ol>
+            </div>
+
+            <h2 id="m1-pipes">1.3 Pipes & Redirection</h2>
+            <p>Linux has three standard I/O streams: <strong>stdin</strong> (0), <strong>stdout</strong> (1), and <strong>stderr</strong> (2). Redirection and piping let you combine commands in powerful ways.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Redirect stdout to file
+ls /etc > files.txt
+
+# Redirect and append
+echo "new line" >> files.txt
+
+# Redirect stderr
+ls /nonexistent 2> errors.log
+
+# Redirect both stdout and stderr
+command > output.log 2>&1
+command &> output.log        # Bash shorthand
+
+# Discard output
+command > /dev/null 2>&1
+
+# Pipe: send stdout of one command to stdin of another
+ls /etc | wc -l              # Count files in /etc
+cat /etc/passwd | grep root  # Find root entries
+ps aux | grep docker         # Find docker processes
+
+# Pipe with stderr through pipe
+cat /etc/passwd /nonexistent 2>&1 | grep -i error
+
+# Here document
+cat << EOF > /tmp/config.txt
+name=lab
+version=1.0
+EOF
+
+# xargs: build commands from stdin
+find /etc -name "*.conf" | xargs ls -la</code></pre>
+            </div>
+
+            <div class="callout info">
+                <div class="callout-title">💡 Pipe Chain Examples</div>
+                <p><code>cat /var/log/messages | grep "error" | sort | uniq -c | sort -nr</code> — finds all error lines, counts unique occurrences, and sorts by frequency (most common first).</p>
+            </div>
+
+            <h2 id="m1-env">1.4 Environment Variables</h2>
+            <p>Environment variables store configuration that programs can read. They are essential for scripting and application configuration.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># List all environment variables
+env
+printenv
+
+# Show a specific variable
+echo $HOME
+echo $PATH
+echo $SHELL
+
+# Set a variable (local to current shell)
+MY_VAR="hello world"
+echo $MY_VAR
+
+# Export to make it available to child processes
+export MY_VAR="hello world"
+
+# Add to PATH
+export PATH="$PATH:/my/custom/bin"
+
+# Remove a variable
+unset MY_VAR
+
+# Common environment variables on Alpine
+env | grep -E "^(HOME|PATH|SHELL|USER|PWD|TERM)="</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 1.3: Variables in Action</div>
+                <ol>
+                    <li>Set a variable: <code>PROJECT="browser-lab"</code></li>
+                    <li>Verify with <code>echo $PROJECT</code></li>
+                    <li>Run <code>env | grep PROJECT</code> — why is it empty?</li>
+                    <li>Export it: <code>export PROJECT</code> and check <code>env</code> again</li>
+                    <li>Run a sub-shell: <code>sh -c 'echo $PROJECT'</code> — does it work now?</li>
+                </ol>
+            </div>
+
+            <h2 id="m1-packages">1.5 Package Management (apk)</h2>
+            <p>Alpine uses <code>apk</code> (Alpine Package Keeper) instead of <code>apt</code> or <code>yum</code>. The original course materials use Debian commands, so this is an important adaptation.</p>
+
+            <div class="callout warning">
+                <div class="callout-title">⚠️ Debian vs Alpine Commands</div>
+                <table>
+                    <tr><th>Task</th><th>Debian/Ubuntu</th><th>Alpine Linux</th></tr>
+                    <tr><td>Update package list</td><td><code>apt update</code></td><td><code>apk update</code></td></tr>
+                    <tr><td>Install package</td><td><code>apt install pkg</code></td><td><code>apk add pkg</code></td></tr>
+                    <tr><td>Remove package</td><td><code>apt remove pkg</code></td><td><code>apk del pkg</code></td></tr>
+                    <tr><td>Search package</td><td><code>apt search pkg</code></td><td><code>apk search pkg</code></td></tr>
+                    <tr><td>Package info</td><td><code>dpkg -l | grep pkg</code></td><td><code>apk info pkg</code></td></tr>
+                    <tr><td>Upgrade all</td><td><code>apt upgrade</code></td><td><code>apk upgrade</code></td></tr>
+                </table>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Update package index
+apk update
+
+# Install packages
+apk add curl wget vim nano git
+
+# Install with no cache (saves space in Docker)
+apk add --no-cache curl
+
+# Remove a package
+apk del vim
+
+# Search for packages
+apk search python3
+apk search -v python3   # With descriptions
+
+# Show installed packages
+apk info
+
+# Show package details
+apk info curl
+
+# Show what files a package owns
+apk info -L curl
+
+# Find which package owns a file
+apk info --who-owns /bin/curl</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 1.4: Package Management</div>
+                <ol>
+                    <li>Update the package index: <code>apk update</code></li>
+                    <li>Search for the nginx package: <code>apk search nginx</code></li>
+                    <li>Install <code>curl</code> and <code>jq</code>: <code>apk add curl jq</code></li>
+                    <li>Test curl: <code>curl -s https://httpbin.org/get | jq '.origin'</code></li>
+                    <li>Check what curl owns: <code>apk info -L curl | head -20</code></li>
+                </ol>
+            </div>
+
+            <hr style="border-color: var(--border); margin: 48px 0;">
+
+            <!-- MODULE 2: SYSTEM ADMINISTRATION -->
+            <h1 class="content-h1" id="m2-users">Module 2: System Administration</h1>
+            <p>This module covers user management, process control, disk configuration, networking, and firewall rules — the daily work of a Linux system administrator.</p>
+
+            <h2>2.1 Users & Groups</h2>
+            <p>Linux is a multi-user system. Every file and process is owned by a user and a group. The <code>root</code> user has unlimited privileges.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Show current user
+whoami
+id
+
+# Show user info
+id root
+id $(whoami)
+
+# User database files
+cat /etc/passwd      # User accounts
+cat /etc/shadow      # Password hashes (root only)
+cat /etc/group       # Group definitions
+
+# Add a user (Alpine uses adduser script)
+adduser -D -s /bin/sh student
+
+# Set password
+passwd student
+
+# Add user to a group
+addgroup student docker
+
+# Modify user
+usermod -s /bin/bash student
+
+# Delete user
+deluser student
+
+# Switch user
+su - student
+
+# Run command as root (you are already root in this lab)
+sudo whoami</code></pre>
+            </div>
+
+            <p>The <code>/etc/passwd</code> file format:</p>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Output</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>root:x:0:0:root:/root:/bin/sh
+# format: username:password:UID:GID:comment:home:shell</code></pre>
+            </div>
+
+            <h2 id="m2-processes">2.2 Process Management</h2>
+            <p>Every running program is a <strong>process</strong>. Linux provides powerful tools to view, control, and manage processes.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># List processes
+ps aux              # All processes, detailed
+ps -ef              # Full format
+ps aux | grep docker
+
+# Real-time process viewer
+top                 # Basic
+top -b -n 1         # Batch mode, single snapshot
+
+# Better process viewer (install if needed)
+# apk add htop      # Not available on i386; use top instead
+
+# Process tree
+pstree
+
+# Find process by name
+pgrep docker
+pidof dockerd
+
+# Send signals to processes
+kill PID            # Graceful termination (SIGTERM)
+kill -9 PID         # Force kill (SIGKILL)
+killall dockerd     # Kill by name
+
+# Background and foreground
+sleep 60 &          # Run in background
+jobs                # List background jobs
+fg %1               # Bring job 1 to foreground
+bg %1               # Resume job 1 in background
+
+# Process priority (nice values)
+nice -n 10 command  # Run with lower priority
+renice -n 5 -p PID  # Change priority of running process
+
+# Show open files by process
+lsof -p PID
+lsof -i :80         # What is using port 80?</code></pre>
+            </div>
+
+            <div class="callout info">
+                <div class="callout-title">💡 Common Process States</div>
+                <p><code>R</code> = Running, <code>S</code> = Sleeping (interruptible), <code>D</code> = Uninterruptible sleep, <code>T</code> = Stopped, <code>Z</code> = Zombie (defunct). See full list with <code>man ps</code>.</p>
+            </div>
+
+            <h2 id="m2-disk">2.3 Disk & Filesystems</h2>
+            <p>Understanding disk layout, partitions, and filesystems is essential for storage management.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Disk space usage
+df -h               # Human-readable
+df -hT              # With filesystem types
+
+# Directory sizes
+du -sh /var/log
+du -sh /*           # Size of each top-level directory
+
+# List block devices
+lsblk
+fdisk -l            # Partition tables
+
+# Filesystem info (Alpine uses ext4 for root, tmpfs for some mounts)
+mount | column -t
+
+cat /proc/filesystems       # Supported filesystems
+cat /proc/partitions        # Partition info
+
+# Create a filesystem (careful!)
+# mkfs.ext4 /dev/sda1
+
+# Mount and unmount
+mount /dev/sda1 /mnt
+umount /mnt
+
+# Check /etc/fstab for auto-mount rules
+cat /etc/fstab
+
+# Swap
+free -m             # Memory and swap usage
+cat /proc/swaps     # Swap devices
+
+# The dd command — low-level data copy
+dd if=/dev/zero of=/tmp/testfile bs=1M count=100  # Create 100MB file
+dd if=/dev/urandom of=/tmp/random bs=1K count=10  # Random data</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 2.1: Storage Analysis</div>
+                <ol>
+                    <li>Check disk usage: <code>df -h</code> — how much free space do you have?</li>
+                    <li>Find largest directories: <code>du -sh /var/* /tmp/*</code></li>
+                    <li>Check what filesystem types are in use: <code>mount | awk '{print $1, $5}' | sort | uniq</code></li>
+                    <li>Create a 50MB test file with <code>dd</code> and verify its size</li>
+                </ol>
+            </div>
+
+            <h2 id="m2-network">2.4 Network Basics</h2>
+            <p>Networking is fundamental to modern Linux systems. This section covers the essential network commands available on Alpine.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Interface configuration
+ip addr show
+ip addr show eth0
+ifconfig            # Legacy but available via busybox
+
+# Routing
+ip route
+route -n
+
+# DNS resolution
+nslookup google.com
+dig google.com
+host google.com
+
+cat /etc/resolv.conf        # DNS servers
+
+# Connectivity tests
+ping -c 4 8.8.8.8
+ping -c 4 google.com
+
+# Trace route
+traceroute google.com       # Install: apk add traceroute
+mtr google.com              # Install: apk add mtr
+
+# Port scanning and connections
+netstat -tlnp               # Listening ports with PIDs
+ss -tlnp                    # Modern replacement for netstat
+
+# ARP table
+ip neigh
+arp -a
+
+# Network stats
+cat /proc/net/dev           # Interface statistics
+
+# Download files
+wget https://example.com/file.txt
+curl -O https://example.com/file.txt
+curl -s https://api.ipify.org   # Show public IP
+
+# Check if a port is open
+nc -zv google.com 443       # Install: apk add netcat-openbsd
+telnet google.com 80        # Test TCP connection</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 2.2: Network Exploration</div>
+                <ol>
+                    <li>Install traceroute: <code>apk add traceroute</code> and trace to <code>8.8.8.8</code></li>
+                    <li>Check your DNS servers: <code>cat /etc/resolv.conf</code></li>
+                    <li>Find your public IP: <code>curl -s https://api.ipify.org</code></li>
+                    <li>Check listening ports: <code>ss -tlnp</code> — what services are running?</li>
+                    <li>Use <code>netstat -tlnp</code> to confirm Docker is listening</li>
+                </ol>
+            </div>
+
+            <h2 id="m2-firewall">2.5 Firewall (iptables)</h2>
+            <p>iptables is the Linux firewall framework. Alpine includes iptables and ip6tables. Docker manipulates iptables rules automatically for container networking.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># List all rules
+iptables -L -v -n
+
+# List rules with line numbers
+iptables -L INPUT -n --line-numbers
+
+# Show NAT rules (Docker uses these extensively)
+iptables -t nat -L -n -v
+
+# Default chains: INPUT, FORWARD, OUTPUT
+# Default tables: filter, nat, mangle, raw
+
+# Allow incoming SSH (example)
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+
+# Block an IP
+iptables -A INPUT -s 192.168.1.100 -j DROP
+
+# Save rules (Alpine)
+iptables-save > /etc/iptables/rules.v4
+
+# Docker's iptables impact
+iptables -L FORWARD -n -v   # Docker creates forwarding rules
+iptables -t nat -L DOCKER   # Docker NAT rules for port mapping</code></pre>
+            </div>
+
+            <div class="callout warning">
+                <div class="callout-title">⚠️ iptables + Docker</div>
+                <p>Docker modifies iptables rules automatically to enable container networking. Be careful when manually editing iptables rules — you might break Docker's networking. Always check <code>iptables -L -n -v</code> before and after changes.</p>
+            </div>
+
+            <hr style="border-color: var(--border); margin: 48px 0;">
+
+            <!-- MODULE 3: SHELL SCRIPTING -->
+            <h1 class="content-h1" id="m3-intro">Module 3: Shell Scripting</h1>
+            <p>Shell scripts automate repetitive tasks. This module covers Bash scripting from variables and conditionals to loops, functions, and text processing.</p>
+
+            <h2>3.1 Script Basics</h2>
+            <p>A shell script is a text file containing multiple commands that can be executed together.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>#!/bin/sh
+# This is a comment
+echo "Hello, World!"
+echo "Today is $(date)"
+echo "Current user: $USER"
+echo "Current directory: $PWD"</code></pre>
+            </div>
+
+            <p>To create and run a script:</p>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Create script
+cat > /tmp/hello.sh << 'EOF'
+#!/bin/sh
+echo "Hello from script!"
+EOF
+
+# Make executable
+chmod +x /tmp/hello.sh
+
+# Run it
+/tmp/hello.sh
+# or
+sh /tmp/hello.sh
+# or
+bash /tmp/hello.sh</code></pre>
+            </div>
+
+            <h2 id="m3-variables">3.2 Variables & Arguments</h2>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>#!/bin/sh
+
+# Variables
+NAME="Linux Lab"
+NUMBER=42
+
+# No spaces around = !
+# CORRECT: VAR="value"
+# WRONG:   VAR = "value"
+
+# Use variables with $
+echo "Name: $NAME"
+echo "Number: $NUMBER"
+
+# Command substitution
+FILES=$(ls /etc)
+echo "Files in /etc: $FILES"
+# or backticks (legacy)
+DATE=`date`
+
+# Arguments
+# $0 = script name, $1 = first arg, $2 = second arg...
+# $@ = all arguments, $# = argument count
+
+echo "Script: $0"
+echo "First arg: $1"
+echo "Second arg: $2"
+echo "All args: $@"
+echo "Arg count: $#"
+
+# Arithmetic
+A=5
+B=3
+echo "Sum: $((A + B))"
+echo "Product: $((A * B))"
+echo "Modulo: $((A % B))"
+
+# Read user input
+echo -n "Enter your name: "
+read USERNAME
+echo "Welcome, $USERNAME!"
+
+# Read with prompt
+read -p "Enter a number: " NUM
+echo "You entered: $NUM"</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 3.1: Simple Calculator Script</div>
+                <p>Create a script that takes two numbers as arguments and prints their sum, difference, product, and quotient.</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                    <pre><code>cat > /tmp/calc.sh << 'EOF'
+#!/bin/sh
+if [ $# -ne 2 ]; then
+    echo "Usage: $0 <num1> <num2>"
+    exit 1
+fi
+A=$1
+B=$2
+echo "Sum:        $((A + B))"
+echo "Difference: $((A - B))"
+echo "Product:    $((A * B))"
+echo "Quotient:   $((A / B))"
+EOF
+chmod +x /tmp/calc.sh
+/tmp/calc.sh 15 4</code></pre>
+                </div>
+            </div>
+
+            <h2 id="m3-conditions">3.3 Conditionals</h2>
+            <p>Use <code>if</code>, <code>elif</code>, <code>else</code> to make decisions. Test conditions with <code>[ ]</code> or <code>[[ ]]</code> (bash only).</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>#!/bin/sh
+
+# File tests
+if [ -e /etc/passwd ]; then
+    echo "/etc/passwd exists"
+fi
+
+# Common test operators:
+# -e file  : exists
+# -f file  : exists and is regular file
+# -d file  : exists and is directory
+# -r file  : readable
+# -w file  : writable
+# -x file  : executable
+# -s file  : non-empty
+# -z str   : string is empty
+# -n str   : string is non-empty
+# str1 = str2  : strings equal
+# str1 != str2 : strings not equal
+# num1 -eq num2 : numbers equal
+# num1 -ne num2 : numbers not equal
+# num1 -lt num2 : less than
+# num1 -gt num2 : greater than
+# num1 -le num2 : less or equal
+# num1 -ge num2 : greater or equal
+
+# Numeric comparison
+AGE=25
+if [ "$AGE" -ge 18 ]; then
+    echo "Adult"
+else
+    echo "Minor"
+fi
+
+# String comparison
+NAME="admin"
+if [ "$NAME" = "admin" ]; then
+    echo "Welcome, administrator"
+elif [ "$NAME" = "guest" ]; then
+    echo "Welcome, guest"
+else
+    echo "Unknown user"
+fi
+
+# Combined conditions with AND / OR
+if [ -f /etc/passwd ] && [ -r /etc/passwd ]; then
+    echo "Can read /etc/passwd"
+fi
+
+if [ "$1" = "start" ] || [ "$1" = "begin" ]; then
+    echo "Starting..."
+fi
+
+# Case statement
+case "$1" in
+    start)
+        echo "Starting service..."
+        ;;
+    stop)
+        echo "Stopping service..."
+        ;;
+    restart)
+        echo "Restarting service..."
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac</code></pre>
+            </div>
+
+            <h2 id="m3-loops">3.4 Loops</h2>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>#!/bin/sh
+
+# For loop with list
+for NAME in Alice Bob Charlie; do
+    echo "Hello, $NAME!"
+done
+
+# For loop with command output
+for FILE in /etc/*.conf; do
+    echo "Config file: $FILE"
+done
+
+# C-style for loop (bash)
+for ((i=1; i<=5; i++)); do
+    echo "Iteration $i"
+done
+# In sh, use: for i in $(seq 1 5); do ... done
+
+# While loop
+COUNT=1
+while [ $COUNT -le 5 ]; do
+    echo "Count: $COUNT"
+    COUNT=$((COUNT + 1))
+done
+
+# Until loop
+NUM=1
+until [ $NUM -gt 5 ]; do
+    echo "Until: $NUM"
+    NUM=$((NUM + 1))
+done
+
+# Infinite loop with break
+while true; do
+    echo "Running... (Ctrl+C to stop)"
+    sleep 1
+done
+
+# Continue (skip to next iteration)
+for i in 1 2 3 4 5; do
+    if [ $i -eq 3 ]; then
+        continue
+    fi
+    echo "Number: $i"
+done</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 3.2: Directory Scanner</div>
+                <p>Create a script that loops through all files in <code>/etc</code> and prints whether each is a regular file, directory, or symlink.</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                    <pre><code>cat > /tmp/scan.sh << 'EOF'
+#!/bin/sh
+for ITEM in /etc/*; do
+    if [ -L "$ITEM" ]; then
+        echo "LINK:  $ITEM"
+    elif [ -d "$ITEM" ]; then
+        echo "DIR:   $ITEM"
+    elif [ -f "$ITEM" ]; then
+        echo "FILE:  $ITEM"
+    fi
+done
+EOF
+chmod +x /tmp/scan.sh
+/tmp/scan.sh</code></pre>
+                </div>
+            </div>
+
+            <h2 id="m3-functions">3.5 Functions</h2>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>#!/bin/sh
+
+# Define function
+say_hello() {
+    echo "Hello, $1!"
+}
+
+# Call function
+say_hello "World"
+say_hello "Linux"
+
+# Function with return value
+add_numbers() {
+    RESULT=$(( $1 + $2 ))
+    return $RESULT
+}
+
+add_numbers 5 3
+echo "Return code (0-255 only): $?"
+
+# Better: use echo for output
+multiply() {
+    echo $(( $1 * $2 ))
+}
+
+PRODUCT=$(multiply 6 7)
+echo "6 x 7 = $PRODUCT"
+
+# Local variables
+process_file() {
+    local FILENAME=$1
+    local SIZE=$(stat -c%s "$FILENAME" 2>/dev/null || echo 0)
+    echo "File: $FILENAME, Size: $SIZE bytes"
+}
+
+process_file /etc/passwd</code></pre>
+            </div>
+
+            <h2 id="m3-text">3.6 Text Processing</h2>
+            <p>Text processing is one of the shell's greatest strengths. These tools form a powerful pipeline for data manipulation.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># grep — pattern search
+grep "root" /etc/passwd
+grep -i "admin" /etc/passwd        # Case-insensitive
+grep -v "nologin" /etc/passwd      # Invert match
+grep -c "bin" /etc/passwd          # Count matches
+grep -E "^root|^admin" /etc/passwd # Extended regex
+
+# sed — stream editor
+sed 's/old/new/' file.txt          # Replace first occurrence per line
+sed 's/old/new/g' file.txt         # Replace all occurrences
+sed 's|/usr/local|/opt|g' file.txt # Different delimiter
+sed -i 's/old/new/g' file.txt      # Edit in place
+sed -n '5,10p' file.txt            # Print lines 5-10
+sed '/pattern/d' file.txt          # Delete matching lines
+
+# awk — pattern scanning and processing
+awk '{print $1}' file.txt          # Print first field
+awk -F: '{print $1}' /etc/passwd   # Use : as delimiter
+awk '{print NR, $0}' file.txt      # Print with line numbers
+awk '/pattern/ {print $2}' file    # Print $2 where pattern matches
+awk '{sum+=$1} END {print sum}' nums.txt  # Sum first column
+
+# cut — extract columns
+cut -d: -f1 /etc/passwd            # First field, : delimiter
+cut -c1-10 file.txt                # First 10 characters
+
+# sort and uniq
+sort file.txt                      # Alphanumeric sort
+sort -n file.txt                   # Numeric sort
+sort -r file.txt                   # Reverse sort
+sort | uniq                        # Unique lines only
+sort | uniq -c                     # Count occurrences
+sort | uniq -c | sort -nr          # Most common first
+
+# tr — translate characters
+echo "hello" | tr 'a-z' 'A-Z'      # To uppercase
+echo "hello world" | tr ' ' '_'    # Replace spaces
+cat file.txt | tr -d '\r'          # Delete carriage returns
+
+# wc — word count
+wc -l file.txt                     # Line count
+wc -w file.txt                     # Word count
+wc -c file.txt                     # Byte count
+ls /etc | wc -l                    # Count files
+
+# xargs — build commands from stdin
+find /etc -name "*.conf" | xargs grep -l "setting"
+echo "file1 file2" | xargs rm</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 3.3: Log Analyzer</div>
+                <p>Analyze the system log to find the most common log sources:</p>
+                <div class="code-block">
+                    <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                    <pre><code># View the system log
+cat /var/log/messages 2>/dev/null || echo "No messages log"
+
+# Create sample log data for practice
+cat > /tmp/sample.log << 'EOF'
+2024-01-15 10:00:01 sshd login successful
+2024-01-15 10:01:15 nginx request 200
+2024-01-15 10:02:30 sshd login failed
+2024-01-15 10:03:45 nginx request 404
+2024-01-15 10:04:00 sshd login successful
+2024-01-15 10:05:12 nginx request 200
+2024-01-15 10:06:33 sshd login failed
+EOF
+
+# Extract the service name (3rd field), count occurrences
+awk '{print $3}' /tmp/sample.log | sort | uniq -c | sort -nr
+
+# Count HTTP status codes
+awk '{print $5}' /tmp/sample.log | sort | uniq -c</code></pre>
+                </div>
+            </div>
+
+            <hr style="border-color: var(--border); margin: 48px 0;">
+
+            <!-- MODULE 4: DOCKER -->
+            <h1 class="content-h1" id="m4-containers">Module 4: Docker Essentials</h1>
+            <p>Docker is a platform for developing, shipping, and running applications in containers. This VM comes with Docker 27.3.1 pre-installed and running.</p>
+
+            <div class="callout info">
+                <div class="callout-title">ℹ️ Docker in This Lab</div>
+                <p>Docker is already installed and configured. The Docker daemon starts automatically via OpenRC when the VM boots. You have network access, so you can pull images from Docker Hub.</p>
+            </div>
+
+            <h2>4.1 Container Lifecycle</h2>
+            <p>Containers are lightweight, isolated environments that package an application with all its dependencies.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Docker</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Run a container
+docker run i386/alpine:3.22 echo "Hello from container"
+
+# Run interactively with terminal
+docker run -it i386/alpine:3.22 sh
+
+# Run in background (detached)
+docker run -d --name mynginx i386/nginx:alpine
+
+# List running containers
+docker ps
+
+# List all containers (including stopped)
+docker ps -a
+
+# Stop a container
+docker stop mynginx
+
+# Start a stopped container
+docker start mynginx
+
+# Restart a container
+docker restart mynginx
+
+# Remove a container
+docker rm mynginx
+
+# Remove forcefully (running container)
+docker rm -f mynginx
+
+# View container logs
+docker logs mynginx
+docker logs -f mynginx        # Follow (tail -f style)
+
+# Execute command in running container
+docker exec mynginx ps aux
+docker exec -it mynginx sh   # Interactive shell
+
+# Copy files to/from container
+docker cp localfile.txt mynginx:/tmp/
+docker cp mynginx:/etc/nginx/nginx.conf ./
+
+# Inspect container details
+docker inspect mynginx
+
+# Resource usage
+docker stats
+
+# Clean up stopped containers
+docker container prune</code></pre>
+            </div>
+
+            <div class="callout warning">
+                <div class="callout-title">⚠️ Architecture Reminder</div>
+                <p>Always use <code>i386/...</code> prefixed images or test with <code>docker run --rm i386/alpine:3.22 uname -m</code> first. Official images like <code>nginx</code>, <code>mysql</code>, <code>redis</code> are typically amd64-only and will fail with <code>exec format error</code> on this 32-bit VM.</p>
+            </div>
+
+            <h2 id="m4-images">4.2 Images & Dockerfile</h2>
+            <p>Docker images are read-only templates used to create containers. You can build custom images using a <code>Dockerfile</code>.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Docker</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># List images
+docker images
+docker image ls
+
+# Pull an image
+docker pull i386/alpine:3.22
+
+# Remove an image
+docker rmi i386/alpine:3.22
+
+# Remove unused images
+docker image prune
+
+# Inspect an image
+docker inspect i386/alpine:3.22
+
+# View image history (layers)
+docker history i386/alpine:3.22
+
+# Save image to tar
+docker save -o alpine.tar i386/alpine:3.22
+
+# Load image from tar
+docker load -i alpine.tar</code></pre>
+            </div>
+
+            <h3>Writing a Dockerfile</h3>
+            <p>A Dockerfile is a recipe for building an image. Each instruction creates a new layer.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Dockerfile</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Use official Alpine base image (i386 variant)
+FROM i386/alpine:3.22
+
+# Set metadata
+LABEL maintainer="lab@example.com"
+LABEL description="A simple web server lab"
+
+# Install packages
+RUN apk add --no-cache nginx curl
+
+# Create a directory
+RUN mkdir -p /var/www/html
+
+# Copy files into the image
+COPY index.html /var/www/html/
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Expose port
+EXPOSE 80
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+    CMD curl -f http://localhost/ || exit 1
+
+# Default command
+CMD ["nginx", "-g", "daemon off;"]</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Build the image
+docker build -t myweb:latest .
+
+# Build with tag
+docker build -t myweb:v1.0 .
+
+# Build without cache
+docker build --no-cache -t myweb:latest .
+
+# Run your custom image
+docker run -d -p 8080:80 --name web myweb:latest
+
+# Tag an image
+docker tag myweb:latest localhost:5000/myweb:v1.0</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 4.1: Build a Custom Image</div>
+                <ol>
+                    <li>Create a directory: <code>mkdir -p /tmp/dockerlab &amp;&amp; cd /tmp/dockerlab</code></li>
+                    <li>Create an index.html: <code>echo '&lt;h1&gt;Hello from Docker Lab!&lt;/h1&gt;' > index.html</code></li>
+                    <li>Create the Dockerfile above (adapted for i386)</li>
+                    <li>Build: <code>docker build -t myweb:v1 .</code></li>
+                    <li>Run: <code>docker run -d -p 8080:80 --name myweb myweb:v1</code></li>
+                    <li>Test: <code>curl http://localhost:8080</code></li>
+                </ol>
+            </div>
+
+            <h3>Dockerfile Instructions Reference</h3>
+            <table>
+                <tr><th>Instruction</th><th>Purpose</th></tr>
+                <tr><td><code>FROM</code></td><td>Base image to start from</td></tr>
+                <tr><td><code>RUN</code></td><td>Execute command (creates new layer)</td></tr>
+                <tr><td><code>CMD</code></td><td>Default command (overridable)</td></tr>
+                <tr><td><code>ENTRYPOINT</code></td><td>Fixed command (appends args)</td></tr>
+                <tr><td><code>COPY</code></td><td>Copy files from host to image</td></tr>
+                <tr><td><code>ADD</code></td><td>Like COPY but can extract tar/URLs</td></tr>
+                <tr><td><code>WORKDIR</code></td><td>Set working directory</td></tr>
+                <tr><td><code>ENV</code></td><td>Set environment variable</td></tr>
+                <tr><td><code>ARG</code></td><td>Build-time variable</td></tr>
+                <tr><td><code>EXPOSE</code></td><td>Document listening ports</td></tr>
+                <tr><td><code>VOLUME</code></td><td>Create mount point</td></tr>
+                <tr><td><code>USER</code></td><td>Set user to run as</td></tr>
+                <tr><td><code>LABEL</code></td><td>Add metadata</td></tr>
+                <tr><td><code>HEALTHCHECK</code></td><td>Container health monitoring</td></tr>
+            </table>
+
+            <h2 id="m4-networking">4.3 Docker Networking</h2>
+            <p>Docker provides several network drivers. By default, containers use the <code>bridge</code> network.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Docker</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># List networks
+docker network ls
+
+# Inspect a network
+docker network inspect bridge
+
+# Create a custom bridge network
+docker network create mynet
+
+# Run container on custom network
+docker run -d --name web --network mynet i386/nginx:alpine
+
+# Connect container to additional network
+docker network connect mynet web2
+
+# Disconnect from network
+docker network disconnect mynet web2
+
+# Remove a network
+docker network rm mynet
+
+# Port mapping (NAT)
+docker run -d -p 8080:80 --name web i386/nginx:alpine
+docker run -d -p 127.0.0.1:8080:80 --name web i386/nginx:alpine  # Bind to localhost only
+
+# View container IP
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' web
+
+# Test connectivity between containers
+docker run -it --rm --network mynet i386/alpine:3.22 ping -c 3 web</code></pre>
+            </div>
+
+            <h3>Network Types</h3>
+            <table>
+                <tr><th>Type</th><th>Use Case</th></tr>
+                <tr><td><code>bridge</code></td><td>Default isolated network on single host</td></tr>
+                <tr><td><code>host</code></td><td>Share host's network stack (no isolation)</td></tr>
+                <tr><td><code>none</code></td><td>No network interface</td></tr>
+                <tr><td><code>overlay</code></td><td>Multi-host networking (Swarm mode)</td></tr>
+                <tr><td><code>macvlan</code></td><td>Assign MAC address, appear as physical device</td></tr>
+            </table>
+
+            <h2 id="m4-compose">4.4 Docker Compose</h2>
+            <p>Docker Compose lets you define and run multi-container applications using a YAML file.</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">YAML</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>version: '3.8'
+
+services:
+  web:
+    image: i386/nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    networks:
+      - frontend
+    depends_on:
+      - api
+
+  api:
+    build: ./api
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=db
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - db
+
+  db:
+    image: i386/postgres:alpine
+    environment:
+      POSTGRES_USER: lab
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: labdb
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  db_data:
+
+networks:
+  frontend:
+  backend:</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Start all services
+docker-compose up
+
+# Start in background
+docker-compose up -d
+
+# View logs
+docker-compose logs
+docker-compose logs -f web
+
+# Scale a service
+docker-compose up -d --scale web=3
+
+# Stop services
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+
+# Rebuild images
+docker-compose up -d --build
+
+# Execute command in service container
+docker-compose exec web sh
+
+# List services
+docker-compose ps</code></pre>
+            </div>
+
+            <div class="callout warning">
+                <div class="callout-title">⚠️ Compose Images on i386</div>
+                <p>Many Docker Compose examples use images like <code>postgres</code>, <code>mysql</code>, or <code>redis</code> without the <code>i386/</code> prefix. On this VM, these will fail. Use <code>i386/postgres:alpine</code>, <code>i386/redis:alpine</code>, or build from Alpine-based Dockerfiles.</p>
+            </div>
+
+            <h2 id="m4-microservices">4.5 Microservices Lab: Link Extractor</h2>
+            <p>Let's build a simple multi-service application inspired by the original Docker 101 course — adapted for our Alpine i386 environment.</p>
+
+            <h3>Project Structure</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Shell</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>mkdir -p /tmp/linkextractor/api
+mkdir -p /tmp/linkextractor/www
+cd /tmp/linkextractor</code></pre>
+            </div>
+
+            <h3>API Service (Python Flask)</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># api/linkextractor.py
+cat > api/linkextractor.py << 'EOF'
+#!/usr/bin/env python3
+import sys
+import urllib.request
+from html.parser import HTMLParser
+
+class LinkExtractor(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.links = []
+    def handle_starttag(self, tag, attrs):
+        if tag == 'a':
+            for name, value in attrs:
+                if name == 'href':
+                    self.links.append(value)
+
+def extract_links(url):
+    try:
+        with urllib.request.urlopen(url, timeout=10) as response:
+            html = response.read().decode('utf-8')
+        parser = LinkExtractor()
+        parser.feed(html)
+        return parser.links
+    except Exception as e:
+        return [f"Error: {e}"]
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: linkextractor.py <URL>")
+        sys.exit(1)
+    for link in extract_links(sys.argv[1]):
+        print(link)
+EOF</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Python</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># api/main.py
+cat > api/main.py << 'EOF'
+#!/usr/bin/env python3
+from flask import Flask, jsonify
+import sys
+sys.path.insert(0, '/app')
+from linkextractor import extract_links
+
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return "Usage: /api/&lt;url&gt;"
+
+@app.route('/api/&lt;path:url&gt;')
+def api(url):
+    links = extract_links("http://" + url)
+    return jsonify({"url": url, "links": links})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+EOF</code></pre>
+            </div>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Dockerfile</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># api/Dockerfile
+cat > api/Dockerfile << 'EOF'
+FROM i386/python:3.11-alpine
+WORKDIR /app
+RUN apk add --no-cache gcc musl-dev linux-headers
+RUN pip install --no-cache-dir flask
+COPY . /app/
+EXPOSE 5000
+CMD ["python", "/app/main.py"]
+EOF</code></pre>
+            </div>
+
+            <h3>Web Frontend (Static HTML served by nginx)</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">HTML</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># www/index.html
+cat > www/index.html << 'EOF'
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;Link Extractor&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+&lt;h1&gt;Link Extractor&lt;/h1&gt;
+&lt;p&gt;Enter a URL to extract links:&lt;/p&gt;
+&lt;input type="text" id="url" placeholder="example.com"&gt;
+&lt;button onclick="extract()"&gt;Extract&lt;/button&gt;
+&lt;pre id="result"&gt;&lt;/pre&gt;
+&lt;script&gt;
+function extract() {
+    const url = document.getElementById('url').value;
+    fetch('/api/' + url)
+        .then(r =&gt; r.json())
+        .then(data =&gt; document.getElementById('result').textContent = JSON.stringify(data, null, 2));
+}
+&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+EOF</code></pre>
+            </div>
+
+            <h3>docker-compose.yml</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">YAML</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>cat > docker-compose.yml << 'EOF'
+version: '3.8'
+
+services:
+  api:
+    build: ./api
+    ports:
+      - "5000:5000"
+    networks:
+      - appnet
+
+  web:
+    image: i386/nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./www:/usr/share/nginx/html:ro
+    networks:
+      - appnet
+    depends_on:
+      - api
+
+networks:
+  appnet:
+EOF</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 4.2: Build & Run the Microservice</div>
+                <ol>
+                    <li>Navigate to <code>/tmp/linkextractor</code></li>
+                    <li>Build and start: <code>docker-compose up -d --build</code></li>
+                    <li>Check logs: <code>docker-compose logs -f</code></li>
+                    <li>Test the API: <code>curl http://localhost:5000/api/example.com</code></li>
+                    <li>View the web UI at <code>http://localhost:8080</code> (from within the VM)</li>
+                    <li>Stop: <code>docker-compose down</code></li>
+                </ol>
+            </div>
+
+            <hr style="border-color: var(--border); margin: 48px 0;">
+
+            <!-- MODULE 5: DATABASE -->
+            <h1 class="content-h1" id="m5-mysql">Module 5: Database with Docker</h1>
+            <p>Databases are a core component of most applications. This module shows how to run MySQL/MariaDB in Docker and perform essential SQL operations.</p>
+
+            <div class="callout info">
+                <div class="callout-title">ℹ️ MariaDB vs MySQL</div>
+                <p>Alpine Linux packages <code>mariadb</code> (the open-source fork of MySQL) rather than Oracle MySQL. For Docker, we can use <code>i386/mariadb</code> or <code>i386/mysql</code> if available. On this VM, we'll use MariaDB which is fully compatible for basic SQL operations.</p>
+            </div>
+
+            <h2>5.1 Running MySQL/MariaDB in Docker</h2>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">Docker</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Run MariaDB container
+docker run -d \
+  --name mariadb \
+  -e MYSQL_ROOT_PASSWORD=secret123 \
+  -e MYSQL_DATABASE=labdb \
+  -e MYSQL_USER=labuser \
+  -e MYSQL_PASSWORD=labpass \
+  -p 3306:3306 \
+  i386/mariadb:10
+
+# Check it's running
+docker ps
+docker logs mariadb
+
+# Connect to MySQL
+docker exec -it mariadb mysql -uroot -psecret123
+
+# Or connect as labuser
+docker exec -it mariadb mysql -ulabuser -plabpass labdb</code></pre>
+            </div>
+
+            <h2 id="m5-sql">5.2 SQL Basics</h2>
+            <p>Once connected to the MySQL prompt (<code>mysql&gt;</code>), try these commands:</p>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>-- Show databases
+SHOW DATABASES;
+
+-- Select database
+USE labdb;
+
+-- Create table
+CREATE TABLE employees (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    department VARCHAR(50),
+    salary DECIMAL(10,2),
+    hire_date DATE
+);
+
+-- Insert data
+INSERT INTO employees (first_name, last_name, department, salary, hire_date) VALUES
+('Alice', 'Johnson', 'Engineering', 85000.00, '2020-03-15'),
+('Bob', 'Smith', 'Sales', 65000.00, '2019-07-22'),
+('Carol', 'Williams', 'Engineering', 92000.00, '2018-11-01'),
+('David', 'Brown', 'Marketing', 58000.00, '2021-01-10'),
+('Eve', 'Davis', 'Sales', 72000.00, '2017-05-30');
+
+-- Select all
+SELECT * FROM employees;
+
+-- Select specific columns
+SELECT first_name, last_name, salary FROM employees;
+
+-- Filter with WHERE
+SELECT * FROM employees WHERE department = 'Engineering';
+SELECT * FROM employees WHERE salary > 70000;
+SELECT * FROM employees WHERE hire_date >= '2020-01-01';
+
+-- Sort results
+SELECT * FROM employees ORDER BY salary DESC;
+SELECT * FROM employees ORDER BY department, last_name;
+
+-- Limit results
+SELECT * FROM employees LIMIT 3;
+
+-- Aggregate functions
+SELECT COUNT(*) FROM employees;
+SELECT AVG(salary) FROM employees;
+SELECT MAX(salary), MIN(salary) FROM employees;
+SELECT SUM(salary) FROM employees WHERE department = 'Engineering';
+
+-- Group by
+SELECT department, COUNT(*) AS emp_count, AVG(salary) AS avg_salary
+FROM employees
+GROUP BY department;
+
+-- Group by with HAVING
+SELECT department, AVG(salary) AS avg_salary
+FROM employees
+GROUP BY department
+HAVING avg_salary > 60000;
+
+-- Update data
+UPDATE employees SET salary = salary * 1.05 WHERE department = 'Sales';
+
+-- Delete data
+DELETE FROM employees WHERE id = 5;
+
+-- Describe table structure
+DESCRIBE employees;
+SHOW COLUMNS FROM employees;</code></pre>
+            </div>
+
+            <h2 id="m5-joins">5.3 JOINs & Advanced Queries</h2>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">SQL</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>-- Create departments table
+CREATE TABLE departments (
+    dept_id INT AUTO_INCREMENT PRIMARY KEY,
+    dept_name VARCHAR(50),
+    location VARCHAR(50)
+);
+
+INSERT INTO departments (dept_name, location) VALUES
+('Engineering', 'Building A'),
+('Sales', 'Building B'),
+('Marketing', 'Building C');
+
+-- INNER JOIN: only matching rows
+SELECT e.first_name, e.last_name, d.dept_name, d.location
+FROM employees e
+INNER JOIN departments d ON e.department = d.dept_name;
+
+-- LEFT JOIN: all employees, even without matching department
+SELECT e.first_name, e.last_name, d.dept_name
+FROM employees e
+LEFT JOIN departments d ON e.department = d.dept_name;
+
+-- Subquery
+SELECT first_name, last_name, salary
+FROM employees
+WHERE salary > (SELECT AVG(salary) FROM employees);
+
+-- IN operator with subquery
+SELECT * FROM employees
+WHERE department IN (SELECT dept_name FROM departments WHERE location = 'Building A');
+
+-- Create index for faster queries
+CREATE INDEX idx_department ON employees(department);
+CREATE INDEX idx_salary ON employees(salary);
+
+-- Check query execution plan
+EXPLAIN SELECT * FROM employees WHERE department = 'Engineering';</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 5.1: Database Lab</div>
+                <ol>
+                    <li>Start MariaDB with Docker as shown above</li>
+                    <li>Create the <code>employees</code> and <code>departments</code> tables</li>
+                    <li>Insert at least 5 employees across 3 departments</li>
+                    <li>Write a query to find the highest-paid employee in each department</li>
+                    <li>Write a query using JOIN to show employee names with department locations</li>
+                    <li>Exit MySQL and stop the container: <code>docker stop mariadb &amp;&amp; docker rm mariadb</code></li>
+                </ol>
+            </div>
+
+            <h3>MySQL Replication Concepts (Theory)</h3>
+            <p>MySQL replication enables data from one MySQL host (Primary) to be copied to another (Replica). Common uses:</p>
+            <ul>
+                <li><strong>Read scaling</strong>: Distribute read queries across replicas</li>
+                <li><strong>Backups</strong>: Take backups from a replica without affecting the primary</li>
+                <li><strong>Disaster recovery</strong>: Geographic distribution of data</li>
+            </ul>
+            <p>Replication types:</p>
+            <ul>
+                <li><strong>Asynchronous</strong> (default): Primary does not wait for replica acknowledgment</li>
+                <li><strong>Semi-synchronous</strong>: Primary waits for at least one replica to acknowledge</li>
+                <li><strong>GTID-based</strong>: Uses Global Transaction IDs instead of binlog coordinates</li>
+            </ul>
+
+            <hr style="border-color: var(--border); margin: 48px 0;">
+
+            <!-- MODULE 6: KUBERNETES -->
+            <h1 class="content-h1" id="m6-concepts">Module 6: Kubernetes Concepts</h1>
+            <p>Kubernetes (K8s) is a container orchestration platform. While this VM does not have enough resources to run a full K8s cluster, understanding its concepts is essential for modern DevOps.</p>
+
+            <div class="callout warning">
+                <div class="callout-title">⚠️ Note on Practical Kubernetes</div>
+                <p>Running Kubernetes requires significant resources (typically 2+ GB RAM, 64-bit architecture). This 512MB 32-bit VM cannot run a real K8s cluster. The content below is <strong>conceptual/theoretical</strong>. For hands-on practice, use cloud-based labs like Killercoda, Katacoda, or cloud provider playgrounds.</p>
+            </div>
+
+            <h2>6.1 Core Concepts</h2>
+            <p>Kubernetes is a <strong>declarative</strong> system: you describe the desired state, and K8s works to maintain it.</p>
+
+            <h3>Key Principles</h3>
+            <table>
+                <tr><th>Concept</th><th>Description</th></tr>
+                <tr><td><strong>Declarative</strong></td><td>You say "I want 3 replicas of this app"; K8s makes it happen</td></tr>
+                <tr><td><strong>Self-healing</strong></td><td>If a pod crashes, K8s automatically creates a new one</td></tr>
+                <tr><td><strong>Scaling</strong></td><td>Scale applications horizontally by adding/removing pods</td></tr>
+                <tr><td><strong>Rolling updates</strong></td><td>Update applications without downtime, one pod at a time</td></tr>
+                <tr><td><strong>Service discovery</strong></td><td>Pods find each other via DNS names, not IP addresses</td></tr>
+            </table>
+
+            <h3>Architecture</h3>
+            <p>Kubernetes has a <strong>control plane</strong> (master) and <strong>worker nodes</strong>:</p>
+            <ul>
+                <li><strong>API Server</strong>: Entry point for all K8s operations</li>
+                <li><strong>etcd</strong>: Distributed key-value store for all cluster data</li>
+                <li><strong>Scheduler</strong>: Assigns pods to nodes</li>
+                <li><strong>Controller Manager</strong>: Maintains desired state</li>
+                <li><strong>Kubelet</strong>: Agent running on each node</li>
+                <li><strong>Kube-proxy</strong>: Network proxy on each node</li>
+            </ul>
+
+            <h2 id="m6-resources">6.2 Resources & kubectl</h2>
+            <p><code>kubectl</code> is the CLI tool for interacting with Kubernetes. Key resource types:</p>
+
+            <table>
+                <tr><th>Resource</th><th>Purpose</th><th>Abbreviation</th></tr>
+                <tr><td><code>Node</code></td><td>A machine (physical or VM) in the cluster</td><td><code>no</code></td></tr>
+                <tr><td><code>Pod</code></td><td>Smallest deployable unit; contains one or more containers</td><td><code>po</code></td></tr>
+                <tr><td><code>Deployment</code></td><td>Manages pod replicas, scaling, and updates</td><td><code>deploy</code></td></tr>
+                <tr><td><code>Service</code></td><td>Stable network endpoint for pods</td><td><code>svc</code></td></tr>
+                <tr><td><code>ConfigMap</code></td><td>Configuration data (non-sensitive)</td><td><code>cm</code></td></tr>
+                <tr><td><code>Secret</code></td><td>Sensitive configuration data</td><td></td></tr>
+                <tr><td><code>Namespace</code></td><td>Isolation boundary for resources</td><td><code>ns</code></td></tr>
+                <tr><td><code>Ingress</code></td><td>HTTP/HTTPS routing rules</td><td><code>ing</code></td></tr>
+                <tr><td><code>PersistentVolume</code></td><td>Storage resource</td><td><code>pv</code></td></tr>
+                <tr><td><code>PersistentVolumeClaim</code></td><td>Request for storage</td><td><code>pvc</code></td></tr>
+            </table>
+
+            <div class="code-block">
+                <div class="code-header"><span class="lang">kubectl</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># These are reference commands for a real K8s cluster
+
+# Cluster info
+kubectl cluster-info
+kubectl get nodes
+kubectl get nodes -o wide
+
+# Pods
+kubectl get pods
+kubectl get pods -n kube-system
+kubectl get pods --all-namespaces
+kubectl get pods -o yaml
+kubectl get pods -w              # Watch mode
+
+# Describe resources (detailed info + events)
+kubectl describe pod my-pod
+kubectl describe node my-node
+
+# Logs
+kubectl logs my-pod
+kubectl logs my-pod --follow
+kubectl logs my-pod --previous   # Previous container instance
+
+# Execute commands in pods
+kubectl exec my-pod -- ls /
+kubectl exec -it my-pod -- sh
+
+# Port forwarding
+kubectl port-forward pod/my-pod 8080:80
+
+# Apply configuration
+kubectl apply -f manifest.yaml
+kubectl delete -f manifest.yaml
+
+# Scale a deployment
+kubectl scale deployment myapp --replicas=5
+
+# Rolling update
+kubectl set image deployment/myapp app=myapp:v2
+kubectl rollout status deployment/myapp
+kubectl rollout undo deployment/myapp   # Rollback</code></pre>
+            </div>
+
+            <h2 id="m6-yaml">6.3 YAML Manifests</h2>
+            <p>Everything in Kubernetes is defined as YAML (or JSON) resources. Here are example manifests:</p>
+
+            <h3>Pod Manifest</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">YAML</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>apiVersion: v1
+kind: Pod
+metadata:
+  name: simple-pod
+  labels:
+    app: web
+spec:
+  containers:
+  - name: nginx
+    image: nginx:alpine
+    ports:
+    - containerPort: 80
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+      requests:
+        memory: "64Mi"
+        cpu: "250m"</code></pre>
+            </div>
+
+            <h3>Deployment Manifest</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">YAML</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10</code></pre>
+            </div>
+
+            <h3>Service Manifest</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">YAML</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code>apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  selector:
+    app: web
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: ClusterIP
+  # Other types: NodePort, LoadBalancer, ExternalName</code></pre>
+            </div>
+
+            <h3>Service Types</h3>
+            <table>
+                <tr><th>Type</th><th>Description</th></tr>
+                <tr><td><code>ClusterIP</code></td><td>Internal cluster access only (default)</td></tr>
+                <tr><td><code>NodePort</code></td><td>Exposes service on each node's IP at a static port (30000-32767)</td></tr>
+                <tr><td><code>LoadBalancer</code></td><td>Exposes service externally using cloud provider's load balancer</td></tr>
+                <tr><td><code>ExternalName</code></td><td>Maps service to DNS name (CNAME)</td></tr>
+            </table>
+
+            <h3>Namespace & ConfigMap</h3>
+            <div class="code-block">
+                <div class="code-header"><span class="lang">YAML</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+                <pre><code># Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+
+---
+
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: production
+data:
+  database_url: "postgres://db:5432/myapp"
+  log_level: "info"
+  features: |
+    feature_a=true
+    feature_b=false</code></pre>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">🎯 Exercise 6.1: Kubernetes Knowledge Check</div>
+                <ol>
+                    <li>What is the difference between a Pod and a Deployment?</li>
+                    <li>When would you use a DaemonSet instead of a Deployment?</li>
+                    <li>What K8s resource would you use to expose a database to other pods internally?</li>
+                    <li>Explain the difference between a ConfigMap and a Secret</li>
+                    <li>What does <code>requests</code> vs <code>limits</code> mean in resource specifications?</li>
+                    <li>Write a YAML manifest for a Deployment with 2 replicas of <code>i386/nginx:alpine</code></li>
+                </ol>
+            </div>
+
+            <div class="callout success">
+                <div class="callout-title">✅ Course Complete!</div>
+                <p>You have completed the full Browser Linux + Docker Lab curriculum. You should now have solid foundational knowledge in Linux system administration, shell scripting, Docker containerization, database management, and Kubernetes concepts.</p>
+                <p>Continue practicing by building your own projects, creating Docker images, writing scripts, and exploring the vast ecosystem of Linux and container tools.</p>
+            </div>
+
+            <footer style="margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--text-secondary); font-size: 13px;">
+                <p>Browser Linux + Docker Lab — Unified Curriculum</p>
+                <p>Built from materials covering Linux 101, Docker 101, Scripting 101, Database 101, and Kubernetes 101.</p>
+                <p>Running on real Alpine Linux x86 via v86 emulator in your browser.</p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Copy button functionality
+        function copyCode(btn) {
+            const pre = btn.closest('.code-block').querySelector('pre');
+            const code = pre.innerText;
+            navigator.clipboard.writeText(code).then(() => {
+                const original = btn.innerText;
+                btn.innerText = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.innerText = original;
+                    btn.classList.remove('copied');
+                }, 1500);
+            });
+        }
+
+        // Highlight active nav link on scroll
+        const sections = document.querySelectorAll('h1[id], h2[id]');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const progressFill = document.getElementById('progress-fill');
+
+        function onScroll() {
+            const scrollPos = window.scrollY + 100;
+            let current = '';
+
+            sections.forEach(section => {
+                if (section.offsetTop <= scrollPos) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Update progress bar
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? (window.scrollY / docHeight) * 100 : 0;
+            progressFill.style.width = progress + '%';
+        }
+
+        window.addEventListener('scroll', onScroll);
+        onScroll();
+
+        // Smooth scroll for nav links
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    window.scrollTo({ top: target.offsetTop - 20, behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Toggle sections
+        document.querySelectorAll('.toggle-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('.toggle-icon');
+                content.classList.toggle('open');
+                if (icon) icon.classList.toggle('open');
+            });
+        });
+    </script>
+</body>
+</html>

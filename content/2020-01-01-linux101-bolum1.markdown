@@ -1,0 +1,469 @@
+---
+layout: postnoterm
+title:  "1. İşletim sistemleri ve bilgisayarlar"
+date:   2020-01-01
+author: "@senolcolak"
+tags: [linux101,turkce,operations]
+categories: [linux101,beginner]
+terms: 0
+---
+### [Linux101 - Ana Sayfa](/linux101-landing)
+---
+> **Bölüm içersinde aşağıdaki konular işlenecektir:**
+> * Table of contents
+> {:toc}
+
+---
+
+
+
+
+## 1. Bilgisayarlar nasıl çalışır ?
+
+<br/>  
+
+Bu modül bilgisayarların çalışma mantığını anlamakla ilgilidir. Bilgisayar çalışma mantığı (burada işlediğimiz x86 mimari) işletim sistemlerinden bağımsızdır. Günümüzde artık dilimize yerleşmiş olan "ram azmış", "yavaş çalışıyor", "işlemcisi iyiymiş" gibi terimlerin de ne anlama geldiğini bilmemiz gerekiyor. İşletim sistemlerini ve Linux işletim sistemini anlamak için donanımların nasıl davrandığını anlamamız gerekir. Çünkü aslında bütün işlemlerin yapıldığı ve sonlandığı yer donanım ve bilgisayar mimarisidir.  
+
+Öyleyse başlayalım.  
+
+Kolunuzdaki dijital saatler aslında, ilkel bir mikro bilgisayardır. Bu mikro bilgisayar, saati gösterme fonksiyonunu yerine getirirler.   
+
+Saatin kaç olduğu bilgisi ekranında görünür. Buna çıktı yani (Output) diyebiliriz. Sol ve sağ tarafında bulunan minik tuşlar ile zamanı ayarlayabilirsiniz.Diyelim ki şu anki değeri 00:00 yaptınız. Yani bilgisayara input Türkçe ifadeyle girdi verdiniz. Bu, hafızaya yani Memory’ye  kaydedildi. Saat ilerlemeye devam ettikçe, input artma eğilimi gösterecektir  (CPU-sayaç).
+
+Bilgisayar belli başlı parçaları üzerinden işlem yapan bir alettir. Daha iyi anlamak için parçalara bölüp bunların ne işe yaradığına bakmamız gerekir. 
+Kalvye, Mouse ve touchpad,bilgisayara komut göndermek için kullanabileceğimiz donanımlardır. 
+Ekran ve Yazıcı, Bilgisayardan elde edilen çıktı yani Output’un görüntülendiği ortamlardır. 
+Bir bilgisayarın ana parçalarına bakacak olursak,
+
+Aralarındaki bağlantı aşağıdaki görsel içersinde görebilirsiniz.  
+
+<center><img src="https://2.bp.blogspot.com/-PYNZkOmojQg/Ww2QowmFdTI/AAAAAAAAAhg/ZmfEN-nT8yg9CilKrqy2Ahqb2Qbe3NJtgCLcBGAs/s320/videotogif_2018.05.22_20.15.08.gif"></center>
+
+
+```
+Ana Kart (MainBoard)
+İşlemci  (CPU)
+Hafıza   (RAM)
+Sabit Disk  (HDD)
+Ağ kartı (embed)
+Ses Kartı (embed)
+Grafik Kartı (embed)
+PDU/Pil (elektrik dağıtıcısı)
+```
+
+
+Bizim daha çok ilgilendiğimiz kısımlar CPU, RAM ve DISK. Çünkü bildiğimiz anlamdaki işlemler bu üçlü arasında gerçekleşir, çıktılar ise ekranımıza yansır veya mesaj olarak iletilir. 
+
+<br/>
+
+**Sabit disk**
+
+<center><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Laptop-hard-drive-exposed.jpg/220px-Laptop-hard-drive-exposed.jpg" width="20%"></center>
+
+uzun süreli ve değişmeyen verilerin olduğu alandır, çok daha az değişikliğe uğrayan veri saklama alanıdır.
+
+
+
+**Hafıza**
+
+<center><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/Swissbit_2GB_PC2-5300U-555.jpg/220px-Swissbit_2GB_PC2-5300U-555.jpg" width="20%"></center>
+
+verilerin işlemci tarafından işlenebilmesi için disk üzerinden veya ağ üzerinden yüklendiği erişimi çok hızlı olan ve çok fazla silinip yazılan, değişen veri saklama ortamıdır. Burada veriler ikili (binary) formattadır, yani veriler sadece işlemcinin işlem yapacağı düzendedir.
+
+
+Aslında tarladaki patates gibi düşünebiliriz. Mahsül topraktan çıkmamış haliyle Diskteki veriler gibidir, sonrasında onları birer birer çıkarıp işlersiniz ve işlemeden önce tek tek ayırmanız gerekir orası hafızadaki binary ortam gibidir, sonunda ise işlersiniz çünkü artık tek tek işlenebilir hale gelmişlerdir.  
+
+**işlemci**
+
+<center><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Intel_80486DX2_bottom.jpg/120px-Intel_80486DX2_bottom.jpg"></center>
+
+işlenecek veriler her bir CPU döngüsünde işlenir, 32 bit 64 bit ayrımı buradan gelir. CPU üzerindeki binary bilgiler 32 bit (32 tane ayrı binary kanal ) ile işlenirlerse bu 32 bit işlemci demektir.
+
+Örneğimizden devam edelim, işlemcinin icradan sorumlu bir bıçak olduğunu düşünelim. Patatesleri tek tek kesmek yerine 32 patatesi aynı hizada toplayıp tek bir bıçak ile kesebilirsiniz. Burada 1 kesme işleminde x32 ayrı birim iş yapmış olursunuz. CPU kendi 32 tane register'i üzerinde her bir CPU cylcle da (Kaç Ghz ise) bu işlemi yapacaktır.  
+
+<center><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/ABasicComputer.gif/370px-ABasicComputer.gif" width="60%"></center>
+
+yukarıdaki grafik üzerinde işlemcilerin her bir çekirdeği içersindeki yapılar arasındaki akış gösterilmiştir.
+
+## 2. İşletim sistemleri ve Linux
+<br/>
+
+Tarla ve patates örneğinden devam edecek olursak, İşletim sistemleri patates işleme ve **Patates Cipsi üretme** tesisleridir. Patates işleme tesisi olmadan patatesleri işlemek için her seferinde farklı bir toplama yöntemi kullanmak ve her seferinde farklı kişilerin kullandığı farklı kesim tezgahlarında işlenmeleri gerekecekti.  
+
+İşletim sistemleri yazılım ve donanımların uyumlu konuşabilmeleri ve işlemleri istedikleri hızda/zamanda yapabilmeleri için kolaylaştırıcı birer yazılım topluluğudur.  
+    
+Aslında bilgisayarınızın elektrik düğmesine basmanızdan itibaren yazılımlar birbirlerini çağırarak bir sıralı düzen içinde işletim sistemini başlatırlar.  
+
+<br/>
+```
+BIOS --> MBR (SABIT DISK) --> GRUB --> KERNEL --> SYSTEMD --> programlar
+```
+şeklinde bir sıra izlenir.  
+Bu size bahsettiğim sıra Linux için geçerli, farklı işletim sistemlerinde MBR sonrasındaki süreç farklılık gösterir  
+<br/>
+**Windows** için
+```
+BIOS --> MBR --> Windows Boot Manager şeklinde ilerler. 
+```
+<br/>
+**Mac**, süreç diğer bilgisayarlardan biraz farklı işler, 
+```
+BootROM --> Boot Loader şeklinde ilerler.
+```
+
+
+mac'lerin farklı olmasının sebebi donanım işletim sistemi ile beraber geliştirildiği için bazı ek bileşenlerin donanımdan okunması sürecidir, mac'lerde PC'lerden farklı olarak NVRAM ve SMC donanımları bulunur.
+
+## 3. Peki nedir bu Linux ???
+<br/>
+Linux diye algıladığımız şey, çekirdek diye adlandırdığımız bir ana yazılım ve onun etrafında toplanan açık kaynak yazılımlar topluluğudur. Windows işletim sistemi dediğinizde Grafik arayüz ve Komut satırı, tarayıcı dahil komple bir pakettir ve tek bir üründen bahsederiz. Aslında atomlarına ayırdığınızda Microsoft şirketinde çalışıyor olsaydık, grafik arabirimi ve komutsatırı kısımlarını farklı kişilerin geliştirdiğini görebilirdik. Linux işletim sisteminde Kernel dışındaki tüm yazılımlar dışarıdan eklemlenmektedirler. Geçmişine bakacak olursak başlangıçta amatör ve hevesli bir yazılımcının hayatında heyecan yaratmak için çok "Kalender ve alçakgönüllü" bir şekilde yazdığı [şu not ile başlamıştır](https://www.cs.cmu.edu/~awb/linux.history.html)  
+
+<img src="{{site.baseurl}}/images/BirthOfLinux.png">
+
+helsinkili bir öğrenci Linus Trovalds bu mail içinde:  
+
+ "Basit bişey yazıyorum, minix işletim sistemine benzer, oradan aldıklarımla derledim.." diyerek mailgroup içersinden yardım istemiştir.  
+ 
+ Sonrasında oldukça mütevazi şu cümeleri yazmıştır 
+````
+ "GNU gibi büyük ve profesyonel birşey yapmıyorum, şuan için AT sabit diskleri için yazdığım driver ile çalışıyor, sanırım hiçbir zaman başka disklerde çalışmayacak zaten"
+````
+
+<center><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/LinuxCon_Europe_Linus_Torvalds_03_%28cropped%29.jpg/220px-LinuxCon_Europe_Linus_Torvalds_03_%28cropped%29.jpg" width="20%"></center>
+
+Minix Kernel üzerinde yaptığı değişiklikleri mail.list ile paylaşan Linus ilk kıvılcımı çakmış oldu. Burada çok önemli birisinden bahsetmemiz gerekiyor, linux Kernel derlenebilmesi için bir compiler gerekiyordu.   
+  
+Daha önce kurulmuş olan GNU, Unix üzerinde açık kaynak bir şekilde bu compiler'ı sağladığı için Linus kendi kernelini compile edebildi. Sonrasındaki diğer kişilerin linux üzerinde geliştirme yapabilmeleri Unix üzerinden reverse engineering ile ve rutinleri tahmin edilerek yaratılmış GlibC ile gerçekleşebildi.
+
+<center><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Richard_Stallman_-_Fête_de_l%27Humanité_2014_-_010.jpg/170px-Richard_Stallman_-_Fête_de_l%27Humanité_2014_-_010.jpg"></center>
+
+GNU yu kuran Richard Stallman 1983 senesinde yayınladığı manifestoda, geliştirilecek bir işletim sisteminin tüm içerdiği yazılımların açık kaynak kodlu ve özgür olmasından bahsetmiştir. Bir işletim sistemi yazıyorsanız, nerede derleyeceğiniz çok önemlidir.  
+  
+Çünkü ilk sürümleri derleyebilmek için bir platforma ihtiyacınız vardır. Linux fikri ortaya çıkmadan çok önce,  GlibC GNU tarafından geliştirilmeye başlamıştı, Linux ilk sürümlerinde açık kaynaklı olduğu için GlibC Minix üzerine port edilebildi.  
+  
+Bu işlem çok kritik, bu sayede tüm işletim sistemi yazılımları GlibC kütüphanesi etrafında derlenebildi. Richard Stallman'ın zengin olduğunu düşünebilirsiniz , Kendisi bu konuda herhangi bir para kazanmamıştır.  
+  
+**Şimdi teknik olarak Linux nedir ondan bahsedelim,**
+  
+### Çekirdek nedir ve ne işe yarar?
+  
+Çekirdek, CPU donanımını kontrol eden, belleği ayıran, verilere erişen, işlemleri planlayan, uygulamaları çalıştıran ve birbirlerinden koruyan işletim sisteminin özel bir parçasıdır. Bilgisayar başladığında bilgisayara yüklenen ilk programdır. Çekirdekteki en kritik kod parçaları, işletim sisteminde çalışan diğer uygulamaların üzerine yazılmaması için belleğin korumalı alanlarına yüklenir.  
+  
+### Linux işletim sistemini oluşturan bileşenler
+  
+Linux, yazılım geliştirmenize, uygulamaları çalıştırmanıza ve daha fazlasını yapmanıza olanak tanıyan çeşitli farklı donanım türlerine yüklenebilen açık kaynaklı bir işletim sistemidir.  
+
+Çekirdek ve etrafındaki yazılımlara siz karar vererek kendi dağıtımınızı yapabilirsiniz. [OpenSuse Build](https://build.opensuse.org/image_templates) ile istediğiniz parçalar ile kendi logonuzu da dizayn ederek bir linux yapabilirsiniz.  
+<br/>
+<center><img src="{{site.baseurl}}/images/LinuxDagitimiYapmak.png"></center>  
+<br/>  
+Linux'un kalbinde çekirdek vardır. Linux, i386 kişisel bilgisayarlarında çalışacak şekilde C ve assembly dilinde geliştirildi, ancak o zamandan beri tarihteki diğer işletim sistemlerinden daha fazla donanıma taşındı.  
+  
+Bugün Linux, dünya çapında en çok yüklenen işletim sistemidir. Aslında, Space X Falcon 9 roketi ve Uluslararası Uzay İstasyonu'nun ikisi de birçok sistemlerini Linux üzerinde çalıştırıyorlar!
+  
+Linux, kabuk olarak da bilinen bir komut satırı arayüzünden (CLI) yönetilir. Donanım ve yazılım süreçlerini yöneten çekirdeğin yanı sıra, Linux dağıtımları, donanıma erişmek ve kontrol etmek için aygıt sürücüleri, paylaşılan kitaplıklar, uygulamalar ve arka planda çalışan ve ağ isteklerine yanıt veren sistem arka plan yordamları gibi bir dizi Linux yazılımı içerir.  
+  
+Linux için çok sayıda programlama dili ve 70.000'den fazla, farklı uygulama mevcuttur. Uygulamalar, uygulamanın kendisini ve uygulama hakkındaki meta verileri içeren paketlerden yüklenir. Günümüzde **Linux Kernel** yaklaşık olarak 28 milyon satırdan oluşmaktadır.  
+  
+### Kullanıcı alanını ve çekirdek alanını anlamak
+
+<center><img src="https://www.redhat.com/cms/managed-files/2015/07/user-space-vs-kernel-space-simple-user-space.png" width="70%"></center>
+
+Çekirdeğin sistemi sonlandırmasını ve çökmesini önlemek için, işletim sistemlerinin tümünün çekirdeğini çekirdek alanı adı verilen korumalı ve kısıtlı bellekte çalıştırdığını bilmek önemlidir (aşağıdaki grafiğe bakın).  
+
+<center><img src="https://www.redhat.com/cms/managed-files/styles/wysiwyg_full_width/s3/2015/07/user-space-vs-kernel-space-system-calls-gears.png?itok=_YKDKtva" width="30%"></center>
+  
+Bir kullanıcı bir uygulamayı veya aracı çalıştırdığında, bu uygulama veya araç, kullanıcı alanı adı verilen alanda çalışır. Bu ayrım kritiktir. Bu uygulamaları çekirdek alanından ayrı çalıştırmaları sayesinde, çekirdek kaynaklarına müdahale edemezler ve sistemin paniğe kapılmasına (çökmesine) neden olamazlar.  
+  
+<center><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Pardus_19.0_Xfce_Desktop.jpg/300px-Pardus_19.0_Xfce_Desktop.jpg" width="70%"></center>  
+  
+Linux tek açık kaynak işletim sistemi değildir, en popüler olarak kullanılanıdır sadece. diğer açık kaynak işletim sistemleri FreeBSD ve birkaçtane BSD türevi dışında çok bilinmezler. Linux bahsettiğimiz gibi Kernel ve etrafındaki yazılımlardan oluştuğu için https://distrowatch.com sitesinden popülerlik sıralamasını görebilirsiniz..
+
+<center><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Unix_timeline.en.svg/500px-Unix_timeline.en.svg.png" width="70%"></center>  
+  
+yukarıda Unix türevi işletim sistemlerinin yıllara göre gelişimini görebilirsiniz. Ortadaki yeşil olan Linux.
+
+[buradan](https://www.redhat.com/en/blog/architecting-containers-part-1-why-understanding-user-space-vs-kernel-space-matters) konuyu daha detaylı anlatan bir makaleye erişebilirsiniz.  
+
+## 4. Günümüzdeki Linux 
+<br/>  
+
+ "LiNUX HERYERDE!!!"  
+  
+Şuan bulunduğunuz ortamda mutlaka minimum bir Linux vardır, Akıllı televizyonların neredeyse tamamı Linux ile çalışmaktadır. Android cep telefonları Linux ile çalışmaktadır, ayrıca aklınıza gelmeyecek onlarca cihaz Linux Kernel ile hizmet etmektedir.  
+  
+Size bazı rakamlar, günde yaklaşık Linux ile çalışan 700.000 TV satılmaktadır, 850 bin tane Linux çalışan Android cep telefonu her gün hayatımıza girmekte.  
+  
+Eğer internete girip browser'da Google, Twitter, Amazon, Linkedin, Facebook yazarsanız yine bir linux sunucuya bağlanıyorsunuz.  
+  
+Neredeyse her yeni teknoloji linux bağlantılı oluşmakta. Geçtiğimiz yıllarda Linux, Container teknolojileri ile inanılmaz bir ivme yakalamıştır. Docker ismini mutlaka duymuşsunuzdur. Linux içersindeki bir özellik olan CGroups olmasaydı Docker ve beraberinde gelen Kubernetes hayatımızda bu kadar kolay yer alamazdı.  
+  
+Ortaya son 7-8 sene içinde çıkmış olan, Docker ve Mikroservisler daha başka bir eğitimin konusu. Fakat bilmeniz gereken şey Linux dünyası gerçekten de inanılmaz derecede teknolojiyi sürüklemekte, ve sürüklemeye de devam ediyor.  
+   
+Linux diye bahsettiğimiz şey aslında Linux Çekirdeği (KERNEL)'dir. Kernel kendiniz internetten indirip https://kernel.org üzerinden derleyip bir loader yardımı ile bilgisayarınıza kurabilirsiniz. Ama bu çok zahmetli ve tamamen size özel bir çözüm olacaktır.  
+  
+Oysaki internette hazır birsürü Kernel ve Yükleyicisini içeren artı başka açık kaynak kodlu yazılımları içersine ekleyip sunan dağıtım(distribution) mevcut. Dağıtımlar bazı prensipleri benimser ve topluluk komiteleri üzerinden hangi GlibC kullanacaklarına ve hangi sıklıkta tüm yazılımları güncelleyeceklerine karar verirler.  
+  
+İlk Başta size çok büyük bir karmaşa gibi gelebilir, bu çok normal.  Açık kaynak dünyanın doğasında olan birşey bu, çok organik şekilde gelişen ve değişik talepleri olan insanların kurduğu topluluklar ile büyüyen yapılar bunlar.  
+  
+%99 ihtimalle, Linux olarak Debian veya Redhat tabanlı bir işletim sistemi kullanacaksınız/Yöneteceksiniz, o yüzden diğer dağıtımları hobi olarak kurabilir/kullanabilirsiniz. [Distrowatch](https://distrowatch.com) dağıtımları inceleyip onları listeleyen bir site, Linux camiasında çok bilinen biryerdir, popülerlik sıralamasına göre olan işletim sistemlerini bazen kurmak ve neden popüler olmuş incelemek güzel olabilir.
+  
+Temelde iki büyük dağıtımdan söz edebiliriz, Debian tabanlı ve Redhat tabanlı dağıtımlar. Bunların dışında olan dağıtımlarda vardır(Alpine,Gentoo,ArchLinux,vs.). Mesela Pardus projesi ilk başladığında, sıfır bir dağıtım yapılmak istenmişti, fakat bunun için ciddi bir kaynağa ve güçlü bir topluluğa ihtiyacınız var. Sonradan bundan vazgeçildi ve Debian tabanlı olarak geliştirilmeye devam ediyor. En popüler Linux dağıtımlarından biri olan Ubuntu'da Debian tabanlıdır. 
+
+Dağıtım sayısını şuanda bilmiyorum, bütün dağıtımları bir resim içinde göremeyeceğimiz kadar çoklar, fakat iki ana damarı aşağıda görebilirsiniz. Slackware tarafında Redhat tabanınlılar ve Debian tabanlılar.Aşağıda resmin %20 'sini verebiliyorum sadece.  
+
+<img src="{{site.baseurl}}/images/503px-Linux_Distribution_Timeline.svg.png">
+<!---
+Aşağıda çok güzel bir grafik var, sorulara verdiğiniz cevaba göre bilgisayarınıza hangi işletim sistemini kurmanız konusunda sizi yönlendiyor. 
+<img src="{{site.baseurl}}/images/OS-finding-guide.png">
+--->
+  
+>
+````Son bir tavsiye, internete açacağınız ve üzerinde iş yükü barındırılacak sunucularınızı  (Debian,Ubuntu,Centos,Redhat,SuSE) dağıtımlarından birisi olsun. Diğer dağıtımlar iyidir ama Verilerinizi emanet ederken güvenilebilir ve eski topluluğu olan dağıtımları tercih etmelisiniz.
+````
+
+## 5. Türkiyede Linux ve Açık Kaynak gerçeği.
+<br/>
+Bu konudan mutlaka bahsetmemiz gerekiyor, çünkü Türkiye de Linux dediğinizde etrafınızda sizinle ilgili "Hahh, bu da hippi, Özgürlükçü, Enterprise olmayan" gibi önyargılar belirir. Bunlar maalesef özellikle Microsoft ürünleri kullanan firmaların ve bunlara inanmış bir IT sektörünün size dayattığı şeylerdir.  
+
+Bağımsız düşünmek demek, çözmeniz gereken sorunlarda bir firmanın ürünlerini ve lisanlarını düşünmeden çözüm üretebilmektir. Mesela basit bir dosya paylaşımı işi için Microsoft kullanan birisine sorduğunuzda size Domain controller üzerinden dosya paylaşımı çözümü önerir.  
+
+Halbuki aynı sorun kolaylıkla Linux CIFS servisi ile çözülebilir, veya sanallaştırma çözümüne ihtiyacınız vardır, VMware dışında bir çözüm pek duymazssınız. Unutmayın tüm çözümlerin kendilerine göre avantajları ve dezavantajları vardır, ben Microsoft, VMware kötüdür demiyorum ama Microsoft başlarsanız maalesef öyle gider, heterojen (farklı componentler) bir yapı kuramazssınız.
+
+Linux LEGO gibidir, elinizle istediğiniz şekli verip istediğiniz kadar özelleştirebilirsiniz. Windows gibi platformlar ise size son kullanıcı gözüyle bakarlar ve oldukça az esnektirler. Lego ile yapılmış bir arabayı isterseniz değiştirerek bir uçak yapabilirsiniz, fakat aldığınız bir araba oyuncağı ile hiç bir değişiklik yapamazsınız.  
+<br/>
+<center><img src="https://d2eohwa6gpdg50.cloudfront.net/content/uploads/2018/06/20023150/resize-1.jpeg" width="70%"></center>
+<br/>
+Açık kaynak ve linux kullanması gerçektende Prensip ve Metod gerektiren şeylerdir, yoksa yaptığınız çözümler ilerde insanlar için daha büyük sorunlar haline gelebilir. Çokça yapılan bir yanlışı önce düzeltelim, açık kaynak ürün kullanmak bedava değildir.  
+  
+Kullandığınız çözüm için lisans ücreti ödemezssiniz ama kurduğunuz açık kaynak ürünü artık takip etmeniz ve community içerisinde olmanız gerekmektedir. Linux kullanmak için kernel geliştiriciler içinde olmanız tabiiki gerekli değildir fakat kullandığınız Linux dağıtımı (Örnek Pardus kullanıyorsanız) için internetteki maillistlere ve communitylere üye olmanız mutlaka gerekir.  
+  
+Topluluk içinde olmak ve kollektif etkileşim içinde olmak sizi diğer insanlar ile inanılmaz bir bağ içine iter. Onların sorunlarını çözmelerine yardım edersiniz ve onlar da size yardımcı olurlar. Enterprise diye bahsedilen çözümlerdeki şirketler size danışmanlık veya lisans satarak hayatta kalmaktadırlar bunu unutmayınız.  
+  
+Aslında büyük ticari şirketlerin türkiyedeki satış ofisleridir bunlar. Mesela Microsoft maalesef ülkemizde çok ciddi bir ofis ve çalışana sahipler, fakat Türkiyedeki ofislerinde AR-GE veya Yazılım geliştirme gibi bir faaliyet yürütülmemektedir.  
+  
+HP, IBM ve diğer firmalar içinde aynı şey geçerlidir, Türkiye çok açık tabiri ile bir pazardır. Parasını verelim kursunlar, POC yaparız gibi tabirleri çokça duyarsınız. Bu yazıyı okuyan CIO/CTO ve IT manager titrine sahip kişilere ciddi önerimdir, POC bile yapıyor olsanız karşınızdaki kişilere Open Source alternatifler ile saldırın, pazarlık yapın. Elinizi çok daha fazla sağlamlaştıracaktır, mesela Oracle DB ile Postgre DB'yi VMware ile KVM'yi, Fortigate ile VyOS çarpıştırın.  
+  
+Sürdürülebilirlik ve açık kaynak kod ile ilgili bir yazımız var ( [Sürdürülebilirlik](https://acikkaynakfikirler.com/neden-acik-kaynak-surdurulebilir-sistemler) ). Ayrıca açık kaynak kodlu program yazmak aslında er-meydanında güreşmek gibidir, herkes sizin yazdığınız yazılımı göreceği için yazılımınızı daha güvenli ve anlaşılabilir yapmak zorundasınız, Linux için de aynı şey geçerli.  
+  
+Linux dünyası ile ilgili son olarak bir konuya daha değinmem mutlaka şart, herşey güllük gülistanlık değil tabii. Linux dünyasında da insanların egoları ve bazen kırıcı olan tartışmalar olabiliyor, community işlerinde sizlere tavsiyem hiçbir zaman kırıcı olmayın. mutlaka karşınızdaki kişiye saygı ifadesi kullanın, karşınızdaki kişi ile aynı durumdasınız "Hepimiz Öğreniyoruz".  
+  
+Son bir tavsiye,  
+  
+Kendi kernelinizi kendiniz derleyebilirsiniz, fakat bunları kesinlikle Production ortamnlarında yapmamalısınız, bu sizi yanlız bırakır. Google da bir sorun yazdığınızda 2-3 tane cevap dönmesini istemiyorsanız kesinlikle kendi başınıza yazılımlarınızı derlemeyin. Bu durum, yaptığınız şeyi biliyorsanız ve kullanacağınız yer bu durum için özelse geçerli değil.  
+  
+Eğitimimiz içersinde Grafik tabanlı linux konusunu hedeflemedik. Eğitimimiz içersinde göreceğiniz tüm içerikler sunucu hizmetleri ve sistem yönetimi esaslarını içermektedir. Fakat Linux, geçtiğimiz 10 yıl içersinde masaüstü ortamı olarak ciddi bir yol kat etti. Eğitimimizin amacı grafik kullanım değil ama buna da kısaca değinmek istiyorum.  
+  
+Eğitimlerimizde web sayfası üzerinden doğrudan komutları uygulama şansınız olacaktır, size eğitim için ortam kurulumunu tavsiye etmiyorum.  
+  
+## 6. Linux kurulumu.
+
+Önce hangi linux ve amaç soruları gelir. Kuracağınız linux ile amacınız ne olacaktır ?  
+
+**Denemek ve görmek için**  
+**Masaüstü ortamı olarak kullanmak için**  
+**Sunucu olarak**  
+
+Linux işletim sistemi windows ile kıyaslandığında çok daha az kaynak tüketmektedir, kullanmadığınız eski bilgisayarınıza rahatlıkla linux kurabilirsiniz. 
+
+Internette kendi bilgisayarınıza linux kurmak için oldukça fazla kaynak zaten mevcut. Youtube üzerinden izleyeceğiniz bir kurulum videosu ile Virtualbox,DualBoot gibi bir yöntem ile Linux kurabilirsiniz.
+
+**EĞİTİM İÇERİĞİNİ KULLANABİLMENİZ İÇİN LİNUX KURMANIZA GEREK YOKTUR, CEP TELEFONU, TABLET veya BİLGİSAYAR İLE BÜTÜN EĞİTİMLERİ YAPABİLİRSİNİZ**
+
+### Sunucu olarak Linux kurulumu ve tercihler
+
+Okuyacağınız birsürü kitapta ve dökümanda farklı yaklaşımlar vardır. Ben de yıllar içersinde kendimce bir yaklaşım belirledim, en iyi linux dağıtımı en fazla bildiğinizdir. Kendinizi en yakın hissettiğiniz dağıtımı kurabilirsiniz.
+
+Ben Şahsen Debian ve Redhat tabanlı bütün dağıtımlara kendimi yakın hissediyorum onun için yıllar içersinde edindiğim tecrübelerden bazı best practice'ler edindim. Her biri yaşanan bir olumlu/olumsuz tecrübe sonucu oluştu.
+
+Kurulum öncesi karar verirken nelere dikkat etmelisiniz;
+   * Sunucuların öncelikle ihtiyacını iyi belirlemelisiniz ve hangi servisleri çalıştıracağınıza karar vermelisiniz.
+   * iyi mühendisler HLD mutlaka yapar ve bir arkadaşıyla yapacağı şeyi tartışır. Tartışılmamış dizaynların kısa süre sonra ciddi müdahaleye ihtiyaç duyduğunu gördüm. 
+   * Herzaman Single purpose sunucu kurun, sunucunuzun üzerinde hem mail sunucusu hem DB sunucusu olmasın
+   * varsayılan (default) bir disk bölümleme mantığınız olsun. Mesela "/ 10GB", "home 5GB" gibi
+   * Sunucularınızı mümkünse fiziksel kurmayın. Sanallaştırma için kendinize bir hipervizör edinin, KVM,proxmox veya Xen gibi
+   * kurduğunuz sunucularda herşeyi sorgulayın, neden böyle yapıyorum?, bu parametre ne demek? vb. bu sayede daha çok şey öğrenebilirsiniz.  
+            ````"Ezbere yaptığınız herşey birgün başınıza bela olacak`tır, unutmayın"````
+   * Sunucularınızın toplam disklerini olabildiğince küçük tutun, ben bütün linux kurulumlarının(default) en fazla 20GB ihtiyacı olduğunu düşünüyorum. Bu sayede sanal sunucularınızı kolay taşırsınız, base backup kolay alınır, template yaratabilirsiniz vs..
+   * kurulum sonrası mutlaka **/etc** klasörünü yedekleyin ``"# cp -rp /etc /etc-first-install"`` hayat kurarıcı olabilir
+   * mümkünse data bölümünü herzaman **LVM** yapın. sonradan ekleyeceğiniz diskleri sistem çalışırken tanıtabilirsiniz.
+   * güvenlik duvarını mecbur olmadıkça kullanmayın, güvenliğinizi başka bir seviyeden sağlayın. ileri güvenlik gerektiren sunucularda veya direkt internete açık sunucularda firewall kullanın.
+   * sanallaştırma kullanıyorsanız golden copy yapın, 
+
+### Linux dağıtımları ve hangi servislerde daha iyiler   
+  **Debian** Web, php, mysql, nginx, apache  
+  **Ubuntu** Masaüstü, debian ile aynı, fakat ilk tercihim debian olur.  
+  **Centos** File Server, Network Host, NFS server, Docker host, Kurumsal yazılımlar(kendin veya topluluk desteği)  
+  **SuSE**   SAP kurulumları için (HANA, ECC, Portal...), Kurumsal yazılımlar  
+  **Redhat** Oracle, Centos için geçerli kullanımlar, Kurumsal yazılımlar  
+
+  Peki Centos varken neden Redhat kullanalım, iki dağıtım da aynı kaynaktan geliyor?. Sebep kurumsal destek alabilmek. 
+
+  Kullanımlar ile ilgili döküman paylaşmayı tercih etmedik, zaten internette hangi linux'u kurmak isterseniz onlarca kurulum videosu bulabilirsiniz, aşağıda kurulum için sorulara vereceğiniz bazı cevaplar vardır.
+
+
+#### **Hipervizör Kurulumu KVM**  
+  
+>En az 64GB hafıza   
+  
+**disk yapısı**  
+````
+    swap partition 4GB   (bilgisayarın hafızasına göre karar vermenize gerek yok)
+    500M /boot
+    10GB / kök dizin
+    5GB  /home
+    1GB  /tmp
+    500GB /srv/data01    (data dizini, sanal sunucu diskleri için, kaynaklarınıza göre karar verin)
+````
+<img src="{{site.baseurl}}/images/KVM-sanal-sunucular.png" width="70%">
+
+Kurulum sonrası daha önce hazırladığımız [sanallaştımra makalemizdeki](https://acikkaynakfikirler.com/sanallastirma-yaparken-vmwareye-mecbur-degilsiniz/) komutlar ile KVM sanallaştırmasını aktive edip sanal sunucularınızı kurmaya başlayabilirsiniz.  
+<br/>  
+  
+#### **Docker Sunucu kurulumu (CENTOS)**  
+  
+>en az 8 GB hafıza, mutlaka I/O yüksek disk  
+  
+**disk yapısı**  
+````
+    0   swap            (swap partition olmasın!!)
+    500M /boot
+    10GB / kök dizin
+    5GB  /home
+    1GB  /tmp
+    20GB /src/data01    (data dizini, sonradan ihtiyacınıza göre arttırırsınız)
+````    
+<br/>
+<br/>
+#### **Web Sunucu Kurulumu (DEBIAN)**, php veya Java uygulamaları çalıştıracak sunucu
+
+**backend** sunucusu(php,java,ruby)  
+genelde 8,16 GB ve 4-6 vCPU yeterli olacaktır _(vCPU sanal CPU demektir)_
+
+**frontend** sunucularda (nginx/apache/Haproxy)  
+cache yapmayacaksanız 1GB ram 2 vCPU yeterli olacaktır. _(vCPU sanal CPU demektir)_
+
+**disk yapısı**  
+````
+    swap partition 1GB (bilgisayarın hafızasına göre karar vermenize gerek yok)
+    500M /boot
+    10GB / kök dizin
+    5GB  /home
+    1GB  /tmp
+````
+ 
+
+Artık linux kurulumları çoğunlukla tamamen grafik ortamda (veya text ama çok basit) yapılmaktadır. Internette Linux kurulumu ile ilgili bulabileceğiniz onlarca youtube videosu mevcut. Bir bilgisayarda çalıştıracağım, sanallaştırmaya gerek yok demeyin, tek bilgisayar kuracaksanız bile sanallaştırma kullanmanızı tavsiye ederim. Sanallaştırılmış bir sistem çözümleriniz için size hep yeni alternatifler sunacaktır.  
+  
+
+
+## Eğitimi nasıl kullanmalıyım?
+
+Eğitim konuları olabildiğince sizin shell, yani komut satırı üzerinde yetkinliğinizi geliştirmek üzere sıralanmıştır. Ben eğitim sırasında komutları yazmanızı ve kendinizi sınamanızı tavsiye ederim. Aynı Bölümü mutlaka en az 2-3 kere tekrar etmeniz ve sonradan öğrendiğiniz komutlar ile öncekileri kontrol etmenizi öneririm.  
+  
+
+
+### ```Dikkat!!! Eğitim platformu sadece test ve eğitim içindir, platform üzerinden eğitim dışı kullanımlar loglanacaktır ve yasaktır!!!```  
+
+## **[Bolum2 - Komut satırı ve Linux](/linux101-bolum2-1)**  
+
+## **[Linux101 - Başlangıç](/linux101-landing)**  
+-----
+
+<!-- Quiz bölümünü diğer quizlerde aynen kopyalayıp değiştirmemiz gerek.-->
+
+
+-----
+## Konu tekrarı, kısa sınav
+>seçeneklerden doğru olanları seçtikten sonra **Gönder** butonuna basınız. Sonuçları <span style="color:green">**doğru**</span> ve <span style="color:red">**yanlış**</span> görebilirsiniz.
+
+
+
+
+{:.quiz}
+GNU Kurucusu ve GlibC yaratıcısı kimdir?
+
+- ( ) Linus Trovalds
+- ( ) Bill Gates
+- (x) Richard Stallman
+- ( ) Paul Allen
+
+{:.quiz}
+Linux işletim sisteminin çekirdeği hangi parçalardan oluşur?
+
+- (x) Scheduler, Drivers, Security, Networking
+- ( ) Libraries, Daemons, Shells, Tools
+- ( ) Database, Web Server, Network Monitor, Games
+- ( ) CLI, Shared Libraries, Linux Kernel
+
+{:.quiz}
+Linux işletim sisteminin Userspace (Kullanıcı Ortamı) hangi parçalardan oluşur?
+
+- ( ) Scheduler, Drivers, Security, Networking
+- (x) Libraries, Daemons, Shells, Tools
+- ( ) Database, Web Server, Network Monitor, Games
+- ( ) CLI, Shared Libraries, Linux Kernel
+
+{:.quiz}
+User Space ve Kernel Space hangi prensip uyarınca ayrı olmak zorundadır?
+- (x) izolasyon
+- ( ) Güvenlik
+- ( ) Performans
+
+{:.quiz}
+Aşağıdaki sistemlerden hangisini linux üzerinde kuramazssınız?
+
+- ( ) E-posta sunucusu
+- ( ) Hipervizör sunucusu
+- ( ) Oyun Sunucusu
+- ( ) Dosya Paylaşımı
+- (x) Exchange sunucusu
+
+{:.quiz}
+Aşağıdaki sistemlerden hangisini linux üzerinde kuramazssınız?
+
+- ( ) E-posta sunucusu
+- ( ) Hipervizör sunucusu
+- ( ) Oyun Sunucusu
+- ( ) Dosya Paylaşımı
+- (x) Exchange sunucusu
+
+{:.quiz}
+Şirketiniz de bir Linux sunucu kurmanız ve hizmet sağlamasını isterseniz hangi Linux dağıtımını tercih etmeliyiz?
+
+- ( ) Pardus
+- ( ) Kali Linux
+- (x) Debian
+- ( ) OpenSuse
+
+{:.quiz}
+Şirketiniz de bir Dosya paylaşımı sunucusu kurmanız gerekiyor, hangi linux dağıtımı en doğru tercih olacaktır?
+
+- ( ) Pardus
+- ( ) SuSE Sles
+- ( ) Mandrake Linux
+- (x) Centos
+
+{:.quiz}
+Şirketinizde Masaüstü bilgisayarlara Windows yerine Linux işletim sistemi kuracaksınız, Yerelleştirme si en iyi olacak hangi dağıtımı tercih edersiniz?
+
+- (x) Pardus
+- ( ) Centos
+- ( ) Fedora
+- ( ) OpenSuse
+
+{:.quiz}
+Aşağıdaki hangi dağıtıma SAP kuramazssınız?
+
+- (x) Debian
+- ( ) Redhat
+- ( ) SuSE Sles
+- ( ) Oracle Linux
+
+{:.quiz}
+Docker Sunucusu için ne kadar Swap alanı ayırmanız gerekir?
+
+- ( ) 1 GB
+- ( ) 4 GB
+- ( ) Hafızanın(RAM) iki katı
+- (x) 0

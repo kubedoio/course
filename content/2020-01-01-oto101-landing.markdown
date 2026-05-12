@@ -1,0 +1,31 @@
+---
+layout: landing
+title: "Otomasyon 101 - nasıl otomasyon yapabiliriz?"
+date: 2020-01-01
+author: "@senolcolak"
+tags: [landing]
+categories:
+terms: 0
+---
+
+Bu eğitim ile aşağıdaki konularda bilgi alacaksınız
+* Otomasyon eğitimi
+  
+Eğitimimiz içersinde Geliştiriciler için sağladığı faydalara değinmedik, fakat Docker aslında geliştiriciler için yaratılmış bir çözümdür. Geliştiriciler için internette çokça kaynak mevcut, buradaki eğitim geliştiriciler için de temel bilgiler içeriyor.
+
+
+<!-- 5-7 minute animated PPT to describe the benefits TODO: Build this -->
+
+<!--  Build - Ship - Run recorded demo TODO: Record New One -->
+
+<!-- Docker 101 Webinar TODO: Find right video -->
+
+## Canlı Docker öğrenme laboratuvarı
+Buradaki iki Labaratuar eğitimi ile docker kurmayı kullanmayı Give Docker a try with these two beginning tutorials:
+
+[Başlangıç için docker öğrenmek ve temel komutlar](/docker101-bolum1)
+
+[Docker kullanımı ve genel özellikleri](/docker101-bolum2)
+
+## Docker konusunda daha fazla bilgi edinebileceğiniz bir Ebook:
+Sanal sunucular ve container'lar arasındaki farkları ögrenebilirsiniz, bu kitabı kontrol edebilirsiniz(ingilizce): [Docker for the Virtualization Admin](https://goto.docker.com/docker-for-the-virtualization-admin.html)

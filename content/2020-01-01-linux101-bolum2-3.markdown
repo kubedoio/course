@@ -1,0 +1,635 @@
+---
+layout: post
+title:  "2-3 Metin Dosyası işlemleri"
+date:   2020-01-01
+author: "@senolcolak"
+tags: [linux101,turkce,operations]
+categories: [linux101,beginner]
+terms: 1
+---
+
+Labaratuar içersinde kabuk üzerinden erişim, dosya yapıları, dizinlere erişim, Temel komutlara giriş ve filtreleme komutlarından bahsedeceğiz. Ayrıca küçük bir test ile konular ile ilgili bilginizi sınayabileceksiniz.
+
+---
+
+
+> **Bölüm içersinde aşağıdaki konular işlenecektir:**
+> * Table of contents
+> {:toc}
+  
+
+-----
+## Labaratuar Kullanım İpuçları
+
+Eğitim içersinde, komut satırı bilgileri aşağıdaki üç farklı şekilde belirtilmiştir.
+
+1. `buradaki` gibi görünen komut betimleri şeklinde gösterilmler daha çok örnekler ve yazılması gereken komutları tanımlamak için kullanılır.
+
+2. Aşağıdaki gibi kutu içersinde gördüğünüz kodlar üzerine tıkladığınızda, kopyala yapıştır yapmanıza gerek kalmadan terminal içersinde çalıştırılacaktır:
+```.term1
+uname -a
+```
+3. Aşağıda gördüğünüz gibi bir pencere içersinde yazılmış olan kod betimleri sizin klavyeden yazmanız gereken kod betimleridir.
+Genellikle benzersiz bir ID veya başka bir değişken girmeniz gerekiyordur. Buradaki benzersiz veri eğitim sırasında kullandığınız ortam içersinden bulunabilir.
+<> içersinde bulunan maddeler sizin değiştirmeniz gereken verinin yerini göstermektedir.
+```
+hostnamectl set <sunucu adı>
+```
+  
+-----
+
+## 7. Dosya (metin dosyası - txt) işleme komutları
+__(cut, paste, expand, unexpand, join, split, sort, tr, uniq, wc, nl, grep)__
+  
+---
+### **cut** - Kes  
+Kesme(cut) komutu özellikle script yazarken çok kullanışlıdır, çıktılardan istediğiniz ayıraçlara göre verileri bölebilirsiniz.
+
+Kesme komutu, giriş satırlarının bölümlerini çıkarır ve bunları standart çıktıda görüntüler.
+Giriş satırlarından nelerin kesileceğini birkaç yolla belirtebilirsiniz:  
+  
+**Byte vererek**: `-b` veya `--bytes=` seçeneği ile girdiden belirtilen bayt listesini dosyadan keserler.  
+  
+**Karaktere Göre**: `-c` veya `--characters=` seçeneği ile belirtilen listeyi keser.
+giriş dosyasındaki karakterler. Uygulamada, bu yöntem ve bayt yöntemi genellikle
+aynı sonuçları üretir.  
+
+**Alana Göre** `-f` veya `--fields=` seçeneği ile belirtilen alan girdi dosyasından kesilir. Varsayılan değer olarak alanlar satır içersinde sekmeyle ayrılmış olarak kabul edilir. Ancak sınırlayıcı karakteri `-d`, `--delim=` veya `--delimiter=` seçeneğiyle değiştirebilirsiniz.  
+
+burada char, istediğiniz karakterdir alanları sınırlandırmak için kullanılır. CSV dosyasında `,` veya `;` kullanılması gibi.  
+  
+burada yapacağımız çalışmalar için bir metin dosyası(txt) oluşturmamız gerekiyor, aşağıdaki satırı çalıştırarak /tmp dizini altında bu dosyayı oluşturabilirsiniz.  
+  
+```.term1
+cat >> /tmp/sirasiz.txt <<EOL
+1 Remzi
+8 remzi
+3 guray
+2 necmi
+10 tuncay
+4 tumay
+7 remzi
+6 necati
+9 guray
+5 tuncay 
+EOL
+```
+  
+Örnek olarak dosyamızda boşluk karakterine göre ayrım yapalım ve ilk sütunu sıralayalım   
+```.term1
+cd /tmp
+cut -d ' ' -f 1 sirasiz.txt
+```  
+şimdide aynı dosyadaki sadece isimleri sıralayalım  
+
+```.term1
+cut -d ' ' -f 2 sirasiz.txt
+```  
+
+Gördüğünüz gibi buradaki `-d ' '` boşluk delimeter tanımı ile boşluğa göre böl diyoruz sonrasında `-f1` veya `-f 2` ile istediğimiz yerden dosyayı ayırıyoruz.
+
+  
+---
+### **expand** ve **unexpand**
+**expand** Sekmeleri Boşluklara Dönüştürme (tab to space)  
+  
+Bazen metin dosyaları sekmeler içerir, ancak dosyaları işlemesi gereken programlar sekmelerle iyi başa çıkmaz; veya belki de bir düzenleyicide, sekme için dosyayı oluşturan düzenleyiciden farklı miktarda yatay alan kullanan bir metin dosyasını düzenlemek istersiniz. Bu gibi durumlarda, sekmeleri boşluklara dönüştürmek isteyebilirsiniz. Genişletme komutu bunu yapar. Varsayılan olarak, genişletme, her sekiz karakterde bir sekme durağı olduğunu varsayar.  
+  
+**unexpand** boşlukları sekmelere dönüştürme (space to tab)  
+  
+Genişletilmemiş Boşlukları Sekmelere Dönüştürme Genişletme komutu, genişletmenin mantıksal tersidir; birden çok boşluğu sekmelere dönüştürür. Bu, birçok boşluk içeren dosyaların boyutunu sıkıştırmaya yardımcı olabilir ve bir dosya, belirli konumlarda sekmeler bekleyen bir yardımcı program tarafından işlenecekse yardımcı olabilir.  
+Expand gibi, unexpand, sekme aralığını her num karakterde bir olacak şekilde ayarlayan -t num veya --tabs = num seçeneğini kabul eder. Bu seçeneği atlarsanız, genişletme, her sekiz karakterde bir sekme durağı olduğunu varsayar.  
+  
+---
+### **join** birleştir  
+Birleştirme komutu, dosyalar içindeki belirli alanların içeriklerini eşleştirerek iki dosyayı birleştirir. Alanlar tipik olarak bir satırdaki boşlukla ayrılmış girişlerdir, ancak -t karakter seçeneğiyle alan ayırıcı olarak başka bir karakter belirtebilirsiniz, burada char kullanmak istediğiniz karakterdir. -İ seçeneğini kullanarak karşılaştırma gerçekleştirirken join işleminin durumu yok saymasına neden olabilirsiniz.  
+  
+Aşağıdaki isimlerin olduğu `1.txt` isimli bir dosyamız olsun  
+```
+1 Remzi
+2 remzi
+3 guray
+4 necmi
+5 tuncay
+6 tumay
+7 remzi
+8 necati
+9 guray
+10 tuncay 
+```  
+  
+Aşağıdaki verilerin olduğu `2.txt` isimli bir başka dosyamız olsun
+
+```
+1 99
+2 77
+3 66
+4 35
+5 72
+6 46
+7 92
+8 29
+9 19
+10 48
+```
+
+Aşağıdaki komut ile /tmp klasöründe bu dosyaları oluşturabilirsiniz   
+
+```.term1
+cat >> /tmp/1.txt <<EOL
+1 Remzi
+2 remzi
+3 guray
+4 necmi
+5 tuncay
+6 tumay
+7 remzi
+8 necati
+9 guray
+10 tuncay 
+EOL
+cat >> /tmp/2.txt <<EOL
+1 99
+2 77
+3 66
+4 35
+5 72
+6 46
+7 92
+8 29
+9 19
+10 48
+EOL
+```
+
+SQL bilen arkadaşlarımız için buradaki birleştirme işlemi çok anlamlı olacaktır, önce her iki dosyayı görelim ve sonrasında birleşimlerini yeni bir dosyaya yazalım, yeni dosyamızın adı 3.txt olsun.  
+  
+1.txt dosya çıktısı aşağıdaki gibi    
+```.term1
+cat /tmp/1.txt
+```
+2.txt dosya çıktısı aşağıdaki gibi  
+```.term1
+cat /tmp/2.txt
+```
+3.Her iki dosyanın birleşimi aşağıdaki gibi 3.txt yazılır 
+```.term1
+join /tmp/1.txt /tmp/2.txt > /tmp/3.txt
+```
+4.Her iki dosyanın birleşimini stdout üzerinden ekrana yazmak icin  
+```.term1
+join /tmp/1.txt /tmp/2.txt
+```
+  
+  
+Burada dosyaların her satırdaki sayıları index olarak aldıklarını unutmayalım, en soldaki sayı sütunu farklı olursa o satırlar birleşmeyecektir.  
+  
+---
+### **paste** - Yapıştır 
+ismindende anlaşılacağı gibi, satır satır ilk dosyanın üzerine ekleme yapılır. 
+
+önceki örnekten gidecek olursak,
+```.term1
+paste /tmp/1.txt /tmp/2.txt
+```
+
+Gördüğünüz gibi birinci dosyanın her satırına ikinci dosyanın aynı satırı eklenir. Bu çıktıyı dosyaya yazarak yeni bir dosya oluşturabilirsiniz.
+
+
+### **split** - metin dosyasını parçalara böl  
+Bölme(split) komutu bir dosyayı iki veya daha fazla dosyaya bölebilir. Bu bölümde açıklanan metin işleme komutlarının çoğundan farklı olarak, bu komut bir çıktı dosya adı - veya daha doğrusu, alfabetik bir kod eklenmiş bir çıktı dosya adı öneki girmenizi gerektirir. Normalde, tek tek dosyaların ne kadar büyük olmasını istediğinizi de belirtmelisiniz:  
+  
+**Baytlarla Böl**: `-b`  veya `--bytes=boyut` parametresi ile kullanılır, girdi dosyasını verilen bayt parçalarına böler. Bu seçenek, dikkat edilmezsse dosyayı Orta Satır'a bölme sonucuna neden olabilir.   
+**Satır Boyutlu Parçalarda Baytlara Göre Böl**: Bir dosyayı, `-C` veya `--line-bytes=size` seçeneğini kullanarak bölebilirsiniz. dosyalar arasında satırları bölmeden belirtilen boyuttan büyük olmayan dosyalara bölebilirsiniz. (Satır uzunluğu boyuttan büyükse, satırlar yine de dosyalar arasında bölünecektir.)  
+**Satır Sayısına Göre Böl**: `-l` veya `--lines=` satır sayısına göre bölme. Dosyayı belirtilen satır sayısından fazla olmayan parçalara böler.  
+
+her iki satır için ayrı bir dosya yaratması için aşağıdaki komutu verebiliriz.
+
+```.term1
+cd /tmp
+split -l 2 sirasiz.txt ikili-
+```
+bu sayede ikili-aa ... şeklinde 5 tane dosya oluşacaktır. her bir dosyanın içinde sadece iki satır bulunur. 
+
+Çok büyük dosyalar ile uğralırken onları bazen parçalara bölmek istersiniz, bu durumlar için vazgeçilmez bir komuttur.  
+  
+Herhangi bir varsayılan belirtmezseniz (`ikili-` yazmazssanız), sonuç, x (xaa, xab vb.) İle başlayan adlarla bölünür. Ayırıcı bir bilgi vermezsseniz (`-l 2` yazmassanız) 1000 satırlık parçalara bölünmüş çıktı dosyaları oluşur. Bir giriş dosya adı belirtmezseniz, bölme (stdin) standart girişi kullanır.  
+  
+---
+### **sort** - sırala  
+Bazen sıralamak istediğiniz bir çıktı dosyası oluşturursunuz. Dosyanızı sıralayabilmek için, sort (sıralama) isimli bir komutu kullanabilirsiniz.  
+Bu komut, aşağıdakiler de dahil olmak üzere çeşitli şekillerde sıralama yapabilir: 
+  
+**Büyük/Küçük Harf Yoksay**: Normalde, sıralamayı ASCII değerine göre sıralayın, bu da büyük ve küçük harfleri birbirinden ayırır. -F veya --ignore-case seçeneği sıralamanın büyük / küçük harf kullanımını göz ardı etmesine neden olur.  
+**Ay Sıralama -M veya --month-sort seçeneği**: programın üç harfli ay kısaltmasına göre (JAN'dan DEC'e) sıralama yapmasına neden olur.  
+**Sayısal Sıralama**: -n veya --numeric-sort seçeneğini kullanarak sayıya göre sıralayabilirsiniz.  
+**Ters Sıralama Düzeni**: -r veya --reverse seçeneği ters sırada sıralar.  
+**Sırala Alanı vererek sıralama**: Varsayılan, sıralama alanı olarak ilk alanı kullanmaktır. `-k`  veya `--key=alan` seçeneği ile başka bir alan belirtebilirsiniz. (Alan, birden çok alana göre sıralamak için virgülle ayrılmış iki numaralı alan olabilir.)   
+  
+
+```.term1
+cat >> /tmp/sirasiz.txt <<EOL
+1 Remzi
+8 remzi
+3 guray
+2 necmi
+10 tuncay
+4 tumay
+7 remzi
+6 necati
+9 guray
+5 tuncay 
+EOL
+```
+  
+`/tmp/sirasiz.txt` dosyasını sıralayalım
+
+```.term1
+sort /tmp/sirasiz.txt
+```
+
+gözümüze bir terslik çarptı değilmi, varsayılan olarak metin bilgisine göre sıraladığı için 10 değerini ilk olarak yukarıda getirdi, sayısal değerlere göre sıralayabilmek için sort komutunu `-n` parametresi ile çalıştırmalıyız.
+
+```.term1
+sort /tmp/sirasiz.txt -n
+```
+aynı sıralamayı isimlere göre yapmak için ise `-k` alanı vermeliyiz, bu durumda aşağıdaki komut geçerli olur.  
+
+```.term1
+sort /tmp/sirasiz.txt -k2
+```
+gördüğünüz gibi, çıktımız isimlere göre sıralandı.
+
+>``sort komutu Linux üzerinde birçok farklı yerde işinize yarayacaktır, mutlaka anlamanızı tavsiye ederim, ls komutu veya find komutu ile birleştirip yapabileceklerinizi düşünün lütfen.!!``
+  
+---
+### **tr** transform - dönüştür  
+Tr komutu, tek tek karakterleri standart girdiden değiştirir.
+Kullanım şekli:
+
+tr [seçenekler] KUME1 [KUME2]
+
+Bir grupta (KUME1) değiştirilmesini istediğiniz karakterleri ve ikinci grup (KUME2) olarak değiştirilmesini istediğiniz karakterleri belirtirsiniz. KUME1'deki her karakter, KUME2'deki eşdeğer konumdaki bir karakterle değiştirilir. 
+
+İşte Listeleme kullanan bir örnek
+```.term1
+cd /tmp
+cat sirasiz.txt
+tr gizn 912 <sirasiz.txt
+```
+
+Gördüğünüz gibi `g`, `i` ve `z` harfleri için sırasıyla 9,1 ve 2 karakterlerine dönüştü. Burada `n` için yine 2 karakteri ile değişiklik olduğunu gözlemleyebiliriz.
+
+Tr komutu, bu örnekteki giriş yeniden yönlendirmesinin (<) nedeni olan standart girişe(stdin) dayanır. Metin dosyasını komut tarafından okutmanın tek yolu budur.   
+
+  
+---
+### **uniq**  unique - benzersiz olan satırları gösterir
+isminden de anlaşılacağı gibi unique (benzersiz) demektir. Yenilenen satırları kaldırır. Benzer olan satırları eler ve sadece 1 defa gösterir. SQL biliyorsanız, "Select distinct" şeklinde yazmış olduğunuz query ler ile aynı anlamdadır. Sort ile beraber kullanmanız gerekir, böylece önce dosya içeriğini sıralamış olursunuz.
+
+Örnekler için kullandığımız dosyamız ile devam edelim.
+
+```.term1
+cut -d ' ' -f2 sirasiz.txt |sort|uniq
+```
+Gördüğünüz gibi `sirasiz.txt` dosyası içindeki önce cut ile boşluktan sonraki isimleri aldık, sonrasında isim bilgilerini sort ile küçükten büyüğe doğru sıraladık. uniq komutu ile tekrarlanan satırları sildik, böylece dısyamızdaki tekrarlı isimler kalktı ve sadece 7 satır isim geldi.
+  
+---
+### **wc** kelime say
+wc (word count) yani kelime sayımı anlamına gelir, genelde bir dosyadaki satır sayısı veya stdout içinde üretilmiş bir satır sayısını bulmanıza yarar. buluncuğunuz klasörde kaç dosya olduğunu bulmak için kullanabilirsiniz  
+  
+```.term1
+ls -1 |wc -l
+```
+  
+YENISATIRSAYISI | KELİME SAYISI | BYTE SAYISI şeklinde 3 rakam çıktı olarak gelir.  
+
+biraz önce yazdığımız komuttaki satır sayılarını kıyaslayabiliriz.
+
+önce sirasiz.txt dosyasındaki toplam satır sayısını görelim  
+```.term1
+wc sirasiz.txt
+```
+
+şimdide tekrarlanan satırların çıkarıldığında kaç satır olduğunu görelim `-l` çıktıları sadece yeni satır sayısı ile sınırlandırır  
+
+```.term1
+cut -d ' ' -f2 sirasiz.txt |sort|uniq |wc -l
+```
+
+---
+### **nl** number lines - satırlara sayı ver
+Bu komutla bir dosyanın satırlarını numaralandırabilirsiniz. Kedi satırı numaralandırma seçenekleri sınırlıdır, bu nedenle karmaşık satır numaralandırma yapmanız gerekiyorsa, nl kullanabileceğiniz en kolay araçtır.  
+En basit haliyle, cat -b'nin ulaştığı aynı hedefi gerçekleştirmek için tek başına nl'yi kullanabilirsiniz.  
+  
+```.term1
+nl sirasiz.txt
+```
+gördüğünüz gibi en sol sütunda sıralı bir şekilde satırlara sayı eklendi. Özellikle çıktınıza index oluşturmak isterseniz çok kullanışlıdır.  
+  
+---
+### **grep** - genel filtreleme
+
+Linux işletim sisteminde en fazla kullanılan ilk 3 komuttan biridir (ls,grep,cd). istediğiniz bir karakteri veya kelimeyi aramanıza yarar. Arama yapacağınız veri kaynağı bir dosya olabilir veya Stdout alınan bir veri olabilir.
+
+Grep komutu son derece kullanışlıdır. Belirli bir dizeyi içeren dosyaları arar
+ve dosyanın adını ve (bir metin dosyasıysa) bu dizge için bir bağlam satırı döndürür.
+temel grep sözdizimi aşağıdaki gibidir:
+
+grep [seçenekler] regexp [dosyalar]
+
+Regexp, az önce açıklandığı gibi normal bir ifadedir. Grep komutu çok sayıda seçeneği destekler. Yaygın seçeneklerden bazıları, programın dosyaları arama şeklini değiştirmenize olanak tanır:
+
+**Eşleşen Satırları Sayma** Bağlam çizgilerini görüntülemek yerine, `-c` veya `--count` seçeneğini kullanırsanız grep, belirtilen desenle eşleşen satır sayısını görüntüler.  
+
+**Bir Kalıp Girdi Dosyası Belirtin** `-f` veya `--file=` seçeneği ile, bu sayede aranan kalıp girdisini komut satırı yerine belirtilen dosyadan alır.  
+
+**Büyük / Küçük Harf Yoksay** -i veya --ignore-case seçeneğini kullanarak, varsayılan büyük/küçük harfe duyarlı arama yerine büyük/küçük harfe duyarlı olmayan bir arama yapar.  
+
+**Recursive Arama** -r veya --recursive seçeneği ile belirtilen dizinde ve tüm alt dizinler içersinde bu aramayı yapar. Yerine `rgrep` kullanabilirsiniz.  
+
+**Genişletilmiş  Grep komutu** varsayılan olarak aranan ifadeyi normal ifade olarak yorumlar ve arar. Genişletilmiş ifade kullanmak için `-E` veya `--extended-regexp` seçeneğini kullanmanız gerekir. Alternatif olarak, grep yerine egrep'i kullanabilirsiniz.  
+
+Örnek olarak /etc dizini altında içersinde `user` geçen dosyaları görmek istersek aşağıdaki komut ile bunu sağlayabiliriz. `-r` recursive, yani alt dizinlerde de ara demektir.  
+
+```.term1
+grep user /etc -R
+```
+
+regexp anlamak için örnek dosyamızı kullanarak bir arama yapalım. 
+
+necmi veya tumay isimlerini arayalım önce
+```.term1
+grep -E -i -w 'necmi|tumay' /tmp/sirasiz.txt
+```
+
+ilk harfi küçük veya büyük Remzi ismindeki herkesi arayalım
+
+```.term1
+grep '[rR]emzi' /tmp/sirasiz.txt
+```
+  
+etc klasöründeki tüm IP'leri aramak için ağağıdaki komutu yazabilirsiniz.  
+  
+```.term1
+egrep '[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}\.[[:digit:]]{1,3}' /etc -r
+```
+
+Dosyalar içinde arama yapmak gibi kurulu programlar arasında bir program örn." lib" aramak için  
+  
+debian/Ubuntu:  
+```.term1
+dpkg -l | grep lib
+```  
+Centos/Redhat:  
+````
+rpm -qa | grep lib
+````
+
+Yazdığınız yazılım içindeki `#` ile yazılmış olan commentlerden arındırmak için
+````
+grep –v “#”  /srv/data01/live/app01/myapp.php
+````
+
+Klasörler içinde arama yapıp dosyalar rafine edilebilir, örnek olarak 'docx' dosyalar içersinde 'notlar' isminde bir dosya arıyor olalım fakat dosya adı içinde 'okul' kelimesi bulunmasın.
+
+find . –name “*.docx” | grep –i notlar | grep –vi "okul"  
+  
+sistemde bir hata oldu ve aldığınız hatadan önceki satırlarla birlikte çıktıyı görmek istiyorsunuz  
+
+`-B` Before anlamına gelir ve önceki 4 satırla birlikte çıktıyı gösterir  
+````
+grep -B 4 /var/log/messages
+````  
+  
+`-A` Aefore anlamına gelir ve sonraki 2 satırlarla birlikte çıktıyı gösterir  
+````
+grep -A 2 /var/log/messages
+````  
+  
+`-C` Before&After anlamına gelir ve önceki ve sonraki satırlarla birlikte çıktıyı gösterir  
+````
+grep -C 2 /var/log/messages
+````
+
+Sıkıştırılmış dosyalar içersinde grep komutu çalışmaktadır örnek olarak  
+````
+zgrep –i error /var/log/syslog.2.gz
+````
+
+> 
+``` Eğitim içersinde grep komutunu oldukça kısa işledik, Sistem Yönetimi konusunda uzmanlaşmak isteyen arkadaşlara tavsiyem bu konuda internette kısa bir arama yapmaları. Grep Linux kullanacak kişiler için çok önemlidir, bildiğiniz gibi Linux metin tabanlı bir işletim sistemi ve metin tabanlı işlemler yaparken grep gibi bir araç sizin için işleri inanılmaz kolaylaştıracaktır.
+```
+
+-----
+
+### **sed** Stream Edit - Akış değiştir  
+Sed komutu, değiştirilen dosyayı standart çıktıya göndererek doğrudan dosyaların içeriğini değiştirir.  
+
+iki şekilde kullanımı olabilir:  
+  
+sed [seçenekler] -f komut dosyası [giriş-dosyası]  
+sed [seçenekler] script-text [input-file]  
+  
+Her iki durumda da, giriş-dosyası, değiştirmek istediğiniz dosyanın adıdır. Değişiklikler
+kısaca gösterildiği gibi, bir şekilde kaydetmedikçe sadece ekrana (stdout) yansır.
+
+Önceki örnekten dosyadan devam edecek olursak `/tmp/sirasiz.txt` , bu durumda çıktıyı necati ismi yerine Fecati ismi ile değiştirirsiniz. Dosya kaydedilmez, `-i` parametresi ile çalıştırırsanız dosya içersinde değişiklik olur.  
+
+!! Çok önemli, -i parametresinin geri dönüşü yoktur, -i kullanımı öncesi mutlaka iyi kontrol yapmanızı öneririm, yada daha doğru bir yöntem çıktı ile yani bir doya oluşturmaktır.  
+  
+
+```.term1
+sed 's/necati/Fecati/g' sirasiz.txt
+```
+
+ >
+ ````Sed komutu sıklıkla kullandığım bir komuttur ve genellikle yazdığım scriptler içersinde faydalanırım. Çok güçlü bir komuttur ve TB büyüklüğünde dosyalarda bile inanılmaz hızlı sonuç almanızı sağlar. Özellikle script kullanımı için ve Metin dosyalarının güncellenmesi için değişik varyasyonlarını nasıl kullanabileceğinizi kontrol etmenizi öneririm.
+````
+  
+---
+## 8. Dosya işlemleri için komutlar
+_(cp, mv, mkdir, rm, rmdir, ln)_  
+  
+---
+### **cp** copy - kopyala işlemi
+Linux altında kopyalama işlemi için `cp` komutu kullanılır. Özellikle dosyaları kopyalarken hangi hak ve yetkiler ile kopyalayacağınız, bunları korumak isteyip istememeniz çok önemlidir. Ben kopyalama diye herzaman hak ve yetkiler ile kopyalamayı anladığım için `-rp` parametresini sıklıkla kullanırım.  
+
+
+Kullanım şekli:  
+cp (parametreler) kaynak hedef  
+  
+kullanım örnekleri:  
+
+Basit bir kopyalama  
+```.term1
+cp /tmp/sirasiz.txt /tmp/kopyala1.txt
+```  
+  
+a klasörünü b klasörüne kopyalayacaksak, önce klasör a oluşturulup içine abc.txt dosyası oluşturuluyor. Sonrasında dosya b klasörüne dosyalar ile birlikte kopyalanıyor.  
+
+```.term1
+mkdir -p /tmp/a
+touch /tmp/abc.txt
+cp -r /tmp/a /tmp/b
+```
+  
+---
+### **mv** move - taşı veya rename - isim değiştir
+
+Belirtilen klasör ve dosyanın adını değiştirmeye veya taşımaya yarar. Tahmin edemeyeceğiniz kadar güçlü ve problemli bir komut olabilir. MV işlemi sırasında permissionlar ve dosyaların sahiplikleri ortam parametreleri `environment` ile tanımlı parametrelere göre değişebilmektedir.  
+
+kullanımı:
+mv kaynak hedef
+
+veya
+
+mv eskiAd yeniAd 
+
+Önce bir dosya yaratalım `tasibeni`
+
+```.term1
+touch /tmp/tasibeni
+```
+
+Şimdi de dosyayı taşıyalım
+
+```.term1
+mv /tmp/tasibeni /tmp/tasinandosya
+```
+
+aynı klasör içinde dosyanin ismi `tasibeni`den `tasinandosya` şeklinde yeniden adlandırılmış oldu. Hedef klasör olarak farklı klasör ve yol verdiğinizde dosya taşınmış olacaktır.
+
+  
+---
+### **mkdir** make directory - klasör yap
+
+Belirtilen dizin içinde klasör yaratmak için kullanılır, klasörü yaratırken üst klasörlerin olduğu varsayılır, üst klasörlerle beraber tek komutta birçok altklasör yaratmak için -p flag'i ile kullanılmalıdır
+
+Tek klasör yaratmak için
+
+```.term1
+mkdir /tmp/ilkklasor
+```
+
+tek seferde birçok altklasor yaratmak icin
+```.term1
+mkdir -p /tmp/cokluklasor1/cokluklasor2/alt1/alt2/alt3
+tree /tmp
+```
+burada bir seferde tüm klasörler yaratılmıştır, en sonda bulunan alt3 klasoru olana kadar diğer klasörler de yaratılmıştır. Tree komutu ile dizin yapısını görebiliyoruz.
+  
+---
+### **rm** remove - sil
+dosya silmek için kullanılır, dosyalar geri dönüşümü olmaksızın silinirler. ayrıca klasörelerin içi boş değilse klasör silmek için de kullanılır.
+
+kullanımı için klasörde olmanız gerekir veya relative path vererek bunu yapabilirsiniz.
+
+Önce yarattığımız alt dizine `dosya1.silbeni` ve `dosya2.silbeni` isimli iki dosya yaratalım ve oluşturma tarihi olarak 1 ocak 2020 saat 19:00 verelim.  
+
+```.term1
+touch -t 202001011900 /tmp/cokluklasor1/cokluklasor2/alt1/alt2/alt3/dosya1.silbeni
+touch -t 202001011900 /tmp/cokluklasor1/cokluklasor2/alt1/alt2/alt3/dosya2.silbeni
+```
+  
+```.term1
+cd /tmp/cokluklasor1/cokluklasor2/alt1/alt2/alt3/
+rm dosya1.silbeni
+```
+veya klasöre gitmeden reletive path vererek bu silme işlemini yapabilirsiniz.  
+
+```.term1
+cd
+rm /tmp/cokluklasor1/cokluklasor2/alt1/alt2/alt3/dosya2.silbeni
+```
+
+rm en çok komutunda kullanılan parametreler
+```
+
+rm -f   zorla sil komutudur, dosyayı silme yetkiniz var ise uyarı flag'i açık olsa bile "-i" uyarı vermeden siler
+rm -i   silme işlemi yapmadan önce uyarı verir, bazı işletim sistemlerinde (Centos) default alias olarak tanımlı geldiği için her silme işleminde uyarı alabilirsiniz
+rm -rf  zorla ve uyarı vermeden tüm alt klasörler ile birlikte sil komutu. En güçlü silme komutudur
+
+```
+  
+---
+### **rmdir** remove directory - klasör sil
+
+Belirtilen klasörü silme komutudur. Çok daha az kullanılan bir komuttur, çünkü klasör boş değilse klasörü silmez.
+kullanımı oldukça basittir
+
+```.term1
+rmdir /tmp/ilkklasor
+```
+
+klasör boş değil ise ve tüm alt klasörlerle birlikte silmek istiyorsanız, aşağıdaki rm komutunu aşağıdaki gibi kullanabilirsiniz.
+Burada -r (veya -R, Root-Kök ile birlikte demektir) parametresi tüm alt klasörleri silmesini ister, f parametresi ise her simle öncesi soru sormaması içindir.
+
+```.term1
+rmdir /tmp/cokluklasor1
+```
+alt klasörleri olduğu için rmdir komutu ile `cokluklasor1` dizinini silemezssiniz. `rm -rf` komutunu kullanmanız gerekir
+
+```.term1
+rm -rf /tmp/cokluklasor1
+```
+  
+---
+### ln link - bağlantı, kısayol  
+Linux, makinenizdeki başka bir dosya veya klasöre işaret eden bağlantılar(link) veya sembolik bağlantılar(symbolic link) oluşturmanıza olanak tanır. Bu bağlantıyı kurmak için `ln`  komutunu kullanmanız gerekir. Bu yöntemin dışında, sembolik bağlantılar oluşturabilen bazı grafik dosya yöneticileri de vardır.
+  
+#### Sembolik Bağlantılar(symbolic link) Nelerdir?
+Sembolik bağlantılar temelde gelişmiş kısayollardır. Oluşturduğunuz sembolik bir bağ, yalnızca bir bağlantı olsa bile, işaret ettiği orijinal dosya veya klasörle aynı görünecektir. Windows üzerinde bir programa kısayol oluşturmanız ile aynı şeydir.  
+  
+Örneğin,  Mysql programı için varsayılan klasör /var/lib/mysql klasörüdür, fakat siz bu klasörde işlem yapmak istemiyorsunuzdur. Verilerinizi /srv/data01/mysql klasörü altında tutmak istiyorsunuz. İki seçeneğiniz var, mysql varsayılan ayarlarından `/etc/mysql/mysql.conf` içersinde data dizini olarak yeni klasörü tanımlayabilirsiniz. Yada verilerinizi /srv/data01/mysql altına kopyalar ve /var/lib/mysql dizini altına bir sembolik link yaratırsınız.  
+  
+örnek kurulum debian içinse,  
+
+  
+```
+"Senaryomuzda SSD bir diskiniz var ve mysql datalarınızı onun üzerinde çalıştırmak istiyorsunuz"  
+"1. disk bağlayacağımız klasörü oluşturuyoruz"  
+mkdir /srv/data01  
+  
+"2. Bağlı bulunan SSD disk /dev/sdc olduğunu varsayıyoruz"  
+mkfs.ext4 /dev/sdc  
+  
+"3. yeni disk fstab içersinde tanımlanıyor"  
+echo "/dev/sdc  /srv/data01 ext4 defaults,discard 0 0"  
+  
+"4. yeni disk mount ediliyor"  
+mount /dev/sdc  
+  
+"5. mysql kapatılıp veriler yeni disk üzerinde kopyalanır"  
+systemctl stop mysql/mariadb  
+cp -rp /var/lib/mysql /srv/data01/  
+  
+"6. eski mysql klasörü yedeklenir ve eski lokasyona sembolik link yaratılır"  
+mv /var/lib/mysql /var/lib/mysql-old  
+ln -s  /srv/data01/mysql /var/lib/mysql  
+  
+"7. yeni klasördeki mysql çalıştırılır"  
+systemctl start mysql veya systemctl start mariadb
+```  
+
+Dosyalara ve dizinlere bağlantılar oluşturabilir ve farklı bölümlerde ve orijinalinden farklı bir inode numarasıyla bağlantılar (kısayollar) oluşturabilirsiniz.
+
+Gerçek kopya silinirse, bağlantı çalışmayacaktır.
+  
+
+#### "kalıcı bağlantı"(Hard Link)   
+  
+"sembolik bağlantılara" ek olarak, bunun yerine bir "kalıcı bağlantı"(Hard Link) oluşturabilirsiniz. HardLink dosya sistemindeki bir inode işaret eder, SoftLink ise alias tanımı gibidir, ben ABCDE yazdığımda beni /ab/cd/e ye götür demek gibidir. Sabit bağlantılar yalnızca dosyalar içindir; farklı bir inode numarasına sahip farklı bir disk bölümündeki bir dosyaya bağlanamazsınız.  
+  
+Gerçek kopya silinirse, bağlantı çalışacaktır çünkü gerçek kopyanın erişmekte olduğu temel verilere erişmektedir.  
+  
+Hangisini kullanacağınızdan emin değilseniz, genellikle "yumuşak bağlantılar" olarak da bilinen standart sembolik bağlantıları kullanmalısınız.  
+  
+Hard link yaratmak için `-s` parametresini kullanmayız, böylece hard link oluşur.  
+  
+-----
+
+## **[Sonraki Bölüm - Dosya dizin bulma ve erişim yönetimi](/linux101-bolum2-4)**  
+  
+## **[Linux101 - Başlangıç](/linux101-landing)**  
+

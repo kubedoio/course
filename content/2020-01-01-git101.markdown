@@ -1,0 +1,14 @@
+---
+layout: post
+title: "Git 101 - sürüm kontrolü nasıl yapılabilir?"
+date: 2020-01-01
+author: "@senolcolak"
+tags: [landing]
+categories:
+terms: 3
+---
+
+Bu eğitim ile aşağıdaki konularda bilgi alacaksınız
+* Ansible otomasyon eğitimi
+  
+sağ ekranda 3 tane terminal ekranı bulunmalı

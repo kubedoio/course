@@ -1,0 +1,639 @@
+---
+layout: post
+title:  "4. Sistem Yönetimi ve temel ağ yapılandırması"
+date:   2020-01-01
+author: "@senolcolak"
+tags: [linux101,turkce,operations]
+categories: [linux101,beginner]
+terms: 1
+---
+
+Bölüm içersinde sistem yönetimi temel araçlarını kullanıcı yönetimi ve ağ yapılandırması konusunda temel bilgiler edineceğiz.  
+
+---
+
+
+> **Bölüm içersinde aşağıdaki konular işlenecektir:**
+> * Table of contents
+> {:toc}
+
+---
+
+Kullanım İpuçları:
+
+Eğitim içersinde, komut satırı bilgileri aşağıdaki üç farklı şekilde belirtilmiştir.
+
+1. `şunun` gibi görünen komut betimleri şeklinde gösterilmler daha çok örnekler ve yazılması gereken komutları tanımlamak için kullanılır.
+
+2. Aşağıdaki gibi kutu içersinde gördüğünüz kodlar üzerine tıkladığınızda, kopyala yapıştır yapmanıza gerek kalmadan terminal içersinde çalıştırılacaktır:
+```.term1
+uname -a 
+```
+3. Aşağıda gördüğünüz gibi bir pencere içersinde yazılmış olan kod betimleri sizin klavyeden yazmanız gereken kod betimleridir.
+Genellikle benzersiz bir ID veya başka bir değişken girmeniz gerekiyordur. Buradaki benzersiz veri eğitim sırasında kullandığınız ortam içersinden bulunabilir.
+<> içersinde bulunan maddeler sizin değiştirmeniz gereken verinin yerini göstermektedir.
+```
+hostnamectl set <sunucu adı>
+```
+----
+
+## 4. Ağ Komutları
+  
+---
+### **ping** ip ile icmp protokolü paketleri gönderir
+
+kullanım şekli:  
+ping [ip/dns name]
+
+örnek kullanımlar:
+`ip adresi veya dns üzerinden ping`  
+  
+ping kullanabilmek için paketini kuralım  
+```.term1 
+apt-get update&&apt-get install iputils-ping -y
+```
+
+Şimdi bir ip veya domain ismine ping atalım.  
+
+```.term1
+ping www.google.com
+```
+ veya  
+
+```.term1
+ping 172.217.19.68
+```
+Durdurmak için ctrl+c yapmanız gerekir.    
+  
+
+---
+### **ifconfig**
+ifconfig, ağ arabirimi yapılandırması için bir komut satırı arabirim aracıdır ve ayrıca sistem önyüklemesi sırasında arabirimleri başlatmak için kullanılır. Bir sunucu kurulup çalışmaya başladığında, bir arayüze bir/veya birdençok) IP Adresi atamak ve isteğe bağlı olarak arayüzü etkinleştirmek veya devre dışı bırakmak için kullanılabilir.  
+  
+Ayrıca, halihazırda aktif olan arayüzlerin durum IP Adresini, Donanım(MAC) adresini ve MTU (Maksimum Transfer Birimi) boyutunu görüntülemek için de kullanılır. ifconfig bu ayrıca hata ayıklama veya sistem ayarlaması yapmak için kullanışlıdır.  
+    
+Öncelikle ifconfig kurulumunu yapalım:  
+```.term1
+apt-get update&&apt-get install net-tools -y
+```
+Şu anda mevcut olan tüm arabirimleri, yukarı veya aşağı, listelemek için -a bayrağını kullanın.
+
+$ ifconfig -a
+Bir arayüze bir IP adresi atamak için aşağıdaki komutu kullanın.
+
+$ sudo ifconfig eth0 192.168.56.5 netmask 255.255.255.0
+Bir ağ arayüzünü etkinleştirmek için yazın.
+
+$ sudo ifconfig up eth0
+Bir ağ arayüzünü devre dışı bırakmak veya kapatmak için yazın.
+
+$ sudo ifconfig aşağı eth0  
+Not: ifconfig harika bir araç olmasına rağmen artık kullanılmamaktadır (kullanımdan kaldırılmıştır), onun yerini aşağıda açıklanan ip komutudur.  
+  
+
+---
+### **ip**
+**ip** komutu yönlendirme yapmanıza, ağ aygıtlarını ayarlamanıza, ağ arabirimlerini görüntülemenize yarayan çok kullanışlı bir programdır.**ifconfig** ve diğer birçok ağ komutunun yerine kullanabilirsiniz. Yani tek bir komut ile tüm network işlerinizi rahatlıkla yapabilirsiniz.  
+  
+Aşağıdaki komut IP adresini ve bir ağ arayüzü hakkındaki diğer bilgileri gösterecektir.  
+```.term1
+ip addr show
+```
+  
+Burada gelen bir ağ arayüzüne yeni bir ip verelim,  
+IP Adresini geçici olarak belirli bir ağ arayüzüne (eth0@if1907) atamak için yazın.  
+```.term1
+sudo ip addr add 192.168.0.101 dev eth0@if1907
+````
+  
+Atanmış bir IP adresini bir ağ arayüzünden (eth0@if1907) kaldırmak için yazın.  
+```.term1
+sudo ip addr del 192.168.0.101/24 dev eth0@if1907
+```
+  
+Çekirdekte mevcut komşu tabloyu göstermek için yazın.  
+  
+$ ip neigh  
+  
+route tablosunu görmek için  
+  
+$ ip r  
+    
+varsayılan ağ geçidini tanımlama  
+
+$ ip route add default via 10.0.0.1
+  
+network için route tanımlama  
+  
+$ ip route add 192.168.0.0/24 via 10.0.0.1 dev eth0
+  
+
+>
+```ip komutunu öğrenmenizi özellikle tavsiye ederim, çok kullanışlı bir komuttur, geçici olarak ip tanımlaması yapmanızı ve ağ bağdaştırıcınız ile farklı çözümler üretmenizi sağlar. Script içinde kullanımı en kolay ve fonskiyonel network komutudur.
+```
+  
+  
+---
+### **arp**
+**arp** komutu, Sistemin ARP önbelleğini yönetir. ARP (address resolution protocol) yani Network kartlarının MAC (donanım) adresleri için çözümleme protokolütür. arp komutu ARP önbelleğinin tam bir dökümünü verir. Bu protokolün birincil işlevi, bir sistemin IP adresini mac adresine çözümlemektir ve bu nedenle OSI seviye 2 (Veri bağlantı katmanı) ve seviye 3 (Ağ katmanı) arasında çalışır.  
+  
+$ arp -a  
+  
+size ağ üzerindeki bulunduğunuz sunucu tarafından tutulan MAC tablosunu ve ip adreslerini verir.  
+  
+$ arp -v  
+  
+Detaylı bir şekilde DNS adres karşılıkları ile MAC adresleri bilgisini verir.  
+
+  
+---
+### **traceroute**
+Traceroute, yerel sisteminizden başka bir ağ sistemine tam yolu izlemek için bir komut satırı yardımcı programıdır. Son sunucuya ulaşmak için seyahat ettiğiniz yolda atlamaların sayısını (yönlendirici IP'leri) yazdırır. Ping komutundan sonra kullanımı kolay bir ağ sorun giderme aracıdır.
+
+$ traceroute www.google.com
+
+  
+---
+### **mtr**
+MTR, ping ve traceroute işlevlerini tek bir program üzerinde birleştiren analiz programıdır. Çıktısı, siz q tuşuna basarak programdan çıkana kadar varsayılan olarak gerçek zamanlı olarak güncellenir.  
+  
+$ mtr google.com  
+
+Çok kullanışlı bir komuttur, traceroute yerine kullanabiliyorsanız bu programı kullanmanızı tavsiye ederim.  
+  
+  
+---
+### **route** yönlendir
+**route**, bir Linux sisteminin IP yönlendirme tablosunu görüntülemek veya değiştirmek için kullanabileceğiniz bir programıdır. Esas olarak, bir arayüz aracılığıyla belirli bilgisayarlara veya ağlara statik yollar yapılandırmak için kullanılır. Yani A B C 3 tane bilgisayarını olsun, B bilgisayarı A ile C arasında olsun, A bilgisayarının C ye gidebilmesi için onun ağ bilgisinin B bilgisayarında olması gerekir.  
+  
+
+
+IP yönlendirme tablosunu aşağıdaki şekilde görüntüleyebilirsiniz  
+$ route  
+  
+Varsayılan ağ geçidi tanımlama  
+$ route add default gw 10.40.23.1  
+  
+
+**A** 10.0.0.0/24--- **B** 10.0.0.1/24 ve 192.168.0.1/24 --- **C** 192.168.0.0/24  
+buradaki A networkünü C networküne eriştirmek için aşağıdaki işlem yapılır(B bilgisayarında 2 network kartı olduğunu düşünüyoruz)  
+  
+A bilgisayarı'na C ye gidebilmesi için B bilgisayarına yönlenmesi gerektiği bilgisi verilir.
+  
+$ route add -net 192.168.0.0/24 gw 10.0.0.1 eth0
+
+
+  
+---
+### **netstat**
+**netstat**, Linux ağ alt sistemi ile ilgili hemen hemen her türlü bilgiyi alabilirsiniz. Ağ bağlantıları, yönlendirme tabloları, arayüz istatistikleri gibi bilgileri sağlayan bir komut satırı aracıdır. Ağ sorun giderme ve performans analizi için çok kullanışlıdır.  
+  
+Ben çoğunlukla, hangi program hangi servisi çalıştırıyor onu bulmak için kullanırım.  
+  
+Aşağıdaki komut dinleme modunda tüm TCP bağlantı noktalarını ve hangi programların onları dinlediğini göstermektedir  
+  
+$ netstat -tulpen  
+  
+Route tablosu bilgisi için  
+$ netstat -r  
+
+
+---
+### **nmap**
+Network ve güvenlik konuları ile ilgilenenlerin en sıklıkla kullandığı programdır. Çok kullanışlı ve güçlü bir araçtır. Ağ üzerindeki bir bilgisayar hakkında bilgi toplamak veya tüm bir ağdaki bilgisayarları keşfetmek için kullanılır. Nmap ayrıca güvenlik taramaları, ağ denetimi ve uzak ana bilgisayarlarda açık bağlantı noktaları bulma ve çok daha fazlasını gerçekleştirmek için kullanılır.  
+  
+Özellikle scriptler içersinde farklı yazılımlarla kombine edilip kullanımı çok yaygındır,  
+  
+**Genel bir tarama**  
+$ nmap -A www.google.com  
+  
+**Ağ üzerindeki sunucuları bulma**  
+$ nmap -sP 10.40.24.0/24  
+  
+**icmp paketlerini bloklayan(ping kapalı) sunucuları diğer portlar ile varlığını bulma**  
+$ nmap -sP www.google.com  
+  
+**Varolan tüm portları tarama**  
+$ nmap -sV www.google.com -p 1-1023  
+  
+**İşletim sistemini anlama**  
+$ nmap -O www.google.com  
+  
+---
+### **nc** Netcat
+'NetCat' veya "Network için isviçre çakısı" isimleriyle anılır, çok kullanışlı, güçlü bir araçtır. TCP, UDP veya UNIX alan soketleri bağlantıları için kullanılır, rastgele TCP ve UDP bağlantı noktalarında dinleme, bağlantı noktası taraması ve yönlendirmesi yapabilir.  
+  
+Uzak bağlantı noktalarının erişilebilir olup olmadığını kontrol etmek ve çok daha fazlasını yapmak için ağ arka plan programı testi için basit bir TCP proxy'si olarak da kullanabilirsiniz. Ayrıca, dosyaları iki bilgisayar arasında aktarmak için pv komutuyla birlikte kullanabilirsiniz. (pv progress bar içindir.)  
+
+Port taraması  
+$ nc -zv www.google.com 22 80 443 8080 8443  
+  
+Port aralığı taramak
+$ nc -zv www.google.com 100-500  
+  
+www.google.com sunucusu 2000 portu'na 5000 portu üzerinden bağlantı yaratır ve 20 saniyelik bekleme süresi vardır  
+$ nc -p 5000 -w 20 www.google.com 2000  
+  
+>  
+```Güvenliğiniz için sunucularınızda bu paketin kullanımını sınırlandırmalısınız, Özellikle mikroservislerin popüler olmasından sonra, bu paket daha da tehlikeli hale gelmiştir. Çok kullanışlıdır, fakat sunucularınıza kurulmasına izin vermeyin(mecbur değilseniz).
+```
+    
+  
+---
+### **tcpdump**
+**tcpdump** çok güçlü ve yaygın olarak kullanılan bir komut satırı ağ dinleme aracıdır. Belirli bir ağ arabirimi (eth0, enp4s0..)üzerinden iletilen veya alınan TCP/IP paketlerini yakalamak ve analiz etmek için kullanılır.  
+  
+kullanımı  
+tcpdump -i eth0
+  
+---
+### wireshark
+**wireshark**, network konusu ile derinlemesine ilgilenmek isterseniz mutlaka bu yazılımı öğrenmeniz gerekir. Paket anahtarlamalı bir ağdaki paketleri gerçek zamanlı olarak yakalamak ve analiz etmek için kullanılabilecek güçlü, çok yönlü ve kullanımı kolay bir araçtır.  
+  
+Ayrıca yakaladığı verileri daha sonra incelenmek üzere bir dosyaya da kaydedebilirsiniz. Sistem yöneticileri ve ağ mühendisleri tarafından paketleri güvenlik ve sorun giderme amacıyla izlemek ve incelemek için kullanılır.  
+  
+---  
+### **bmon**
+**bmon**, Linux ve Unix sistemler için komut satırı tabanlı bir ağ izleme ve hata ayıklama aracıdır, ağ ile ilgili istatistikleri yakalar ve bunları görsel olarak insanların anlayabileceği bir foramata çevirir.
+  
+---
+### **iftop**
+**iftp**, sunucu üzerindeki ağ arabirimlerindeki trafik miktarını görüntüler. Her bir soket bağlantısının bağlantı hızını gösterir.  
+
+kullanımı  
+iftop -i eth0
+
+
+---
+### **iptables**
+Linux İşletim sisteminde güvenlik duvarı dediğimizde aklımıza hemen iptables gelir. Güvenlik Duvarı(Firewall), sisteme gelen ve giden paketlere ne yapılacağını belirler. IPTables kural tabanlı bir güvenlik duvarıdır ve çoğunlukla Linux işletim sisteminde önceden yüklenmiştir. Varsayılan olarak herhangi bir kural olmadan çalışır. IPTables Linux kernel içersinde 2.4 sürümünden beri vardır. IPTables, çekirdekle konuşmak için bir arayüz sağlar ve filtrelenecek paketlere karar verir.  
+  
+Farklı protokoller için farklı hizmetler kullanılır:  
+  
+iptables ``IPv4`` için geçerlidir  
+ip6tables ``IPv6`` için geçerlidir  
+arptables ``ARP`` için geçerlidir  
+    
+IPTables ana dosyaları şunlardır:  
+/etc/init.d/iptables - (eski) başlama/durdurma/yeniden başlama dosyası  
+/etc/sysconfig/iptables kuralların olduğu yer  
+/sbin/iptables uygulama dosyası  
+  
+  
+#### **Tablolar**  
+  
+**FILTER** – Varsayılan tablodur, 3 tane zinciri vardır
+INPUT  – yerel soketlere yönelik paketler  
+FORWARD – sistem üzerinden yönlendirilen paketler  
+OUTPUT – yerel olarak oluşturulan paketler  
+  
+**NAT** – Paket yeni bir bağlantı oluşturmak istediğinde gerçekleşir. (Network Address Translation)  
+PREROUTING – bir paketi alır almaz değiştirmek için kullanılır  
+OUTPUT – yerel olarak oluşturulan paketleri değiştirmek için kullanılır  
+POSTROUTING – dışarı çıkmak üzereyken paketleri değiştirmek için kullanılır  
+  
+**MANGLE** – bu tablo, paket değiştirme için kullanılır.  
+PREROUTING – gelen bağlantıları değiştirmek için  
+OUTPUT – yerel olarak oluşturulan paketleri değiştirmek için  
+INPUT – gelen paketler için  
+POSTROUTING – paketleri dışarı çıkmak üzereyken değiştirmek için  
+FORWARD – dışarı yönlendirilen paketler için  
+  
+**Zincirler**  
+INPUT: Sistemden kaynaklanan varsayılan zincir.  
+OUTPUT: Sistemden üretilen varsayılan zincir.  
+FORWARD: Varsayılan zincir paketleri başka bir arabirim aracılığıyla gönderilir.  
+RH-Firewall-1-INPUT: Kullanıcı tanımlı özel zincir.  
+
+
+Iptables servislerini çalıştırmak/durdurmak/yeniden başlatmak için  
+$ systemctl start iptables  
+$ systemctl stop iptables  
+$ systemctl restart iptables  
+  
+#### Komutlar  
+  
+$ iptables -L -n -v  
+  
+şuanki aktif iptables listesinin gösterimi. (-L liste, -v ayrıntılı, -n port numarası bildirimi)  
+  
+sadece bir tablonun çıktısı için(örn. filter)  
+  
+$ iptables -t filter -L -v -n  
+  
+veya nat tablosu için  
+  
+$ iptables -t nat -L -v -n  
+  
+**Bloklama ekle/kaldır**  
+$ iptables -A INPUT -p tcp -s xxx.xxx.xxx.xxx -j DROP  
+  
+yukarıdaki şekilde belirtilen `-A` (add) ekleme demektir, `-s` kaynak ip adresini, `-p` protokol bilgisini,  `-j` ise alınacak aksiyonu belirler.  
+  
+$ iptables -D INPUT -p tcp -s xxx.xxx.xxx.xxx -j DROP  
+  
+aynı komutu ``-D`` (delete) şeklinde yazdığınızda silmek için kullanılır.  
+  
+**Port kapatmak/Açmak Gelen/Giden paketler için**   
+  
+Giden paketler için port bloklama  
+$ iptables -A OUTPUT -p tcp --dport xxx -j DROP  
+  
+Gelen Paketler için port bloklama  
+$ iptables -A INPUT -p tcp --dport xxx -j ACCEPT  
+  
+  
+**Port yönlendirme(NAT)**  
+  
+Bilgisayarınızı internete çıkarmak veya dışarıdan gelen bir port istediğini kendi sunucunuzda veya başka bir sunucudaki başka bir port'a yönlendirmek isterseniz Iptables üzerinden NAT tanımlamanız gerekir, burada firewall olarak kullanılan bir linux sunucunun 3389 (RDP) protokolünü internete nasıl açtığını görebilirsiniz.  
+  
+Bu sunucu üzerinde 33389 portuna erişmeye çalışan bir bilgisayar 10.40.20.144 ip'sinde başka bir bilgisayara yönlenir.  
+$ iptables -t nat -A PREROUTING -p tcp --dport 33389 -j DNAT --to-destination 10.40.20.144:3389  
+$ iptables -A FORWARD -p tcp -d 10.40.20.144 --dport 3389 -j ACCEPT  
+  
+**Ping isteklerini kapatmak**
+  
+Sunucularınızı ping isteklerine kapatmak.
+$ iptables -A INPUT -p icmp -i eth0 -j DROP  
+  
+**iptables-save ile değişiklikleri kalıcı yapmak**  
+Debian/Ubuntu için  
+  
+$ sudo /sbin/iptables-save > /etc/iptables/rules.v4  
+  
+``IPv6``  
+  
+$ sudo /sbin/ip6tables-save > /etc/iptables/rules.v6  
+  
+CentOS/RHEL için  
+  
+$ sudo /sbin/iptables-save > /etc/sysconfig/iptables  
+  
+``IPv6``  
+$ sudo /sbin/ip6tables-save > /etc/sysconfig/ip6tables  
+  
+**Tüm komutları silmek/sayaçları sıfırlamak**  
+  
+$ iptables -L -n -v (çıktısının boş Chain'ler getirmeli)
+
+Öncelikle erişiminizi kaybetmemeniz için tüm erişimleri açın  
+  
+$ iptables -P INPUT ACCEPT  
+$ iptables -P FORWARD ACCEPT  
+$ iptables -P OUTPUT ACCEPT  
+  
+Flush All Iptables Chains/Firewall rules  
+  
+$ iptables -F  
+  
+Delete all Iptables Chains  
+$ iptables -X  
+  
+Tüm sayaçları sıfırlamak  
+$ iptables -Z  
+  
+Tüm mangle ve Nat kurallarının sıfırlanması  
+  
+$ iptables -t nat -F  
+$ iptables -t nat -X  
+$ iptables -t mangle -F  
+$ iptables -t mangle -X  
+$ iptables iptables -t raw -F  
+$ iptables -t raw -X  
+
+
+#### firewalld
+  
+RHEL/CentOS 7 ve CentOS 8 bu güvenlik duvarını kullanıyor. Yeni güvenlik duvarı sistemi yapılmasının en büyük nedenlerinden biri, eski güvenlik duvarının her değişikliği yaptıktan sonra yeniden başlatmaya ihtiyaç duyması ve böylece tüm aktif bağlantıları kesmesiydi. firewalld oldukça kullanışlı ve kullanımı kolay bir güvenlik duvarı arabirimidir.  
+  
+firewalld mutlaka pratik yaparak öğrenebileceğiniz bir güvenlik duvarıdır. Kullanım öncesi buradaki komutlar ve internette arama yapmanızı tavsiye ederim.  
+  
+çalışan servisin durumunu öğrenmek için  
+$ systemctl status firewalld  
+veya  
+$ firewall-cmd --state  
+  
+Aktif zonelar üzerindeki çalışan servisleri listeler  
+$ firewall-cmd --get-active-zones  
+$ firewall-cmd --get-services  
+  
+yeni bir port eklemek için  
+$ firewall-cmd --permanent --zone=public --add-port=8080/tcp  
+  
+yazdıklarınızı aktive etmek için  
+$ firewall-cmd --reload  
+
+#### ufw
+**ufw**, Debian ve Ubuntu Linux dağıtımları için en bilinen ve varsayılan güvenlik duvarı yapılandırma aracıdır. Sistem güvenlik duvarını etkinleştirme/devre dışı bırakma, paket filtreleme kurallarını ekleme/silme/değiştirme/sıfırlama ve bunun gibi birçok işlem için kullanılır.  
+  
+UFW güvenlik duvarı durumunu kontrol etmek için yazın.  
+
+```.term1
+ufw status
+```
+  
+UFW güvenlik duvarı etkin değilse, aşağıdaki komutu kullanarak etkinleştirebilir(enable) veya devre dışı bırakabilirsiniz(disable).
+```.term1
+ufw enable
+```
+
+port ekleme/kaldırma oldukça basittir  
+```.term1
+ufw allow ssh
+```
+
+Herşeyi resetlemek(sıfırlamak)  
+```.term1
+ufw reset
+```
+
+
+## 5. telnet, ssh, whoami, w, uname
+
+---
+### **telnet**
+Telnet, bir TCP/IP ağı üzerinden uzak sistemlere bağlanmak için kullanılan eski bir ağ protokolüdür. 23 port numarasını kullanır, bu bağlantı noktası üzerinden sunuculara ve ağ ekipmanına bağlanır. Telnet komut kullanımı bazen çok işinize yarayabilir, sistemlere bağlanmak ve operasyon yapmak için kesinlikle kullanılmamalıdır. Güvenli olmadığı için gelen/giden paketler tamamen görüntülenebilir.  
+
+Telnet komutu bir sistemin açık portunu anlamak veya acil olarak bir ağ ekipmanının erişimini test etmek için kullanılabilir.
+
+Kullanımı:
+
+$ telnet sunucu_ismi/ip_si  
+  
+veya 23 dışında farklı bir port denemek için
+
+$ telnet sunucu_ismi/ip_si port_numarası  
+  
+    
+---
+### **ssh**  
+SSH (SSH istemcisi), bir makineye uzaktan erişim için bir programdır, kullanıcının uzaktaki bir ana bilgisayarda komutları çalıştırmasını sağlar. Güvenli olmayan bir ağ üzerinden iki güvenilmeyen bilgisayar arasında güvenli ve şifreli iletişim sağlamak üzere tasarlanmıştır. Uzaktaki bir bilgisayarda oturum açmak için en çok önerilen yöntemlerden biridir. Linux üzerinde sunuculara bağlanmak için en etkin yöntemdir.  
+  
+SSH için bir Sunucu, birde istemciye ihtiyaç vardır. Sunucu **OpenSSH server**, istemci ise **ssh client** 'tır.  
+  
+Bir windows bilgisayarınız var ise [putty](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html) kullanarak başka bilgisayarlara bağlanabilirsiniz. Mac bilgisayarlar için [iterm2](https://iterm2.com/) yazılımı oldukça kullanışlıdır.  Linux bir bilgisayardan bağlanıyorsanız ``openssh-client`` paketini kurmanız yeterlidir. komut satırından `ssh` yazarak programa ulaşabilirsiniz.  
+  
+SSH, hem sistem genelinde hem de kullanıcıya özgü (özel) bir yapılandırma dosyası kullanır.  
+  
+Kullanım şekli:  
+$ ssh kullanıcı_adı@sunucu_dns_veya_ip  
+  
+Sunucunuz üzerine OpenSSH kurulumu oldukça basit bir işlemdir.  
+```.term1
+apt-get update&&apt-get install openssh-server -y
+```
+  
+  
+#### SSH anahtarları ile sunuculara bağlanmak
+  
+Anahtar ile işlem yapmak için önce bir anahtar oluşturmalısınız, bu işlem için değişik platformlarda farklı araçlar vardır. Linux veya Mac bir istemci bilgisayarınız var ise `ssh-keygen`, windows bir bilgisayar ve putty kullanacaksanız puttygen.exe programını kullanmanız gerekir. Anahtar kullanımın sayısız faydası vardır, güvenlik ve kullanım kolaylığı ilk akla gelenlerdir. Bunların yanı sıra, günümüzde sistem yöneten ve SRE/DevOps prensipleri uyguluyorsanız, binlerce bilgisayara erişmeniz gerekecektir, parola yönetimi bu anlamda imkansız olacaktır.  
+
+Linux ve Mac için, komut satırından aşağıdaki programı çalıştırın.    
+```.term1
+ssh-keygen
+```
+
+home dizininiz altında ``/home/senol/.ssh/`` ".ssh" dizini içersinde 2 tane anahtar dosyası oluşur, biri (private) **size özel anahtar dosyası** diğeri ise (public) **herkese açık anahtar dosyası** dır.  
+  
+````
+/home/senol.ssh/.id_rsa       <-- Private key  
+/home/senol.ssh/.id_rsa.pub   <-- Public key  
+````
+  
+buradaki public key dosyasını erişmek istediğiniz bilgisayardaki authorized_keys dosyasına elle ekleyebilirsiniz. Veya ``ssh-copy-id`` isimli program ile karşı bilgisayara yüklersiniz.  
+  
+bu işlem aşağıdaki şeklide yapılır.  
+
+$ cat ~/.ssh/id_rsa.pub  
+```
+ekrana çıkan çıktıyı kopyalayıp karşı bilgisayarda yine aynı .ssh dizini içersindeki authorized_keys dosyasına yazmanız gerekir.  
+  
+```
+$ echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC2WMDCcUWFtpsdT.... senol@windows-home" >> ~/.ssh/authorized_keys  
+  
+veya  
+  
+$ ssh-copy-id kullanıcı@karşı_bilgisayar  
+  
+Şifre ile bağlandıktan sonra sunucuya anahtarınızı kopyalayabilirsiniz.  
+  
+>
+``` ÇOK ÖNEMLİ! Private Key hiç kimseyle paylaşmamalısınız, fakat public key herhangi biryerde paylaşmanızda bir zarar yoktur.  
+```
+  
+  
+#### Tünel Kurmak ve mysql localhost bağlanmak
+  
+SSH üzerinden karşıda bağlandığınız sunucuya direkt erişim için bir tünel ile yerel bağlantınız üzerine karşıdaki bir portu getirebilirsiniz.  Örnek bir senaryo ile anlatalım, mysql-server çalışan bir sunucunuz olsun ve erişim ayarlarında sadece ``localhost`` için erişim vermiş olsun.  
+  
+Bu sunucuya uzak bir bilgisayardan bağlandığınızda 3306 portuna erişmeniz hiç kolay olmaz. Karşıdaki bilgisayara bir tünel yaratıp, karşı bilgisayardaki ``localhost:3306`` portunu kendi bağlandığınız bilgisayardaki başka bir porta yönlendirebilirsiniz.
+
+```.term1
+ssh -L 13306:localhost:3306 user1@abc.home.server
+```
+
+Benzer şekilde karşı network içersindeki sadece bir bilgisayara erişiminiz var, siz ise karşı network içindeki bir bilgisayara RDP(3389) ile bağlanmak istiyorsunuz.  
+```.term1
+ssh -L 23389:10.44.212.16:3389 user1@abc.home.server
+```
+  
+Karşı network içersindeki abc.home.server bilgisayarı üzerinden kendi local 23389 portunuzu, karşı network üzerindeki 10.44.231.16 ip'li 3389 portuna bağlıyorsunuz.  
+  
+Kendi bilgisayarınızdan (windows kullanıyorsanız) komut satırınızdan "mstsc /v:localhost:23389" yazıp enter'a bastığınızda RDP protokolü üzerinden diğer ağ üzerindeki bilgisayara bağlanırsınız.  
+  
+  
+  
+putty kullanımı ile ilgili çok güzel bir sayfa var, [buradan](https://www.tecmint.com/putty-configuration-tips-and-tricks/) erişebilirsiniz.
+  
+
+---
+### **whoami** who am i - ben kim olarak sisteme bağlıyım
+
+userid bilgisini ekrana çıktı olarak getirir.  
+
+```.term1
+whoami
+```
+  
+  
+
+
+
+### **w** who is logged on - bağlı olanları ve ne yaptıklarını göster
+
+sistemde şuanki bağlı kullanıcıları ve ne çalıştırdıklarını listeler.
+
+```.term1
+w
+```
+
+### **uname** -işletim sistemi bilgisini gösterir.
+  
+Uname komutu ile üzerinde çalıştığınız Linux bilgisayar ile ilgili bazı sistem bilgilerini edinebilirsiniz.
+
+Her şeyi görmek için -a (tümü) seçeneğini kullanın.  
+
+```.term1
+uname -a
+```  
+Çekirdeğin türünü görmek için -s (çekirdek adı) seçeneğini kullanın.  
+
+```.term1
+uname -s
+```
+
+Çekirdek yayınını görmek için -r (kernel release) seçeneğini kullanın.
+```.term1
+uname -r
+```
+
+Çekirdek sürümünü görmek için -v (çekirdek sürümü) seçeneğini kullanın.  
+```.term1
+uname -v
+```
+  
+   
+------
+<!-- Quiz bölümünü diğer quizlerde aynen kopyalayıp değiştirmemiz gerek.-->
+
+## **[Linux101 - Ana Sayfa](/linux101-landing)**
+
+-----
+## Konu tekrarı, kısa sınav
+>seçeneklerden doğru olanları seçtikten sonra **Gönder** butonuna basınız. Sonuçları <span style="color:green">**doğru**</span> ve <span style="color:red">**yanlış**</span> görebilirsiniz.
+
+
+
+
+{:.quiz}
+Linux sisteminizi yeni kurdunuz ve kullanıcılar yaratmak istiyorsunuz?
+kendi adınıza bir kullancı yaratın home dizini olarak /src/data01 verin uid olarak 1200 verin
+
+- ( ) useradd --home /srv/data01 -uid 1200 ISMIM
+- (x) useradd -m -d /srv/data01 -u 1200 ISMIM
+- ( ) useradd -d /srv/data01 -u 1200 ISMIM
+- ( ) useradd -h /srv/data01 -uid 1200 ISMIM
+
+{:.quiz}
+senol isimli kullanıcının sisteme erişimini kısıtlayın
+
+- ( ) usermod --disable senol
+- ( ) userdel senol
+- ( ) userdel --remove senol
+- (x) usermod --lock senol
+
+{:.quiz}
+/tmp/deneme1.txt dosyasını açın ve içideki tüm 'benisil' yazılı yerleri 'beniekle' ile değiştirin
+
+- (x) vim /tmp/deneme1.txt -c %s/benisil/beniekle/g -c wq
+- ( ) vim /tmp/deneme1.txt sonra komut modunda :/benisil/beniekle/g
+- ( ) vim /tmp/deneme1.txt |grep benisil|paste beniekle
+- ( ) cat /tmp/deneme1.txt|grep benisil|cat beniekle
+
+{:.quiz}
+/etc/nsswitch dosyası içinde "hosts: files dns" sıralamasını "hosts: dns files" yaparsak ne olur?
+
+- ( ) Resolv.conf dosyası içindeki bilgilerin sıralaması değişir
+- ( ) Dosyalarda kaydedilmiş DNS kayıtları silinir
+- (x) DNS sorgulamaları önce resolv.conf içindeki DNS sunucularına, sonra /etc/hosts yapılır
+- ( ) "ip --> domain" isimlendirmesi "domain --> ip" şeklinde değişir

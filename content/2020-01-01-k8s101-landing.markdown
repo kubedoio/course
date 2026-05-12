@@ -1,0 +1,38 @@
+---
+layout: landing
+title: "Docker 101 - Docker'a giriş ve nasıl kullanılır?"
+date: 2020-01-01
+author: "@senolcolak"
+tags: [docker101]
+categories:
+terms: 0
+---
+
+Bu eğitim ile aşağıdaki konularda bilgi alacaksınız
+  
+  * Docker ile ilgili temel bilgiler
+
+  * Docker nerelerde kullanabileceğiniz ve hayatımızı nasıl kolaylaştırabileceği
+
+  * Kurumunuzda Docker kullanmanın yapabileceği faydalar
+
+  
+Eğitimimiz içersinde Geliştiriciler için sağladığı faydalara değinmedik, fakat Docker aslında geliştiriciler için yaratılmış bir çözümdür. Geliştiriciler için internette çokça kaynak mevcut, buradaki eğitim geliştiriciler için de temel bilgiler içeriyor.
+
+> **Önemli Not:** Buradaki docker eğitimleri için kaynak olarak Docker şirketi tarafından hazırlanmış olan **Play With Docker classroom** eğitimleri kullanılmıştır. Eğitimlerin içerikleri yeniden organize edilmiş ve güncellenmiştir. İsterseniz ingilizce olan eğitimlere [buradan](https://training.play-with-docker.com/) erişebilirsiniz.  
+  
+<!-- 5-7 minute animated PPT to describe the benefits TODO: Build this -->
+
+<!--  Build - Ship - Run recorded demo TODO: Record New One -->
+
+<!-- Docker 101 Webinar TODO: Find right video -->
+
+## Canlı Docker öğrenme laboratuvarı
+Buradaki iki Labaratuar eğitimi ile docker kurmayı kullanmayı Give Docker a try with these two beginning tutorials:
+
+[Başlangıç için docker öğrenmek ve temel komutlar](/docker101-bolum1)
+
+[Docker kullanımı ve genel özellikleri](/docker101-bolum2)
+
+## Docker konusunda daha fazla bilgi edinebileceğiniz bir Ebook:
+Sanal sunucular ve container'lar arasındaki farkları ögrenebilirsiniz, bu kitabı kontrol edebilirsiniz(ingilizce): [Docker for the Virtualization Admin](https://goto.docker.com/docker-for-the-virtualization-admin.html)

@@ -1,0 +1,331 @@
+---
+layout: post
+title:  "1. Docker Başlangıç"
+author: "@senolcolak original- @jimcodified"
+date:   2020-11-15
+categories: [beginner,turkce,docker101]
+tags: [docker101,operations]
+---
+
+# Docker kullanımı ve genel özellikleri
+---
+
+Bu laboratuvarda popüler, ücretsiz, az kaynak tüketen bir konteyner çalıştıracak ve konteynerlerin nasıl çalıştığını anlayacaksınız. Docker Engine'in konteynerleri nasıl çalıştırdığı ve birbirinden ayırdığına ilişkin temel bilgileri keşfedeceksiniz.  
+  
+Konteyner ve docker çalıştırmak nedir, konteyner çalışırmak için gerekli temel konmutlar nelerdir diye biliyorsanız bu eğitimi atlayabilirsiniz.
+
+---
+> **Zorluk seviyesi**: Başlangıç 
+
+> **Zaman**: Yaklaşık 25 dakika
+
+> **İçerik**:
+> * [1. İlk Konteyneri çalıştırmak](#git1)
+> * [2. Konteyner ve İmaj(Kalıp) nedir?](#git2)
+> * [2.1 Docker Konteyneri çalıştırma](#git3)
+> * [2.2 Konteyner izolasyonu](#git4)
+> * [2.3 Terminoloji](#git5)
+
+---
+
+İpuçları:
+
+Ortamımız içersindeki kod parçacıkları, üç yoldan biriyle gösterilir:
+
+1. ```Bu``` gibi görünen kod, genellikle bir açıklamanın parçası olan örnek kod parçacıklarıdır.
+2. Aşağıdaki gibi görünen kod tıklanabilir ve çalışacağı terminal penceresine otomatik olarak yazılır.  
+```.term1
+uname -a
+```
+3. Aşağıdaki gibi pencerelerde görünen kod, sizin yazmanız gereken koddur. Genellikle size sağlayamayacağımız benzersiz bir kimlik veya girmeniz gereken başka bir bit olacaktır. <> İçinde görünen öğeler, talimatlara göre değiştirmeniz gereken parçalardır.
+````
+docker konteyner start <konteyner ID(kimliği)>
+````
+  
+## <a name="git1"></a> 1.0 İlk Konteyneri çalıştırmak  
+    
+Yazılım dünyasında her zaman "Hello World" uygulaması ile başlama geleneğine uyalım. Artık docker olan bir ortam nasıl çalışıyor bunu canlı olarak tecrübe edelim. İlk Docker konteynerinizi çalıştırmak için aşağıdaki kodu yazın veya tıklayın:
+```.term1
+docker container run hello-world
+```
+Peki burada ne oldu? 
+Ekranda çıkan *hello-world* yazısı bize ne olduğu hakkında bir ipucu veriyor aslında. Esasen, terminalinizde çalışan Docker komutu, hello-world adlı bir **image** bulmaya çalıştı. Bu yüzden komutu çalıştırdığımızda gelen (`Unable to find image...`) çıktısı, yerel disk üzerinde bu imajın olmadığını bize bildiriyor. Bu nedenle Docker engine, varsayılan **Docker registry** olan [Docker Hub](https://hub.docker.com) üzerinden "hello-world" isimli bir imaj aradı. İmajı orada buldu, indirdi ve ardından bir konteyner içersinde çalıştırdı. hello-world konteynerinin tek görevi terminalinizde gördüğünüz çıktıyı oluşturmak ve konteynerden çıkmaktır.  
+  
+
+![Hello world explainer](/images/ops-basics-hello-world.svg)
+
+Sanal makinelere aşina iseniz, sanal makine görüntülerinin merkezi bir deposu dışında, bunun sanal bir makineyi çalıştırmaya benzediğini düşünebilirsiniz. Buradaki basit örnek için bu yaklaşım doğrudur. Ancak bu alıştırmaları gerçekleştirirken Docker ve container'ların VM'lerden farklı olduğu önemli yollar görmeye başlayacaksınız. Şimdilik basit açıklama şudur:  
+
+* VM sanal bir *donanım* yaratır: fiziksel CPU'ları ve RAM'i bir ana bilgisayardan alır ve birkaç küçük sanal makineye böler ve paylaşır. Sanal makinenin içinde çalışan bir işletim sistemi ve uygulama vardır, ancak sanallaştırma yazılımının genellikle bununla ilgili bir bilgisi ve yönetiminde bir etkisi yoktur.
+* Konteyner ise sanal bir *uygulama* yaratır: Konteyner çalıştırıldığı işletim sistemi ve çalıştırılan uygulama ile direkt etkileşim içindedir. Çalıştırılan donanımın hiçbir önemi yoktur. Konteyner'lar çoğunlukla sanal sunucular içinde çalıştırılır. Sunucu üzerine önce bir hipervizör kurulur, sonrasında sanal sunucular içinde docker servisleri aktive edilir. Yani çoğu çözüm ``Donanım -> Sanal -> Konteyner`` şeklindedir.  
+    
+<center><img src="{{site.baseurl}}/images/Docker.png"></center>
+  
+## <a name="git2"></a> 1.1 Konteyner ve İmaj(kalıp) nedir?
+İmaj(image) olarak bahsi geçen kavramı anlamamız çok önemli. Burada imaj olarak bahsedilen şey aslında bir anlık görüntü veya heykel yapmak için kullandığınız bir **kalıptır**. İmaj kalıcı ve değişmeyen bir ortamdır, her seferinde aynı imaj ile aynı işlemi yaparsınız, imajın farklı işlemler yapabilmesi için imajı çalıştırırken bazı parametreler ile haberleşmeniz gerekir. Docker için image kelimesi geçtiğinde aklınıza herzaman heykel yapmak için kullanacağınız değiştirilemez bir **kalıp** düşünün lütfen.  
+  
+Labaratuarın geri kalan kısmında [Alpine Linux](http://www.alpinelinux.org/) bir konteyner kullanacağız. Alpine çok az kaynağa ihtiyaç duyan bir Linux dağıtımıdır, bu nedenle hızlıca indirilip çalıştırılabilir. Alpine Linux genellikle Docker imajlar için oldukça fazla tercih edilir.  Örnek vermek gerekirse ubuntu bir imaj 700MB iken aynı işi yapabileceğiniz Alpine imaj 30MB olabilir.(vpn-image)  
+  
+Başlamak için terminalimizde aşağıdaki komutları yazalım:
+
+```.term1
+docker image pull alpine
+```
+
+`pull` komutu alpine **image** imajını **Docker registry** üzerinden indirerek sisteminize kaydeder. Hiçbir registry tanımı yapmadığınızda varsayılan registry kaydı **[Docker Hub](https://hub.docker.com)** olacaktır. Docker registry değiştirebilirsiniz. Canlı bir ortamda çalışan imajlarınızı kendi registry ortamınızı kurarak kendi yönetmenizi öneririm.  
+  
+`docker image` komutunu kullanarak sisteminiz üzerindeki indirilmiş imajları listeleyebilirsiniz.  
+  
+```.term1
+docker image ls
+```
+
+
+```
+REPOSITORY                                  TAG                 IMAGE ID            CREATED             SIZE
+alpine                                      latest              d6e46aa2470d        3 weeks ago         5.57MB
+hello-world                                 latest              bf756fb1ae65        10 months ago       13.3kB
+```
+SIZE sütununa bakarsanız alpine imajı'nın(kabı'nın) sadece 5.57 MB olduğunu görebilirsiniz.
+
+### <a name="git3"></a> 2.1 Docker Konteyneri çalıştırma
+
+İmajı indirdiğimize göre artık çalıştırabiliriz. Çalışacak olan konteyner indirmiş olduğumuz imajı (kabı) kullanarak bir **container** oluşturacaktır. Oluşan Konteyner imajın birebir koypasıdır, fakat artık kaynak imajlan bağımsız olarak çalışmaktadır. Konteyner'i çalıştırabilmek için `docker container run` komutunu kullanmamız gerekir.  
+  
+```.term1
+docker container run alpine ls -l
+```
+
+```
+total 56
+drwxr-xr-x    2 root     root          4096 Oct 21 09:23 bin
+drwxr-xr-x    5 root     root           340 Nov 17 16:33 dev
+drwxr-xr-x    1 root     root          4096 Nov 17 16:33 etc
+drwxr-xr-x    2 root     root          4096 Oct 21 09:23 home
+drwxr-xr-x    7 root     root          4096 Oct 21 09:23 lib
+drwxr-xr-x    5 root     root          4096 Oct 21 09:23 media
+drwxr-xr-x    2 root     root          4096 Oct 21 09:23 mnt
+drwxr-xr-x    2 root     root          4096 Oct 21 09:23 opt
+dr-xr-xr-x  171 root     root             0 Nov 17 16:33 proc
+drwx------    2 root     root          4096 Oct 21 09:23 root
+drwxr-xr-x    2 root     root          4096 Oct 21 09:23 run
+drwxr-xr-x    2 root     root          4096 Oct 21 09:23 sbin
+drwxr-xr-x    2 root     root          4096 Oct 21 09:23 srv
+dr-xr-xr-x   11 root     root             0 Nov 17 16:33 sys
+drwxrwxrwt    2 root     root          4096 Oct 21 09:23 tmp
+drwxr-xr-x    7 root     root          4096 Oct 21 09:23 usr
+drwxr-xr-x   12 root     root          4096 Oct 21 09:23 var
+```
+
+`ls` çıktısı çok karmaşık ve heyecan verici bir çıktı değil, fakat bu çıktının oluşabilmesi için arka planda birsürü operasyon gerçekleşti..  `run` komutunu çağırdığınızda, Docker istemcisi imajı bulur (bu örnek için alpine imajını), konteyneri oluşturur ve sonrasında komutu bu konteyner içerinde çalıştırır. `docker container run alpine` dediğinizde, (`ls -l`) şeklinde bir komut verirsiniz, böylece Docker bu komutu konteyner içersinde çalıştırabilir. `ls` komutu işlemini bitirdiğinde konteyner de işini bitirmiş olur ve durur.
+
+![docker run explainer](/images/ops-basics-run-details.svg)
+
+Komutumuzu çalıştırdıktan sonra konteynerin durmuş olması oldukça önemlidir. Şimdi daha başka komutlar çalıştırıp, bu durumu incelemeye çalışalım:  
+    
+```.term1
+docker container run alpine echo "Bu cikti ALPINE icersinden gelmektedir"
+```
+Yukarıdaki komutu yazdığınızda aşağıdaki çıktıyı üretecektir:  
+```
+Bu cikti ALPINE icersinden gelmektedir
+```
+
+Çalışan komutun container içinde olduğunu anlamanın başka bir yolu da aşağıdaki gibi, işletim sistemi dosyasını görüntülemektir.
+Şuan çalıştığınız işletim sisteminin çıktısı  
+```.term1
+cat /etc/issue
+```
+Konteyner(alpine) içerisinden gelen dosya çıktısı
+```.term1
+docker container run alpine cat /etc/issue
+```
+
+Gördüğünüz gibi docker içersinde çalıştırdığımız komut, Kontainer içersindeki ortama göre çıktı üretmektedir. İlk örnekte gördüğünüz gibi Docker istemcisi, alpine konteynırı içinde ``echo`` komutunu bir işlem olarak çalıştırdı ve sonra konteynırı sonlandırdı. Fark ettiyseniz, tüm bunlar oldukça hızlı gerçekleşti ve konteynırımız tekrar kapandı. Birazdan açıklayacağımız gibi, `echo` komutu ayrı bir konteyner içersinde çalıştı.  
+  
+Docker ile yapılan işlemi bir sanallaştırma ortamında yaptığımızı düşünelim. Bir sanal makineyi (VM) başlattığınızı, bir komut çalıştırdığınızı ve ardından onu durdurduğunuzu hayal edin. Komutu çalıştırmadan önce sanal makineyi başlatmak bir veya iki dakika sürer. Bir sanal makinenin tam bir donanımı kaynaklarıyla hipervizör üzerinde oluşturması, bir işletim sistemini başlatması ve ardından uygulamanızı başlatması gerekir.
+  
+Docker konteynerleri uygulama katmanında çalışır, böylece sanal makinelerin gerektirdiği adımların çoğuna ihtiyaçları yoktur ve yalnızca uygulama için gerekli olanı betikleri çalıştırırlar. Artık konteynerlerin neden hızlı olduğunu daha iyi görebilirsiniz.  
+  
+Beraberce daha ilginç bir komut deneyelim.
+
+```.term1
+docker container run alpine /bin/sh
+```
+
+Çok ilginç, hiçbirşey gerçekleşmedi! gerçektenmi? aslında birşeyler gerçekleşti, fakat biz farkedemedik. Alpine konteynırının 3. ayrı bir örneğini başlattınız ve `/bin/sh` komutunu çalıştırıp çıktınız. `/bin/sh` e herhangi bir ek komut vermediğimiz için sadece kabuğu başlattı, kabuktan çıktı ve sonra konteyneri durdurdu.  
+  
+Eminim sizin *Beklediğiniz şey*  bazı komutları yazabileceğiniz etkileşimli bir shell ortamıydı. Docker, konteyneri etkileşimli bir terminalde çalıştırmak için bir parametre ister. bu parametresi verdiğinizde sizi interaktif bir terminal ekranı içersinde konteyner'a bağlar.
+
+
+Konteyner'i interaktif bir şekilde çalıştırmak için:  
+```.term1
+docker container run -it alpine /bin/sh
+```
+veya sadece `docker run -it alpine /bin/sh` diyebilirsiniz. ``container`` varsayılan olarak kabul görecektir.
+
+Şuanda bir konteyner bağlattınız ve onun içindesinde çalışıyorsunuz. ``ls -l``, ``uname -a`` ve ``cat /etc/issue`` gibi birkaç komutu deneyebilirsiniz. Alpine'ın küçük bir Linux işletim sistemi olduğunu ve bu nedenle birkaç komutun eksik olabileceğini unutmayın. ``Exit`` komutunu yazarak kabuk ve konteynerden çıkabilirsiniz.  
+  
+Yukarıdaki komutlarımızın her birini ayrı bir konteyner üzerinde çalıştırdığımızı söylemiştik. Bu konteynerleri `docker container ls` komutunu kullanarak görebiliriz. `docker container ls` veya `docker ps` komutu size şu anda aktif olarak çalışan tüm konteynerleri gösterir(peki çalışmış ve durmuş olanlara ne oldu?):  
+  
+```.term1
+docker container ls
+```
+```
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS
+ NAMES
+```
+
+Gördüğünüz gibi hiçbir aktif çalışan konteyner olmadığı için liste boş geliyor, peki çalışmış ve durmuş olanlar nerede: `docker container ls -a`  veya ``docker ps -a` komutunu deneyelim
+
+```.term1
+docker container ls -a
+```
+```
+CONTAINER ID        IMAGE                                             COMMAND                  CREATED             STATUS
+      PORTS                               NAMES
+d897c07b904b        alpine                                            "/bin/sh"                10 minutes ago      Exited (0) 10 minutes ago                                          priceless_clarke
+611a7c62444d        alpine                                            "cat /etc/issue"         22 minutes ago      Exited (0) 22 minutes ago                                          nervous_bell
+d8e7981abfcc        alpine                                            "ls -l"                  59 minutes ago      Exited (0) 59 minutes ago                                          quizzical_kirch
+b2bb2a758528        hello-world                                       "/hello"                 About an hour ago   Exited (0) About an hour ago                                       beautiful_satoshi
+```
+  
+Şuanda gördüğünüz liste, çalıştırdığınız tüm konteynerlerin bir listesidir. `STATUS` sütununun, bu konteynerlerin bir süre önce durduğunu gösterdiğine dikkat edin. Artık çalışmasalar da yaratılmış olan konteynerler duruyor, ve hepsi aynı imajdan yaratıldılar. Nesne tabanlı programlama ile uğraştıysanız konteynerleri Class lara benzetebilirsiniz. Yaratılan her obje Class'ın birebir kopyasıdır ama Class değildir.
+
+İşte şematik olarak gösterilen `docker container ls -a` veya `docker ps -a` komutunun aynı çıktısı (konteyner ID'lerinin ve isimlerinin farklı olacağını unutmayın lütfen):
+
+![Docker container instances](/images/ops-basics-instances.svg)
+
+Size tavsiyem `docker run` komutları ile biraz deneme ve test yapmanız, böylece komutun inceliklerini öğrenebilirsiniz. `run` hakkında daha fazla bilgi edinmek ve desteklediği tüm parametrelerin bir listesini görmek için `docker container run --help` komutunu kullanabilirsiniz. Docker komut satırı içerindeki help komutu oldukça faydalıdır ve size ilk kullanırken yol gösterici olacaktır. ilerledikçe, birkaç tane daha `docker container run` komutu varyantı göreceğiz. Size tavsiyem burada aklınıza gelen birkaç farklı kullanımı test etmeniz ve çalışan konteyner'in ortamını keşfetmeniz.  
+  
+### <a name="git4"></a> 2.2 Konteyner İzolasyonu
+  
+Yukarıdaki gördüğümüz örneklerde `docker container run` komutu yardımıyla konteyner çalıştırdık. `Docker container ls -a` komutu bize beklediğimizden daha fazla konteyner listeledi. Hepsi *alpine* imajından oluşuyorsa, neden bu kadar çok konteyner listelendi?
+
+Bu durum, Docker konteynerleri için kritik bir güvenlik konseptidir! 
+
+Her bir `docker container run` komutu aynı alpine ***imajını*** kullanıyor. Fakat her çalıştırma ayrı, izole ***bir konteynerdir*** ve liste içinde gördüğünüz gibi farklı bir Konteyner yaratmıştır. Her konteynerin ayrı bir dosya sistemi vardır ve farklı bir **namespace** içersinde çalışır. Bir konteynerin, aynı imajdan oluşsalar bile diğer konteynerlerle etkileşime girme yolu yoktur. İzolasyon hakkında daha fazla bilgi edinmek için başka bir alıştırma yapalım.  
+    
+```.term1
+docker container run -it alpine /bin/ash
+```
+`/bin/ash`, alpine imajı içinde bulunan başka bir kabuk türüdür. Konteyner başlatıldığında ve konteynerin komut istemindeyken aşağıdaki komutları yazın lütfen:  
+  
+```
+ echo "herkese selam olsun!" > merhaba.txt
+
+ ls
+```
+  
+İlk `echo` komutu, içinde "herkese selam olsun" sözcüklerinin bulunduğu "merhaba.txt" adlı bir dosya oluşturur. İkinci komut size dosyaların bir dizin listesini verir ve yeni oluşturduğunuz "merhaba.txt" dosyanızı gösterecektir. Şimdi bu konteynerden ayrılmak için `exit` yazıp çıkalım.
+  
+İzolasyonun nasıl çalıştığını göstermek için aşağıdakileri çalıştırın:  
+
+```.term1
+docker container run alpine ls
+```
+
+Konteynırın interaktif /bin/ash kabuğu içinde kullandığımız `ls` komutunun aynısı, ancak bu sefer "merhaba.txt" dosyanızın olmadığını görmüşsünüzdür? Bu tecrit demektir!  
+  
+Komutunuz aynı *imaja* dayalı olsa bile yeni ve ayrı bir *konteyner*'da çalıştı. Docker Engine onları ayrı tuttuğundan ve bu iki örneğin etkileşime girmesini sağlayacak herhangi bir ekstra parametre ayarlamadığımız için 1. ve 2. örnekle etkileşim kurmanın bir yolu yoktur.
+
+Docker kullanıcıları bu özellikten yalnızca güvenlik için değil, aynı zamanda uygulama üzerinde yapacakları değişiklikleri test etmek için de kullanırlar. İzolasyon, kullanıcıların bir uygulamanın veya hizmetin ayrı, izole edilmiş test kopyalarını hızlı bir şekilde oluşturmasına ve birbirlerini engellemeden yan yana çalıştırmalarına olanak tanır.  
+Docker veya container orkestrasyonu yaparken bu tip özellikler güncellemeler ve farklı sandbox ortamları yaratmak için kullanılır. Burada bahsedilen konu, sanallaştırma izolasyonu değildir. Çalıştırılan uygulamaların(Konteyner) birbirinden izole olmalarıdır. 
+  
+
+
+Peki sorumuza geri dönelim, `merhaba.txt` dosyamızın bulunduğu konteyner'a nasıl geri dönebiliriz?  
+  
+Bir kez daha çalıştırarak:  
+  
+
+```.term1
+docker container ls -a
+```
+  
+veya `docker ps -a` komutunu yazarak aşağıdakine benzer bir çıktı alırsınız:  
+  
+```
+CONTAINER ID        IMAGE                                             COMMAND                  CREATED             STATUS
+  PORTS                               NAMES
+3a64f8a778e0        ubuntu:groovy                                     "/bin/bash"              3 hours ago         Exited (0) 2 hours ago                                         angry_lalande
+d897c07b904b        alpine                                            "/bin/ash"                3 hours ago         Exited (0) 3 hours ago                                         priceless_clarke
+611a7c62444d        alpine                                            "cat /etc/issue"         3 hours ago         Exited (0) 3 hours ago                                         nervous_bell
+d8e7981abfcc        alpine                                            "ls -l"                  4 hours ago         Exited (0) 4 hours ago                                         quizzical_kirch
+b2bb2a758528        hello-world                                       "/hello"                 4 hours ago         Exited (0) 4 hours ago                                         beautiful_satoshi
+```
+Grafik olarak göstermek istersek Docker Engine ile işlem şu şekilde gerçekleşir:  
+  
+![Docker container isolation](/images/ops-basics-isolation.svg)
+  
+`merhaba.txt` dosyasını oluşturduğumuz konteyner, *COMMAND* sütununda listelendiğini görebileceğimiz `/bin/ash` kabuğunu kullandığımız yerdi. İlk sütundaki *CONTAINER ID* numarası, söz konusu konteyner için unique bir tanımdır. Konteyner kimliğinin üzerindeki tanımlayıcı değer `d897c07b904b` dir. Docker'a bu konteyner tekrar çalışsın diye aşağıdaki komutu yazmamız gerekir:  
+  
+```
+docker container start <container ID>
+```
+
+- **İpucu:** Tam kondeyner ID'sini kullanmak yerine, ilk birkaç harfini kullanabilirsiniz. Konteyner ID'leri benzersiz şekilde oldukları sürece yalnızca ilk birkaç karakteri kullanabilirsiniz. Dolayısıyla, yukarıdaki örnekteki konteyner örneğini tanımlamak için basitçe "d897" kullanabiliriz, çünkü bu listedeki diğer konteynerler bu karakterlerle başlamıyor.  
+  
+Çalışan konteynerleri listelemek için `docker container ls` komutunu tekrar kullanabiliriz  
+  
+
+```
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS                      PORTS               NAMES
+d897c07b904b        alpine              "/bin/ash"                2 minutes ago       Up 14 seconds                        priceless_clarke
+```
+
+Bu sefer konteyner örneğimizin hala çalıştığını görebilirsiniz. Bu durum /bin/ash kabuğunu kullandığımız için , `ash `bir komut beklediği için bu şekilde çalışır. Oysa `/bin/sh` çalışıp çıktıyı geri döner ve programı sonlandırır.  
+  
+Konteyner içersinde bir komutu çalıştırmak için `Exec` komutunu kullanabiliriz:  
+  
+```
+docker container exec <container ID> ls
+```
+  
+Şimdi aldığımız çıktı içersinde "merhaba.txt" dosyamızı görebiliyoruz.
+  
+  
+![Docker container exec command](/images/ops-basics-exec.svg)
+  
+Şimdi, konteynerlar ile ilgili bazı önemli kavramları görmeye başlıyoruz. Bir sonraki alıştırmada, kendi Docker imajlarımızı nasıl oluşturabileceğinizi ve imajları standartlaştırmak için bir Dockerfile'ı nasıl kullanacağınızı göreceğiz. Böylece basit, otomatikleştirilmiş bir şekilde daha büyük, daha karmaşık imajlar oluşturmaya başlayacağız.  
+  
+  
+### <a name="git5"></a> 2.3 Terminoloji  
+
+Son bölümde, eğitim içersinde kafanızı karıştırabilecek birçok Docker'a özgü terim gördünüz. Bu yüzden daha fazla ilerlemeden önce, Docker ekosisteminde sıkça kullanılan bazı terminolojilere açıklık getirelim.
+
+- *Image* - İmajlar veya kalıp'lar, konteyner oluşturmak için kullanılan uygulamamızın dosya sistemi ve yapılandırmasını içerir. Docker imajları hakkında daha fazla bilgi edinmek için, `docker image inspect alpine` komutunu çalıştırabilirsiniz. Yukarıdaki örnek içersinde **alpine** imajını indirmek için `docker image pull` komutunu kullandık. `Docker container run hello-world` komutunu çalıştırdığımızda, **hello-world** görüntüsünü indirmek için arka planda bir `docker image pull` işlemi otomatik olarak gerçekleşir.
+
+- *Container* - Konteyner, Docker imajlarının çalışan halleridir. Konteynerlerin çalışması aynı zamanda uygulamaları çalıştırır. Konteyner içersinde uygulama ve tüm bağımlılıkları bulunur. Linux çekirdeğini diğer konteynerlar ile paylaşır ve ana işletim sistemindeki kullanıcı alanında izole bir işlem olarak çalışır. İndirdiğimiz alpine imajını kullanarak çalıştırdığımız `docker run` kullanarak bir konteyner oluşturulur. `docker container ls` komutu kullanılarak çalışan konteynerlerin bir listesi görebiliriz.
+- *Docker daemon* - Docker koneynerlarını oluşturmayı, çalıştırmayı ve dağıtmayı yöneten sunucu üzerinde çalışan çalışan arka plan servisi.
+- *Docker client* - Kullanıcının Docker daemon ile etkileşime girmesine izin veren komut satırı aracı.
+- *Docker Hub* -  Docker görüntülerinin bulunduğu bir [kayıt defteri](https://hub.docker.com/) 'dir. Kayıt defterini(**registry**) tüm kullanılabilir Docker görüntülerinin bir dizini olarak düşünebilirsiniz. İnternet üzerinden bir hesap açıp imajları incelemenizi tavsiye ederim, piyasada bulunan neredeyse her yazılım için bir docker imajı vardır.
+
+-----
+
+<!-- Quiz bölümünü diğer quizlerde aynen kopyalayıp değiştirmemiz gerek.-->
+
+
+-----
+## Konu tekrarı, kısa sınav
+>seçeneklerden doğru olanları seçtikten sonra **Gönder** butonuna basınız. Sonuçları <span style="color:green">**doğru**</span> ve <span style="color:red">**yanlış**</span> görebilirsiniz.
+
+
+{:.quiz}
+Docker imajları varsayılan olarak nereden indirilirler?
+- ( ) Docker Trusted Registry
+- (x) Docker Hub
+- ( ) Varsayılan yoktur
+- ( ) Docker Store
+
+{:.quiz}
+Docker imajlarını nasıl listelersiniz?
+- (x) docker image ls
+- ( ) docker run
+- ( ) docker container ls
+
+{:.quiz}
+Aşağıdakilerden hangisi ubuntu 20.10(groovy) bir konteyner içerisinde komut satırına bağlanır?
+- ( ) docker run ubuntu:groovy /bin/bash
+- (x) docker run -it ubuntu:groovy /bin/bash
+- ( ) docker pull ubuntu:groovy -c /bin/bash 

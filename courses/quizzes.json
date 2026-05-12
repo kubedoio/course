@@ -1,0 +1,1755 @@
+{
+  "schema_version": 1,
+  "generated_by": "scripts/build-course-data.py",
+  "quiz_count": 70,
+  "quizzes": [
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-01",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 383,
+      "type": "single-choice",
+      "prompt": "GNU Kurucusu ve GlibC yaratıcısı kimdir?",
+      "choices": [
+        {
+          "text": "Linus Trovalds",
+          "correct": false
+        },
+        {
+          "text": "Bill Gates",
+          "correct": false
+        },
+        {
+          "text": "Richard Stallman",
+          "correct": true
+        },
+        {
+          "text": "Paul Allen",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-02",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 391,
+      "type": "single-choice",
+      "prompt": "Linux işletim sisteminin çekirdeği hangi parçalardan oluşur?",
+      "choices": [
+        {
+          "text": "Scheduler, Drivers, Security, Networking",
+          "correct": true
+        },
+        {
+          "text": "Libraries, Daemons, Shells, Tools",
+          "correct": false
+        },
+        {
+          "text": "Database, Web Server, Network Monitor, Games",
+          "correct": false
+        },
+        {
+          "text": "CLI, Shared Libraries, Linux Kernel",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-03",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 399,
+      "type": "single-choice",
+      "prompt": "Linux işletim sisteminin Userspace (Kullanıcı Ortamı) hangi parçalardan oluşur?",
+      "choices": [
+        {
+          "text": "Scheduler, Drivers, Security, Networking",
+          "correct": false
+        },
+        {
+          "text": "Libraries, Daemons, Shells, Tools",
+          "correct": true
+        },
+        {
+          "text": "Database, Web Server, Network Monitor, Games",
+          "correct": false
+        },
+        {
+          "text": "CLI, Shared Libraries, Linux Kernel",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-04",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 407,
+      "type": "single-choice",
+      "prompt": "User Space ve Kernel Space hangi prensip uyarınca ayrı olmak zorundadır?",
+      "choices": [
+        {
+          "text": "izolasyon",
+          "correct": true
+        },
+        {
+          "text": "Güvenlik",
+          "correct": false
+        },
+        {
+          "text": "Performans",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-05",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 413,
+      "type": "single-choice",
+      "prompt": "Aşağıdaki sistemlerden hangisini linux üzerinde kuramazssınız?",
+      "choices": [
+        {
+          "text": "E-posta sunucusu",
+          "correct": false
+        },
+        {
+          "text": "Hipervizör sunucusu",
+          "correct": false
+        },
+        {
+          "text": "Oyun Sunucusu",
+          "correct": false
+        },
+        {
+          "text": "Dosya Paylaşımı",
+          "correct": false
+        },
+        {
+          "text": "Exchange sunucusu",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-06",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 422,
+      "type": "single-choice",
+      "prompt": "Aşağıdaki sistemlerden hangisini linux üzerinde kuramazssınız?",
+      "choices": [
+        {
+          "text": "E-posta sunucusu",
+          "correct": false
+        },
+        {
+          "text": "Hipervizör sunucusu",
+          "correct": false
+        },
+        {
+          "text": "Oyun Sunucusu",
+          "correct": false
+        },
+        {
+          "text": "Dosya Paylaşımı",
+          "correct": false
+        },
+        {
+          "text": "Exchange sunucusu",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-07",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 431,
+      "type": "single-choice",
+      "prompt": "Şirketiniz de bir Linux sunucu kurmanız ve hizmet sağlamasını isterseniz hangi Linux dağıtımını tercih etmeliyiz?",
+      "choices": [
+        {
+          "text": "Pardus",
+          "correct": false
+        },
+        {
+          "text": "Kali Linux",
+          "correct": false
+        },
+        {
+          "text": "Debian",
+          "correct": true
+        },
+        {
+          "text": "OpenSuse",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-08",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 439,
+      "type": "single-choice",
+      "prompt": "Şirketiniz de bir Dosya paylaşımı sunucusu kurmanız gerekiyor, hangi linux dağıtımı en doğru tercih olacaktır?",
+      "choices": [
+        {
+          "text": "Pardus",
+          "correct": false
+        },
+        {
+          "text": "SuSE Sles",
+          "correct": false
+        },
+        {
+          "text": "Mandrake Linux",
+          "correct": false
+        },
+        {
+          "text": "Centos",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-09",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 447,
+      "type": "single-choice",
+      "prompt": "Şirketinizde Masaüstü bilgisayarlara Windows yerine Linux işletim sistemi kuracaksınız, Yerelleştirme si en iyi olacak hangi dağıtımı tercih edersiniz?",
+      "choices": [
+        {
+          "text": "Pardus",
+          "correct": true
+        },
+        {
+          "text": "Centos",
+          "correct": false
+        },
+        {
+          "text": "Fedora",
+          "correct": false
+        },
+        {
+          "text": "OpenSuse",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-10",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 455,
+      "type": "single-choice",
+      "prompt": "Aşağıdaki hangi dağıtıma SAP kuramazssınız?",
+      "choices": [
+        {
+          "text": "Debian",
+          "correct": true
+        },
+        {
+          "text": "Redhat",
+          "correct": false
+        },
+        {
+          "text": "SuSE Sles",
+          "correct": false
+        },
+        {
+          "text": "Oracle Linux",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum1-11",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum1.markdown",
+      "source_line": 463,
+      "type": "single-choice",
+      "prompt": "Docker Sunucusu için ne kadar Swap alanı ayırmanız gerekir?",
+      "choices": [
+        {
+          "text": "1 GB",
+          "correct": false
+        },
+        {
+          "text": "4 GB",
+          "correct": false
+        },
+        {
+          "text": "Hafızanın(RAM) iki katı",
+          "correct": false
+        },
+        {
+          "text": "0",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum2-long-01",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum2-long.markdown",
+      "source_line": 2060,
+      "type": "single-choice",
+      "prompt": "Dosyaları tarihe göre ayrıntıları ile birlikte nasıl sıralayabiliriz?",
+      "choices": [
+        {
+          "text": "ls -la",
+          "correct": false
+        },
+        {
+          "text": "ls -latr",
+          "correct": false
+        },
+        {
+          "text": "ls -lt",
+          "correct": true
+        },
+        {
+          "text": "ls -lSr",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum2-long-02",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum2-long.markdown",
+      "source_line": 2069,
+      "type": "single-choice",
+      "prompt": "Hangi komut dosya içeriklerini gösterir?",
+      "choices": [
+        {
+          "text": "cat dosya.txt",
+          "correct": true
+        },
+        {
+          "text": "touch dosya.txt",
+          "correct": false
+        },
+        {
+          "text": "file dosya.txt",
+          "correct": false
+        },
+        {
+          "text": "pwd dosya.txt",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum2-long-03",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum2-long.markdown",
+      "source_line": 2077,
+      "type": "single-choice",
+      "prompt": "Bulunduğunuz dizini ağaç şeklinde 2 kademe derinlikte nasıl gösterebiliriz?",
+      "choices": [
+        {
+          "text": "tree /usr -L 2",
+          "correct": false
+        },
+        {
+          "text": "tree . -L 2",
+          "correct": true
+        },
+        {
+          "text": "tree . -2",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum2-long-04",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum2-long.markdown",
+      "source_line": 2084,
+      "type": "single-choice",
+      "prompt": "Bilgisayarınızdaki tüm mp3 dosyalarını bulun ve 10M büyük olanları silin?",
+      "choices": [
+        {
+          "text": "find . -name *.mp3 -size +10M -exec rm",
+          "correct": false
+        },
+        {
+          "text": "find / -name *.mp3 -size +10M -exec rm {} \\;",
+          "correct": true
+        },
+        {
+          "text": "find / -name *.mp3 -size +10M | rm",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum2-long-05",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum2-long.markdown",
+      "source_line": 2091,
+      "type": "single-choice",
+      "prompt": "test.sh akf senol gurubunu akf yaparak dosya erişimini sadece sahibi için çalıştırma izni verebilirmisiniz ?",
+      "choices": [
+        {
+          "text": "chown akf:akf test.sh ve chmod 755 test.sh",
+          "correct": false
+        },
+        {
+          "text": "chown akf test.sh ve chgrp akf test.sh ve chmod 700 test.sh",
+          "correct": true
+        },
+        {
+          "text": "chmod akf.akf test.sh ve chmod 007 test.sh",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum2-4-01",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum2-4.markdown",
+      "source_line": 494,
+      "type": "single-choice",
+      "prompt": "Dosyaları tarihe göre ayrıntıları ile birlikte nasıl sıralayabiliriz?",
+      "choices": [
+        {
+          "text": "ls -la",
+          "correct": false
+        },
+        {
+          "text": "ls -latr",
+          "correct": false
+        },
+        {
+          "text": "ls -lt",
+          "correct": true
+        },
+        {
+          "text": "ls -lSr",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum2-4-02",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum2-4.markdown",
+      "source_line": 503,
+      "type": "single-choice",
+      "prompt": "Hangi komut dosya içeriklerini gösterir?",
+      "choices": [
+        {
+          "text": "cat dosya.txt",
+          "correct": true
+        },
+        {
+          "text": "touch dosya.txt",
+          "correct": false
+        },
+        {
+          "text": "file dosya.txt",
+          "correct": false
+        },
+        {
+          "text": "pwd dosya.txt",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum2-4-03",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum2-4.markdown",
+      "source_line": 511,
+      "type": "single-choice",
+      "prompt": "Bulunduğunuz dizini ağaç şeklinde 2 kademe derinlikte nasıl gösterebiliriz?",
+      "choices": [
+        {
+          "text": "tree /usr -L 2",
+          "correct": false
+        },
+        {
+          "text": "tree . -L 2",
+          "correct": true
+        },
+        {
+          "text": "tree . -2",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum2-4-04",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum2-4.markdown",
+      "source_line": 518,
+      "type": "single-choice",
+      "prompt": "Bilgisayarınızdaki tüm mp3 dosyalarını bulun ve 10M büyük olanları silin?",
+      "choices": [
+        {
+          "text": "find . -name *.mp3 -size +10M -exec rm",
+          "correct": false
+        },
+        {
+          "text": "find / -name *.mp3 -size +10M -exec rm {} \\;",
+          "correct": true
+        },
+        {
+          "text": "find / -name *.mp3 -size +10M | rm",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum2-4-05",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum2-4.markdown",
+      "source_line": 525,
+      "type": "single-choice",
+      "prompt": "test.sh akf senol gurubunu akf yaparak dosya erişimini sadece sahibi için çalıştırma izni verebilirmisiniz ?",
+      "choices": [
+        {
+          "text": "chown akf:akf test.sh ve chmod 755 test.sh",
+          "correct": false
+        },
+        {
+          "text": "chown akf test.sh ve chgrp akf test.sh ve chmod 700 test.sh",
+          "correct": true
+        },
+        {
+          "text": "chmod akf.akf test.sh ve chmod 007 test.sh",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum3-long-01",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum3-long.markdown",
+      "source_line": 1393,
+      "type": "single-choice",
+      "prompt": "Bağlandığınız sunucudaki RAM mikatrını ve dolu slotların bilgisini nasıl öğrenebilirsiniz?",
+      "choices": [
+        {
+          "text": "ls -la",
+          "correct": false
+        },
+        {
+          "text": "cat /proc/meminfo",
+          "correct": false
+        },
+        {
+          "text": "lshw -c memory",
+          "correct": true
+        },
+        {
+          "text": "lshw -businfo",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum3-long-02",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum3-long.markdown",
+      "source_line": 1401,
+      "type": "single-choice",
+      "prompt": "Diskinizi tamamen yedeklemek istiyorsunuz, aşağıdaki komutlardan hangisi size bunu sağlar?",
+      "choices": [
+        {
+          "text": "dd",
+          "correct": true
+        },
+        {
+          "text": "gzip",
+          "correct": false
+        },
+        {
+          "text": "cp",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum3-long-03",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum3-long.markdown",
+      "source_line": 1409,
+      "type": "single-choice",
+      "prompt": "Hangi komut disk bölümlerinizi(partition) listeler? (Başlangıç ve bitiş bilgileri ile)",
+      "choices": [
+        {
+          "text": "lsblk",
+          "correct": false
+        },
+        {
+          "text": "fdisk",
+          "correct": true
+        },
+        {
+          "text": "diskpart",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum3-long-04",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum3-long.markdown",
+      "source_line": 1416,
+      "type": "single-choice",
+      "prompt": "MBR bir disk için aşağıdaki seçeneklerden hangisi yanlıştır?",
+      "choices": [
+        {
+          "text": "Maksimum 4 birincil bölüm oluşturulabilir",
+          "correct": false
+        },
+        {
+          "text": "Diskin ilk 512 Byte'ı içine yazılır",
+          "correct": false
+        },
+        {
+          "text": "Disklerde 18TB disk alanına izin verir",
+          "correct": true
+        },
+        {
+          "text": "Çoklu açılışa izin verir(Multiboot)",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum3-3-01",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum3-3.markdown",
+      "source_line": 372,
+      "type": "single-choice",
+      "prompt": "Bağlandığınız sunucudaki RAM mikatrını ve dolu slotların bilgisini nasıl öğrenebilirsiniz?",
+      "choices": [
+        {
+          "text": "ls -la",
+          "correct": false
+        },
+        {
+          "text": "cat /proc/meminfo",
+          "correct": false
+        },
+        {
+          "text": "lshw -c memory",
+          "correct": true
+        },
+        {
+          "text": "lshw -businfo",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum3-3-02",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum3-3.markdown",
+      "source_line": 380,
+      "type": "single-choice",
+      "prompt": "Diskinizi tamamen yedeklemek istiyorsunuz, aşağıdaki komutlardan hangisi size bunu sağlar?",
+      "choices": [
+        {
+          "text": "dd",
+          "correct": true
+        },
+        {
+          "text": "gzip",
+          "correct": false
+        },
+        {
+          "text": "cp",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum3-3-03",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum3-3.markdown",
+      "source_line": 388,
+      "type": "single-choice",
+      "prompt": "Hangi komut disk bölümlerinizi(partition) listeler? (Başlangıç ve bitiş bilgileri ile)",
+      "choices": [
+        {
+          "text": "lsblk",
+          "correct": false
+        },
+        {
+          "text": "fdisk",
+          "correct": true
+        },
+        {
+          "text": "diskpart",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum3-3-04",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum3-3.markdown",
+      "source_line": 395,
+      "type": "single-choice",
+      "prompt": "MBR bir disk için aşağıdaki seçeneklerden hangisi yanlıştır?",
+      "choices": [
+        {
+          "text": "Maksimum 4 birincil bölüm oluşturulabilir",
+          "correct": false
+        },
+        {
+          "text": "Diskin ilk 512 Byte'ı içine yazılır",
+          "correct": false
+        },
+        {
+          "text": "Disklerde 18TB disk alanına izin verir",
+          "correct": true
+        },
+        {
+          "text": "Çoklu açılışa izin verir(Multiboot)",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum4-long-01",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum4-long.markdown",
+      "source_line": 1265,
+      "type": "single-choice",
+      "prompt": "Linux sisteminizi yeni kurdunuz ve kullanıcılar yaratmak istiyorsunuz?",
+      "choices": [
+        {
+          "text": "useradd --home /srv/data01 -uid 1200 ISMIM",
+          "correct": false
+        },
+        {
+          "text": "useradd -m -d /srv/data01 -u 1200 ISMIM",
+          "correct": true
+        },
+        {
+          "text": "useradd -d /srv/data01 -u 1200 ISMIM",
+          "correct": false
+        },
+        {
+          "text": "useradd -h /srv/data01 -uid 1200 ISMIM",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum4-long-02",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum4-long.markdown",
+      "source_line": 1274,
+      "type": "single-choice",
+      "prompt": "senol isimli kullanıcının sisteme erişimini kısıtlayın",
+      "choices": [
+        {
+          "text": "usermod --disable senol",
+          "correct": false
+        },
+        {
+          "text": "userdel senol",
+          "correct": false
+        },
+        {
+          "text": "userdel --remove senol",
+          "correct": false
+        },
+        {
+          "text": "usermod --lock senol",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum4-long-03",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum4-long.markdown",
+      "source_line": 1282,
+      "type": "single-choice",
+      "prompt": "/tmp/deneme1.txt dosyasını açın ve içideki tüm 'benisil' yazılı yerleri 'beniekle' ile değiştirin",
+      "choices": [
+        {
+          "text": "vim /tmp/deneme1.txt -c %s/benisil/beniekle/g -c wq",
+          "correct": true
+        },
+        {
+          "text": "vim /tmp/deneme1.txt sonra komut modunda :/benisil/beniekle/g",
+          "correct": false
+        },
+        {
+          "text": "vim /tmp/deneme1.txt |grep benisil|paste beniekle",
+          "correct": false
+        },
+        {
+          "text": "cat /tmp/deneme1.txt|grep benisil|cat beniekle",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum4-long-04",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum4-long.markdown",
+      "source_line": 1290,
+      "type": "single-choice",
+      "prompt": "/etc/nsswitch dosyası içinde \"hosts: files dns\" sıralamasını \"hosts: dns files\" yaparsak ne olur?",
+      "choices": [
+        {
+          "text": "Resolv.conf dosyası içindeki bilgilerin sıralaması değişir",
+          "correct": false
+        },
+        {
+          "text": "Dosyalarda kaydedilmiş DNS kayıtları silinir",
+          "correct": false
+        },
+        {
+          "text": "DNS sorgulamaları önce resolv.conf içindeki DNS sunucularına, sonra /etc/hosts yapılır",
+          "correct": true
+        },
+        {
+          "text": "\"ip --> domain\" isimlendirmesi \"domain --> ip\" şeklinde değişir",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum4-2-01",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum4-2.markdown",
+      "source_line": 608,
+      "type": "single-choice",
+      "prompt": "Linux sisteminizi yeni kurdunuz ve kullanıcılar yaratmak istiyorsunuz?",
+      "choices": [
+        {
+          "text": "useradd --home /srv/data01 -uid 1200 ISMIM",
+          "correct": false
+        },
+        {
+          "text": "useradd -m -d /srv/data01 -u 1200 ISMIM",
+          "correct": true
+        },
+        {
+          "text": "useradd -d /srv/data01 -u 1200 ISMIM",
+          "correct": false
+        },
+        {
+          "text": "useradd -h /srv/data01 -uid 1200 ISMIM",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum4-2-02",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum4-2.markdown",
+      "source_line": 617,
+      "type": "single-choice",
+      "prompt": "senol isimli kullanıcının sisteme erişimini kısıtlayın",
+      "choices": [
+        {
+          "text": "usermod --disable senol",
+          "correct": false
+        },
+        {
+          "text": "userdel senol",
+          "correct": false
+        },
+        {
+          "text": "userdel --remove senol",
+          "correct": false
+        },
+        {
+          "text": "usermod --lock senol",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum4-2-03",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum4-2.markdown",
+      "source_line": 625,
+      "type": "single-choice",
+      "prompt": "/tmp/deneme1.txt dosyasını açın ve içideki tüm 'benisil' yazılı yerleri 'beniekle' ile değiştirin",
+      "choices": [
+        {
+          "text": "vim /tmp/deneme1.txt -c %s/benisil/beniekle/g -c wq",
+          "correct": true
+        },
+        {
+          "text": "vim /tmp/deneme1.txt sonra komut modunda :/benisil/beniekle/g",
+          "correct": false
+        },
+        {
+          "text": "vim /tmp/deneme1.txt |grep benisil|paste beniekle",
+          "correct": false
+        },
+        {
+          "text": "cat /tmp/deneme1.txt|grep benisil|cat beniekle",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum4-2-04",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum4-2.markdown",
+      "source_line": 633,
+      "type": "single-choice",
+      "prompt": "/etc/nsswitch dosyası içinde \"hosts: files dns\" sıralamasını \"hosts: dns files\" yaparsak ne olur?",
+      "choices": [
+        {
+          "text": "Resolv.conf dosyası içindeki bilgilerin sıralaması değişir",
+          "correct": false
+        },
+        {
+          "text": "Dosyalarda kaydedilmiş DNS kayıtları silinir",
+          "correct": false
+        },
+        {
+          "text": "DNS sorgulamaları önce resolv.conf içindeki DNS sunucularına, sonra /etc/hosts yapılır",
+          "correct": true
+        },
+        {
+          "text": "\"ip --> domain\" isimlendirmesi \"domain --> ip\" şeklinde değişir",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum5-01",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum5.markdown",
+      "source_line": 49,
+      "type": "single-choice",
+      "prompt": "Dosyaları tarihe göre ayrıntıları ile birlikte nasıl sıralayabiliriz?",
+      "choices": [
+        {
+          "text": "ls -la",
+          "correct": false
+        },
+        {
+          "text": "ls -latr",
+          "correct": false
+        },
+        {
+          "text": "ls -lt",
+          "correct": true
+        },
+        {
+          "text": "ls -lSr",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum5-02",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum5.markdown",
+      "source_line": 58,
+      "type": "single-choice",
+      "prompt": "Hangi komut dosya içeriklerini gösterir?",
+      "choices": [
+        {
+          "text": "cat dosya.txt",
+          "correct": true
+        },
+        {
+          "text": "touch dosya.txt",
+          "correct": false
+        },
+        {
+          "text": "file dosya.txt",
+          "correct": false
+        },
+        {
+          "text": "pwd dosya.txt",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "linux-2020-01-01-linux101-bolum5-03",
+      "course_id": "linux",
+      "source": "content/2020-01-01-linux101-bolum5.markdown",
+      "source_line": 66,
+      "type": "single-choice",
+      "prompt": "Hangi komut bulunduğunuz dizini gösterir?",
+      "choices": [
+        {
+          "text": "pwd",
+          "correct": true
+        },
+        {
+          "text": "home",
+          "correct": false
+        },
+        {
+          "text": "touch",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "git-2024-03-29-git101en-01",
+      "course_id": "git",
+      "source": "content/2024-03-29-git101en.markdown",
+      "source_line": 469,
+      "type": "single-choice",
+      "prompt": "(It is not mentioned on the course) Who is the creator of git?",
+      "choices": [
+        {
+          "text": "Elon Musk",
+          "correct": false
+        },
+        {
+          "text": "Steve Jobs",
+          "correct": false
+        },
+        {
+          "text": "Linus Trovalds",
+          "correct": true
+        },
+        {
+          "text": "Bill Gates",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "git-2024-03-29-git101en-02",
+      "course_id": "git",
+      "source": "content/2024-03-29-git101en.markdown",
+      "source_line": 476,
+      "type": "single-choice",
+      "prompt": "What does \"$ git add .\" will add to the changes?",
+      "choices": [
+        {
+          "text": "add the hidden files",
+          "correct": false
+        },
+        {
+          "text": "adds only the changed files",
+          "correct": true
+        },
+        {
+          "text": "adds the current directory",
+          "correct": false
+        },
+        {
+          "text": "adds / directory and all files",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "git-2024-03-29-git101en-03",
+      "course_id": "git",
+      "source": "content/2024-03-29-git101en.markdown",
+      "source_line": 484,
+      "type": "single-choice",
+      "prompt": "which command is used to create a new git repo with the name \"my-git-repo\"?",
+      "choices": [
+        {
+          "text": "mkdir my-git-repo",
+          "correct": false
+        },
+        {
+          "text": "git create my-git-repo",
+          "correct": false
+        },
+        {
+          "text": "git my-git-repo",
+          "correct": false
+        },
+        {
+          "text": "git init",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "git-2024-03-29-git101en-04",
+      "course_id": "git",
+      "source": "content/2024-03-29-git101en.markdown",
+      "source_line": 492,
+      "type": "single-choice",
+      "prompt": "you need to exclude some files like \".venv\" or \".env-database\" to be excluded from your changes. what is the command ?",
+      "choices": [
+        {
+          "text": "git dont-add \".venv,.env-database\"",
+          "correct": false
+        },
+        {
+          "text": "git add --exclude .venv --exclude .env-database",
+          "correct": false
+        },
+        {
+          "text": "create a file .gitignore and add the exluding files inside",
+          "correct": true
+        },
+        {
+          "text": "git commit -x \".venv,.env-database\"",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum1-01",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum1.markdown",
+      "source_line": 314,
+      "type": "single-choice",
+      "prompt": "Docker imajları varsayılan olarak nereden indirilirler?",
+      "choices": [
+        {
+          "text": "Docker Trusted Registry",
+          "correct": false
+        },
+        {
+          "text": "Docker Hub",
+          "correct": true
+        },
+        {
+          "text": "Varsayılan yoktur",
+          "correct": false
+        },
+        {
+          "text": "Docker Store",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum1-02",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum1.markdown",
+      "source_line": 321,
+      "type": "single-choice",
+      "prompt": "Docker imajlarını nasıl listelersiniz?",
+      "choices": [
+        {
+          "text": "docker image ls",
+          "correct": true
+        },
+        {
+          "text": "docker run",
+          "correct": false
+        },
+        {
+          "text": "docker container ls",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum1-03",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum1.markdown",
+      "source_line": 327,
+      "type": "single-choice",
+      "prompt": "Aşağıdakilerden hangisi ubuntu 20.10(groovy) bir konteyner içerisinde komut satırına bağlanır?",
+      "choices": [
+        {
+          "text": "docker run ubuntu:groovy /bin/bash",
+          "correct": false
+        },
+        {
+          "text": "docker run -it ubuntu:groovy /bin/bash",
+          "correct": true
+        },
+        {
+          "text": "docker pull ubuntu:groovy -c /bin/bash",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum2-01",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum2.markdown",
+      "source_line": 368,
+      "type": "single-choice",
+      "prompt": "Docker imajları varsayılan olarak nereden indirilirler?",
+      "choices": [
+        {
+          "text": "Docker Trusted Registry",
+          "correct": false
+        },
+        {
+          "text": "Docker Hub",
+          "correct": true
+        },
+        {
+          "text": "Varsayılan yoktur",
+          "correct": false
+        },
+        {
+          "text": "Docker Store",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum2-02",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum2.markdown",
+      "source_line": 375,
+      "type": "single-choice",
+      "prompt": "Docker imajlarını nasıl listelersiniz?",
+      "choices": [
+        {
+          "text": "docker image ls",
+          "correct": true
+        },
+        {
+          "text": "docker run",
+          "correct": false
+        },
+        {
+          "text": "docker container ls",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum2-03",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum2.markdown",
+      "source_line": 381,
+      "type": "single-choice",
+      "prompt": "Aşağıdakilerden hangisi ubuntu 20.10(groovy) bir konteyner içerisinde komut satırına bağlanır?",
+      "choices": [
+        {
+          "text": "docker run ubuntu:groovy /bin/bash",
+          "correct": false
+        },
+        {
+          "text": "docker run -it ubuntu:groovy /bin/bash",
+          "correct": true
+        },
+        {
+          "text": "docker pull ubuntu:groovy -c /bin/bash",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum3-01",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum3.markdown",
+      "source_line": 642,
+      "type": "single-choice",
+      "prompt": "Docker imajları varsayılan olarak nereden indirilirler?",
+      "choices": [
+        {
+          "text": "Docker Trusted Registry",
+          "correct": false
+        },
+        {
+          "text": "Docker Hub",
+          "correct": true
+        },
+        {
+          "text": "Varsayılan yoktur",
+          "correct": false
+        },
+        {
+          "text": "Docker Store",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum3-02",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum3.markdown",
+      "source_line": 649,
+      "type": "single-choice",
+      "prompt": "Docker imajlarını nasıl listelersiniz?",
+      "choices": [
+        {
+          "text": "docker image ls",
+          "correct": true
+        },
+        {
+          "text": "docker run",
+          "correct": false
+        },
+        {
+          "text": "docker container ls",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum3-03",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum3.markdown",
+      "source_line": 655,
+      "type": "single-choice",
+      "prompt": "Aşağıdakilerden hangisi ubuntu 20.10(groovy) bir konteyner içerisinde komut satırına bağlanır?",
+      "choices": [
+        {
+          "text": "docker run ubuntu:groovy /bin/bash",
+          "correct": false
+        },
+        {
+          "text": "docker run -it ubuntu:groovy /bin/bash",
+          "correct": true
+        },
+        {
+          "text": "docker pull ubuntu:groovy -c /bin/bash",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum4-01",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum4.markdown",
+      "source_line": 889,
+      "type": "single-choice",
+      "prompt": "Docker imajları varsayılan olarak nereden indirilirler?",
+      "choices": [
+        {
+          "text": "Docker Trusted Registry",
+          "correct": false
+        },
+        {
+          "text": "Docker Hub",
+          "correct": true
+        },
+        {
+          "text": "Varsayılan yoktur",
+          "correct": false
+        },
+        {
+          "text": "Docker Store",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum4-02",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum4.markdown",
+      "source_line": 896,
+      "type": "single-choice",
+      "prompt": "Docker imajlarını nasıl listelersiniz?",
+      "choices": [
+        {
+          "text": "docker image ls",
+          "correct": true
+        },
+        {
+          "text": "docker run",
+          "correct": false
+        },
+        {
+          "text": "docker container ls",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "docker-2020-01-01-docker101-bolum4-03",
+      "course_id": "docker",
+      "source": "content/2020-01-01-docker101-bolum4.markdown",
+      "source_line": 902,
+      "type": "single-choice",
+      "prompt": "Aşağıdakilerden hangisi ubuntu 20.10(groovy) bir konteyner içerisinde komut satırına bağlanır?",
+      "choices": [
+        {
+          "text": "docker run ubuntu:groovy /bin/bash",
+          "correct": false
+        },
+        {
+          "text": "docker run -it ubuntu:groovy /bin/bash",
+          "correct": true
+        },
+        {
+          "text": "docker pull ubuntu:groovy -c /bin/bash",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "scripting-2021-01-01-scripting101en-01",
+      "course_id": "scripting",
+      "source": "content/2021-01-01-scripting101en.markdown",
+      "source_line": 1165,
+      "type": "single-choice",
+      "prompt": "What is the shell character that means \"Every\" or \"All\"?",
+      "choices": [
+        {
+          "text": "@",
+          "correct": false
+        },
+        {
+          "text": "*",
+          "correct": true
+        },
+        {
+          "text": "#",
+          "correct": false
+        },
+        {
+          "text": "?",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "scripting-2021-01-01-scripting101en-02",
+      "course_id": "scripting",
+      "source": "content/2021-01-01-scripting101en.markdown",
+      "source_line": 1173,
+      "type": "single-choice",
+      "prompt": "How to remove a system variable that is active on the shell?",
+      "choices": [
+        {
+          "text": "alias",
+          "correct": false
+        },
+        {
+          "text": "env",
+          "correct": false
+        },
+        {
+          "text": "export",
+          "correct": false
+        },
+        {
+          "text": "unset",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "scripting-2021-01-01-scripting101en-03",
+      "course_id": "scripting",
+      "source": "content/2021-01-01-scripting101en.markdown",
+      "source_line": 1181,
+      "type": "single-choice",
+      "prompt": "What is the argument number 0 (zero) for a script?",
+      "choices": [
+        {
+          "text": "shell type",
+          "correct": false
+        },
+        {
+          "text": "scripts own name",
+          "correct": true
+        },
+        {
+          "text": "first argument given",
+          "correct": false
+        },
+        {
+          "text": "user name",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "scripting-2021-01-01-scripting101en-04",
+      "course_id": "scripting",
+      "source": "content/2021-01-01-scripting101en.markdown",
+      "source_line": 1189,
+      "type": "single-choice",
+      "prompt": "What is the command that provides input from the keyboard into the script?",
+      "choices": [
+        {
+          "text": "alias",
+          "correct": false
+        },
+        {
+          "text": "read",
+          "correct": true
+        },
+        {
+          "text": "cat",
+          "correct": false
+        },
+        {
+          "text": "echo",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "scripting-2021-01-01-scripting101en-05",
+      "course_id": "scripting",
+      "source": "content/2021-01-01-scripting101en.markdown",
+      "source_line": 1197,
+      "type": "single-choice",
+      "prompt": "What command is used to end an if query?",
+      "choices": [
+        {
+          "text": "fi",
+          "correct": true
+        },
+        {
+          "text": "elif",
+          "correct": false
+        },
+        {
+          "text": "if",
+          "correct": false
+        },
+        {
+          "text": "then",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "scripting-2021-01-01-scripting101en-06",
+      "course_id": "scripting",
+      "source": "content/2021-01-01-scripting101en.markdown",
+      "source_line": 1205,
+      "type": "single-choice",
+      "prompt": "Let's say we have a list of arguments, what is the value of programs = ‘python,C,java,go’ programlar[2] ?",
+      "choices": [
+        {
+          "text": "python",
+          "correct": false
+        },
+        {
+          "text": "c",
+          "correct": false
+        },
+        {
+          "text": "go",
+          "correct": false
+        },
+        {
+          "text": "java",
+          "correct": true
+        }
+      ]
+    },
+    {
+      "id": "scripting-2021-01-01-scripting101en-07",
+      "course_id": "scripting",
+      "source": "content/2021-01-01-scripting101en.markdown",
+      "source_line": 1213,
+      "type": "single-choice",
+      "prompt": "Which read command parameter prevents written values from being displayed on the screen?",
+      "choices": [
+        {
+          "text": "-p",
+          "correct": false
+        },
+        {
+          "text": "-d",
+          "correct": false
+        },
+        {
+          "text": "-s",
+          "correct": true
+        },
+        {
+          "text": "-h",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "scripting-2021-01-01-scripting101en-08",
+      "course_id": "scripting",
+      "source": "content/2021-01-01-scripting101en.markdown",
+      "source_line": 1221,
+      "type": "single-choice",
+      "prompt": "Which of the following file operator parameters are defined incorrectly?",
+      "choices": [
+        {
+          "text": "-e \"Queries whether the file exists or not\"",
+          "correct": false
+        },
+        {
+          "text": "-f \"Queries file size\"",
+          "correct": true
+        },
+        {
+          "text": "-d \"Queries whether file is a directory or not\"",
+          "correct": false
+        },
+        {
+          "text": "-x \"Queries whether the file is working or n\"",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "database-2024-04-01-db101en-section1-01",
+      "course_id": "database",
+      "source": "content/2024-04-01-db101en-section1.markdown",
+      "source_line": 533,
+      "type": "single-choice",
+      "prompt": "CRUD is the short of?",
+      "choices": [
+        {
+          "text": "Collect Request Update Destroy",
+          "correct": false
+        },
+        {
+          "text": "Create Read Update Delete",
+          "correct": true
+        },
+        {
+          "text": "Create Repeat Update Destroy",
+          "correct": false
+        },
+        {
+          "text": "Come and Request Update Data",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "database-2024-04-01-db101en-section1-02",
+      "course_id": "database",
+      "source": "content/2024-04-01-db101en-section1.markdown",
+      "source_line": 540,
+      "type": "single-choice",
+      "prompt": "Which one is wrong for ACID properties?",
+      "choices": [
+        {
+          "text": "Transactions only result in valid state(Consistent)",
+          "correct": false
+        },
+        {
+          "text": "Each transaction is atomic",
+          "correct": false
+        },
+        {
+          "text": "Each transaction can be Destroyed independently",
+          "correct": true
+        },
+        {
+          "text": "Each transaction is executed independently than others",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "database-2024-04-01-db101en-section1-03",
+      "course_id": "database",
+      "source": "content/2024-04-01-db101en-section1.markdown",
+      "source_line": 548,
+      "type": "single-choice",
+      "prompt": "what is the result for SELECT FROM employees WHERE first_name = 'Sachin';?",
+      "choices": [
+        {
+          "text": "This query will show the number of users whose name is 'Sachin'",
+          "correct": false
+        },
+        {
+          "text": "This query will show the users whose name is 'Sachin', result will only show users",
+          "correct": false
+        },
+        {
+          "text": "This query will show the users whose name is 'Sachin', result will show all fields",
+          "correct": true
+        },
+        {
+          "text": "This query will give empty result",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "database-2024-04-01-db101en-section1-04",
+      "course_id": "database",
+      "source": "content/2024-04-01-db101en-section1.markdown",
+      "source_line": 556,
+      "type": "single-choice",
+      "prompt": "What is the result of the following SELECT CREATE INDEX idx_firstname ON employees(first_name); ?",
+      "choices": [
+        {
+          "text": "Create index with the name idx_firstname on employees table's first_name fields.",
+          "correct": false
+        },
+        {
+          "text": "error",
+          "correct": true
+        },
+        {
+          "text": "Show the result for the name idx_firstname on employees table's first_name fields.",
+          "correct": false
+        },
+        {
+          "text": "Analyse the INDEX creation for the table employees and field first_name",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "database-2024-04-01-db101en-section2-01",
+      "course_id": "database",
+      "source": "content/2024-04-01-db101en-section2.markdown",
+      "source_line": 1098,
+      "type": "single-choice",
+      "prompt": "Which one is not a MySQL replication?",
+      "choices": [
+        {
+          "text": "Read-scaling",
+          "correct": false
+        },
+        {
+          "text": "Asynchronous",
+          "correct": false
+        },
+        {
+          "text": "Stand By replication",
+          "correct": true
+        },
+        {
+          "text": "Semi-Synchronous",
+          "correct": false
+        }
+      ]
+    },
+    {
+      "id": "database-2024-04-01-db101en-section2-02",
+      "course_id": "database",
+      "source": "content/2024-04-01-db101en-section2.markdown",
+      "source_line": 1105,
+      "type": "single-choice",
+      "prompt": "Which one can not be used for mysql backup?",
+      "choices": [
+        {
+          "text": "mysqldump",
+          "correct": false
+        },
+        {
+          "text": "tar",
+          "correct": true
+        },
+        {
+          "text": "xtrabackup",
+          "correct": false
+        },
+        {
+          "text": "mysql",
+          "correct": false
+        }
+      ]
+    }
+  ]
+}

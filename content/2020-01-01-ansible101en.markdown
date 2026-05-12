@@ -1,0 +1,413 @@
+---
+layout: post
+title: "Ansible 101 - how can we automate in Ops ?"
+date: 2021-01-01
+author: "@senolcolak"
+tags: [ansible101en,automation]
+categories:
+terms: 3
+---
+
+
+> **Ansible 101 tutorial coverst the following topics:**
+> * Table of contents
+> {:toc}
+
+---
+
+## 0. Ansible tutorial  
+The following topics are incuded in detail. This course is targeted to give you the fundamentals about ansible automation.  
+    
+Configuration management systems are designed to simplify the process of controlling multiple servers for managers and operations teams. They allow you to automatically control many different systems from one central location.
+  
+While there are many popular configuration management tools for Linux systems such as Chef and Puppet, these are often more complex than most people would need. Ansible is a great alternative to these options because it offers an architecture that does not require special software to be installed on the servers to be managed(client side), using SSH to run automation tasks and YAML files to define provisioning details.
+  
+In this guide, we will show you how to install Ansible on Ubuntu 16.04 server and go over some basic information on how to use this software. You can use different articles on the internet to cover more advanced topics to Ansible as a configuration management tool. The aim of our training is to provide basic information and to get you started.
+
+With Ansible configuration management, you can easily manage thousands of servers from a single center. You can manage the packages on the servers and make all the operations you want synchronously.
+
+Possible Use Cases:
+1. User management and SSH key management.
+2. Provision Cloud servers/services
+3. Package management
+4. interactive monitoring solutions (AIops practices)
+5. Configuration management (Switches,routers,servers...)
+
+If there are hundreds of servers in your environment, you should definitely use an automation solution, otherwise you will start typing commands like the one below and the situation will become unmanagable.  
+  
+```` # ssh for s in server{1..4}.acikkaynakfikirler.com do ssh senol@${s} 'bash -s' < /home/senol/test.sh last````  
+
+Or you start making parallel connections with tmux. If you use automation, you can keep the commands you run in a manageable way in a central place and track changes easily.   
+  
+
+## 1. Preparing the environment
+
+**There are three servers on the right side(simulated)**
+
+These servers are servers with the following features, respectively.
+  
+### 1 web server (top)
+(representative) web services running server
+We will install apache and php packages on the server with ansible.
+
+### 2 file sharing servers (middle)
+(representative) file sharing server
+We will install samba packages on it with Ansible
+
+### 3 our automation server (bottom)
+The main server on which we will manage the above two servers
+
+
+Applications we need for Ansible installation.
+
+1. ansible central server (bottom standing server)
+2.Accessibility with ssh service on servers
+3. Configuring ssh keys for password-free access
+
+## 2. Preparing servers
+To prepare the web server, you must run the following commands (If you click on it, the installation will occur)
+  
+``` !!! Please install the following servers one by one, after the installation of the web server is finished, set up the file sharing server and then the automation server ```
+    
+**1. Setting up web server**
+```.term1
+apt-get update
+apt install ssh -y
+```
+  
+Now let's create ssh keys and set the hostname
+```.term1
+ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa <<< y
+echo "web">/etc/hostname
+/etc/init.d/ssh start
+/etc/init.d/hostname.sh stop
+/etc/init.d/hostname.sh start
+bash
+clear
+```
+
+To prepare the file sharing server, you must run the following commands (If you click on it, the installation will occur)
+  
+**2. Installing file sharing server**
+```.term2
+apt-get update
+apt install ssh -y
+```
+    
+Now let's create ssh keys and set the hostname
+```.term2
+ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa <<< y
+echo "file">/etc/hostname
+/etc/init.d/ssh start
+/etc/init.d/hostname.sh stop
+/etc/init.d/hostname.sh start
+bash
+clear
+```
+
+To prepare the Ansible (automation) server, you must run the following commands (If you click on it, the installation will occur)
+  
+**3. Setting up the server we will use for automation**
+```.term3
+apt-get update
+apt install ssh -y
+```
+  
+Now let's create ssh keys and set the hostname
+```.term3
+ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa <<< y
+echo "automation"> /etc/hostname
+/etc/init.d/hostname.sh stop
+/etc/init.d/hostname.sh start
+bash
+clear
+```
+  
+  
+Under normal circumstances, you perform the operations mentioned above in different ways in your own environment. You can create servers on AWS, create new servers on VMware or KVM. You have to define ip for these servers and define the hosts of the servers.  
+  
+The default situation is that ssh service is running on 3 servers, after that we will make adjustments regarding ansible.  
+
+## 3. Ansible configuration
+
+The biggest benefit of using Ansible is that you do not need to install any packages on the servers you manage(client side). In other words, ansible installation will only be done on the automation server(central server-bottom).
+
+We have processed the **ansible** package installation on ubuntu in the tutorial, there are many other installation types. There are also options such as installing via pip or installing packages via the repository.
+
+```.term3
+apt-get update && apt install ansible -y
+```
+
+### a. Getting the IP addresses of the servers
+
+** Run the following command to get the ip address of the **``web``** server
+```.term1
+ip a | grep eth0
+```
+  
+** Run the following command to get the ip address of the **``file sharing``** server
+```.term2
+ip a | grep eth0
+```
+A line like the following will appear as output,
+
+````
+eg. inet 10.0.152.2/24 brd 10.0.152.255 scope global eth0
+````
+
+The example in the result. 10.0.152.2 is the ip address we are looking for.
+ 
+  
+now we define the two ip addresses we found on the **automation** server.
+  
+```.term3
+cat <<EOF>>/etc/ansible/hosts
+##
+web ansible_host = 10.0.152.3
+file ansible_host = 10.0.152.4
+EOF
+```
+
+`` You can run the above command and update the real ip information in the "vi /etc/ansible/hosts" file. ``
+
+We also need to add it to the ``/etc/hosts`` file to be able to use other computers by name.
+
+```.term3
+cat <<EOF>>/etc/hosts
+##
+10.0.152.3 web
+10.0.152.4 file
+EOF
+```
+  
+### b. Providing SSH access to servers
+  
+On the servers, ssh keys were created with the "ssh-keygen" command. There are two files named id_rsa and id_rsa.pub in a folder named .ssh in your home directory. Among these files, the file ending with pub is the key file that we can share, and the id_rsa file contains key information that we should not share with anyone.  
+  
+Since we will manage other servers on the automation server, we need to copy the public ssh key of our automation server into the ~/.ssh/autherized_keys file of other servers.  
+  
+Id_rsa and id_rsa.pub files are created by running ssh-keygen in the automation server. The content of id_rsa.pub is then copied to other computers (File, Web) as a line into the ~ /.ssh/authorized_keys file.  
+  
+```.term3
+cat /root/.ssh/id_rsa.pub
+```
+  
+**We copy the shared key information we have displayed with cat above to our other servers.**  
+   
+  
+Let's copy the shared key information onto the web server.
+```.term1
+echo "ssh-rsa AAAA ......" >>~/.ssh/authorized_keys
+```
+`` You can enter the correct key information on the line in the file by running the above command and executing vi ~ / .ssh / authorized_keys.
+Let's copy the shared key information onto the File sharing server.  
+  
+```.term2
+echo "ssh-rsa AAAA ......" >>~/.ssh/authorized_keys
+```
+
+`` You can enter the correct key information on the line in the file by running the above command and executing vi ~/.ssh/authorized_keys``  
+  
+Now let's try to access other servers via ssh via our automation server.  
+
+** Let's view the hostname file on the web server **
+```.term3
+ssh web cat /etc/hostname
+```  
+*(The ssh key will be added to the known-hosts file, you can press the letter y and confirm it)*  
+  
+**let's view the hostname file on the file server**
+  
+```.term3
+ssh file cat /etc/hostname
+```
+*(The ssh key will be added to the known-hosts file, you can press the letter y and confirm)*
+
+## 4. Running commands on servers.
+
+### a. Let's check the access to the servers via ansible
+
+Here, ``all`` means command written after ansible means run the command on all servers within the /etc/ansible/hosts file. ``-m`` means module preference, in this case **ping** module is used. ``-u root`` means run commands as root.  
+  
+```.term3
+ansible all -m ping -u root
+```
+  
+the output you see means that the servers are accessible.  
+  
+### b. Let's run "df -h" command on servers
+
+The ``-a`` parameter is for ad-hoc (special purpose, single use) use. In other words, the command you write will run directly on the servers.  
+  
+```.term3
+ansible all -a "df -h" -u root
+```
+  
+### c. Ansible playbook kullanımı
+  
+To understand this, we need to know what the **imperative** and **declarative** command execution is. The commands we have run so far were imperative commands, which means, we executed the commands by making the necessary choices among the commands we wrote on the command line. Declarative definitions are made by running the configuration preferences saved in the files.  
+  
+You can make declaration using files in yaml or json format inside Ansible. In Ansible, mostly ``.yaml`` defined configuration files are used.  
+  
+Below are examples for ``web`` and ``file`` servers for **declarative** configurations.  
+  
+```.term3
+cat <<EOL> web-example.yaml
+---
+
+- name: Ansible simple Playbook example
+   gather_facts: True
+   hosts: web
+   tasks:
+
+     - name: Disk space on servers
+       shell: df -h
+      
+     - name: package installation according to need web (apache)
+       apt:
+         name: ['apache2']
+         update_cache: true
+         state: present
+        
+EOL
+```
+  
+```.term3
+cat <<EOL> file-example.yaml
+---
+
+- name: Ansible simple Playbook example
+   gather_facts: True
+   hosts: file
+   tasks:
+
+     - name: package setup file server (samba) according to need
+       apt:
+         name: ['samba']
+         update_cache: true
+         state: present
+           
+EOL
+```
+  
+  
+Descriptions for the file parameters:  
+``gather_facts`` indicates that information about the situation on the connected server is collected/not-collected. The ``hosts`` specifies on which servers this playbook will be run. The (top) ``name`` indicates the playbook description. ``taks`` contains the list of tasks to be run, again ``name`` inside the tasks indicates the description of the task to be run, and in the next part, modules such as ``shell`` or ``ping`` indicate the modules to be used. In the example, the module ``apt`` for installing packages, is used.
+
+
+You can run the commands as follows to run the files here and execute the commands.
+
+for **web** server
+`` .term3
+ansible-playbook web-example.yaml
+``
+
+for **file sharing** (samba) server
+`` .term3
+ansible-playbook file-example.yaml
+``
+  
+In the module we wrote here, we used the ``apt`` module, instead of using this module, we can use the ``shell`` module and write what we will write directly into the playbook.
+
+As an alternative to the web-sample.yaml file, the following command can be written.
+
+```.term3
+cat <<EOL> web-example-command.yaml
+---
+
+- name: Ansible simple Playbook example
+  gather_facts: True
+  hosts: web
+  tasks:
+
+    - name: package installation web server according to need (apache2)
+      shell: apt update && apt install apache2
+           
+EOL
+```
+  
+**web** for alternative installation
+```.term3
+ansible-playbook web-example-command.yaml
+```
+  
+As you can see, we can give the command line information directly to the ``shell`` module, so that we connect to the server and run it. Since we do not use the ``apt`` module here, we cannot take advantage of the opportunities it provides us (such as security, result translation, debugging).  
+  
+  
+You can access a more up-to-date list [here] (https://docs.ansible.com/) for different modules and commands.
+
+
+
+### Demonstration of how ad-hoc command works on servers  
+Let's run a scenario like this, let's show the status of a file in the first two servers with the commands ``watch`` and ``cat``, when we change these files with ansible, we can see the operation of the automation system more clearly.  
+  
+Let's run this command on the web server first.  
+```.term1
+watch -n1 cat /tmp/STATUS
+```
+  
+then run this command on file server
+```.term2
+watch -n1 cat /tmp/STATUS
+```
+
+
+Now let's send file creation commands to both servers via automation server.
+
+```.term3
+ansible all -a "touch /tmp/STATUS" -u root
+```
+
+Let's write what we want in them now.
+
+```.term3
+ansible all -a "cp /etc/hostname  /tmp/STATUS" -u root
+```
+  
+  
+
+
+If you would like to continue learning from now on and cover more topics, I recommend you to continue on [this link](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) .  
+
+-----
+<!-- Quiz bölümünü diğer quizlerde aynen kopyalayıp değiştirmemiz gerek.-->
+
+**[Tutorials main page](/)**  
+ 
+
+-----
+## Short quiz to repeat the topic
+> After selecting the correct options, press the **Gonder** button. You can see the results <span style = "color: green"> **true** </span> and in <span style = "color: red"> **false** </span> colours.
+
+
+
+
+{:.quiz}
+Which of the following commands can you create an ssh key with? (pub and key files)
+
+- (x) ssh-keygen
+- ( ) ssh
+- ( ) ssh >>~/.ssh/authorized_keys
+- ( ) ssh-keygen >.ssh/id_rsa
+
+{:.quiz}
+Which folder below is the default directory for ssh keys?
+
+- ( ) .ssh/
+- (x) ~/./ssh
+- ( ) /root/.ssh/
+
+{:.quiz}
+In which file is the IP information of managed servers located?
+
+- ( ) /etc/hosts
+- (x) /etc/ansible/hosts
+- ( ) web-example.yaml
+
+{:.quiz}
+Which of the following commands is an example of declarative commands?
+  
+- ( ) ansible all -a "df -h" -u root
+- ( ) ansible all -a "apt update && apt install apache2 -y" -u root
+- (x) ansible-playbook -i /etc/ansible/hosts web-uninstall.yaml
+- ( ) ansible all -a "apt update && apt remove apache2 -y" -u root

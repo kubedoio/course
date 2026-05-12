@@ -1,0 +1,83 @@
+{
+  "realm": "browser-lab",
+  "enabled": true,
+  "displayName": "Browser Lab",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "clients": [
+    {
+      "clientId": "browser-lab-oauth2-proxy",
+      "name": "Browser Lab OAuth2 Proxy",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "change-this-client-secret",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://lab.localhost:8080/oauth2/callback",
+        "http://localhost:8080/oauth2/callback",
+        "http://lab.localhost:18080/oauth2/callback",
+        "http://localhost:18080/oauth2/callback"
+      ],
+      "webOrigins": [
+        "http://lab.localhost:8080",
+        "http://localhost:8080",
+        "http://lab.localhost:18080",
+        "http://localhost:18080"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    },
+    {
+      "clientId": "browser-lab-spa",
+      "name": "Browser Lab SPA Client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "http://lab.localhost:8080/*",
+        "http://lab.localhost:18080/*",
+        "http://localhost:9998/*",
+        "http://localhost:8080/*",
+        "http://localhost:18080/*"
+      ],
+      "webOrigins": [
+        "http://lab.localhost:8080",
+        "http://lab.localhost:18080",
+        "http://localhost:9998",
+        "http://localhost:8080",
+        "http://localhost:18080"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "student",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Lab",
+      "lastName": "Student",
+      "email": "student@example.local",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "student",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

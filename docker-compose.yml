@@ -1,0 +1,110 @@
+services:
+  lab:
+    build:
+      context: .
+    image: browser-linux-docker-lab:local
+    restart: unless-stopped
+    ports:
+      - "${LAB_DIRECT_PORT:-9998}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/healthz | grep -q ok"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  progress-api:
+    build:
+      context: ./progress-api
+    image: browser-lab-progress-api:local
+    restart: unless-stopped
+    environment:
+      PROGRESS_DB_PATH: /data/progress.sqlite3
+    volumes:
+      - progress-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; raise SystemExit(0 if urllib.request.urlopen('http://localhost:8090/healthz', timeout=2).read() == b'ok\\n' else 1)\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  keycloak-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB:-keycloak}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER:-keycloak}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak}
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER:-keycloak} -d ${KEYCLOAK_DB:-keycloak}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  keycloak:
+    image: ${KEYCLOAK_IMAGE:-quay.io/keycloak/keycloak:26.6.1}
+    restart: unless-stopped
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/${KEYCLOAK_DB:-keycloak}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER:-keycloak}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak}
+      KC_HTTP_RELATIVE_PATH: /auth
+      KC_HOSTNAME: ${PUBLIC_ORIGIN:-http://lab.localhost:8080}/auth
+      KC_PROXY_HEADERS: xforwarded
+    volumes:
+      - ./config/keycloak:/opt/keycloak/data/import:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+
+  oauth2-proxy:
+    image: ${OAUTH2_PROXY_IMAGE:-quay.io/oauth2-proxy/oauth2-proxy:latest}
+    restart: unless-stopped
+    command:
+      - --http-address=0.0.0.0:4180
+      - --provider=oidc
+      - --oidc-issuer-url=${PUBLIC_ORIGIN:-http://lab.localhost:8080}/auth/realms/browser-lab
+      - --skip-oidc-discovery=true
+      - --login-url=${PUBLIC_ORIGIN:-http://lab.localhost:8080}/auth/realms/browser-lab/protocol/openid-connect/auth
+      - --redeem-url=http://keycloak:8080/auth/realms/browser-lab/protocol/openid-connect/token
+      - --oidc-jwks-url=http://keycloak:8080/auth/realms/browser-lab/protocol/openid-connect/certs
+      - --profile-url=http://keycloak:8080/auth/realms/browser-lab/protocol/openid-connect/userinfo
+      - --client-id=${OAUTH2_PROXY_CLIENT_ID:-browser-lab-oauth2-proxy}
+      - --client-secret=${OAUTH2_PROXY_CLIENT_SECRET:-change-this-client-secret}
+      - --redirect-url=${PUBLIC_ORIGIN:-http://lab.localhost:8080}/oauth2/callback
+      - --cookie-secret=${OAUTH2_PROXY_COOKIE_SECRET:-MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
+      - --cookie-secure=false
+      - --email-domain=*
+      - --scope=openid email profile
+      - --upstream=static://202
+      - --reverse-proxy=true
+      - --set-xauthrequest=true
+      - --pass-access-token=true
+      - --pass-authorization-header=true
+      - --skip-provider-button=true
+    extra_hosts:
+      - "lab.localhost:host-gateway"
+    depends_on:
+      - keycloak
+
+  gateway:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${GATEWAY_PORT:-8080}:8080"
+    volumes:
+      - ./config/gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - lab
+      - progress-api
+      - keycloak
+      - oauth2-proxy
+
+volumes:
+  keycloak-db-data:
+  progress-data:

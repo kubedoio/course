@@ -1,0 +1,41 @@
+---
+layout: landing
+title: "Database 101 - Relational databases and introduction to mysql"
+date: 2024-10-01
+author: "@senolcolak"
+tags: [landing]
+categories:
+terms: 0
+---
+
+this course is taken from ["School of SRE"](https://linkedin.github.io/school-of-sre/) repository
+
+Basic concepts of SQL databases. We have also covered some of the tasks that an SRE may be responsible for - there is so much more to learn and do. We hope this course gives you a good start and inspires you to explore further.
+ 
+---
+  
+### **Database Concepts**  
+#### What is database and SQL concepts
+
+#### **[Relational databases and introduction to mysql?](/db101en-section1)**   
+You will have an understanding of what relational databases are, their advantages, and some MySQL specific concepts.
+*   In depth implementation details
+*   Advanced topics like normalization, sharding
+*   Specific tools for administration
+*   MySQL Backup, Retore
+*   SQL Lab and MySQL
+
+#### **[MyQL Replication, Database Operation & Concept](/db101en-section2)**   
+*   What is replication and how does it work?
+*   MYSQL Lab and Hands on SQL Lab
+
+#### **[NoSQL concepts, when do we need this kind of data stores?](/db101en-section3)**   
+*   How to configure database
+*   database SQL
+
+
+  
+----  
+#### ```Dikkat!!! ```
+#### ```Eğitim platformu sadece test ve eğitim içindir.```  
+#### ```Eğitim içeriğinin ve test platformunun eğitim amacı dışında 3. kişiler tarafından kullanılması, parayla satılması, reklam amacıyla kullanılması ve siber saldırı aracı yapılması halinde yasal işlem başlatma hakkımız saklıdır !!!```  

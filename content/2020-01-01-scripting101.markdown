@@ -1,0 +1,1166 @@
+---
+layout: post
+title: "Scripting 101"
+date: 2020-01-01
+author: "@erdenayates"
+tags: [scripting101,turkce]
+categories:
+terms: 1
+---
+
+Bu eğitim ile Linux sistemlerinde çalışan, işlerimizi otomatize eden scriptlerin nasıl yazıldığı ve temel algoritma oluşturma hakkında bilgi alacaksınız.  
+  
+## Bash Scripting Yapısı ve Bash’e Giriş
+
+**Shell ve Bash Nedir? Scriptler Ne İşe Yarar?**
+<br/> 
+<br/> 
+
+Bash eğitim serimizde, Linux 101 eğitiminden sonra aşina olduğumuz CLI (command line interface) üzerinde yapmak istediğimiz işlemleri uzun uzun komut satırları ile uğraşmak yerine yazdığımız bir script(senaryo) dosyayı ile otomatize etmek amacıyla kullanacağımız Bash’e giriş yapacağız.
+<br/>  
+Öncelikle Bash ne ona bir göz atalım.  
+  
+Kısaca shell(kabuk) Linux çekirdeğini çevreler. Bu kabuğun ise pek çok çeşidi vardır; ```tcsh, zsh, csh ve bash```. Kullandığınız shell türüne göre shell ile iletişime geçme tarzınız değişir. CLI üzerinden `echo $SHELL` komutunu çalıştırdığımızda çekirdeğimiz bize kullanılan shell değişkenini söyleyecektir, farklı shell türleri olduğu için bu da bir değişkendir.  
+  
+Peki bu otomatize işler kimlerin işine yarayacak? Herkesin işine yarayabilir, eğer ki bir sistem yöneticisi iseniz yazdığınız bir script ile her pazartesi sabahı değiştirdiğiniz veya güncellediğiniz bir dosyayı yazdığınız Bash scriptine yaptırabilirsiniz. Açık Kaynak Fikirler üzerinden Linux 101 eğitimini bitirmiş bir kişi yazdığı bir Bash scripti ile dosyalarını kontrol edebilir, dosya izinlerini kontrol edebilir, paketlerini sürekli güncel tutabilir, işlemlerini (processlerini) yönetebilir, serverların kontrolünü sağlayabilir.  
+  
+Buna örnek vermek gerekirse;  
+  
+**Bash ile dosya kontrolü ve izin denetimi:** Scriptiniz her gün dosyalarınızın silinip silinmediğini, planlandığı dizinde mi durduğunu, dosya erişim izinlerinin güncel veya değiştirilmişse bile istediğiniz şekilde tekrar düzenlemenizi sağlayabilirsiniz.  
+  
+**Bash yazma ortamları:** nano, vi, vim, Atom veya Microsoft Visual Studio Code üzerinden scriptlerimizi yazabiliriz, eğer Linux bilgisayarınızı sanal makine üzerinden kullanıyorsanız ve Microsoft Visual Studio Code kurmak istemiyorsanız ana bilgisayarınız üzerinden yazdıktan sonra kopyala-yapıştır ile sanal makinenize aktarabilirsiniz.  
+  
+  
+## Örneklere Erişim ve Docker  
+<br/>
+Scripting 101 eğitimimiz boyunca pek çok örnek üzerinden konu başlıklarımızı işleyeceğiz. Eğitim için hazırlanan 50'den fazla örneğe ulaşmak için ise Docker teknolojisini kullanacağız. Açık Kaynak Fikirler platformu üzerinden sunulan eğitimler, kullanıcıların kolay şekilde pratik yapması için kullanıcılara konteyner sunucular sağlamaktadır, bunun için de Docker teknolojisi kullanılmaktadır. (Docker 101 eğitimine [buradan](https://egitim.acikkaynakfikirler.com/docker101-landing/) ulaşabilirsiniz.)  
+  
+Kısaca Docker bilgisayar içerisinde ufak sanal makineler oluşturmaya yarıyor ve bizde Docker üzerinden oluşturulmuş bir sanal makineye tekrar bir sanal makine kurarak eğitimimize örnekler ile beraber devam edeceğiz. Yalnızca 1-2 komut girerek bu işlemi sağlayacağız.  
+  
+```.term1
+docker run -dit --name scripting101 erdates/scripting101 ; docker exec -it scripting101 bash
+```
+Komutlarını çalıştırdıktan sonra `scripting101` isimli 75 megabytelık ufak bir Ubuntu imajı indirilecek ve eğitimler için kullanacağımız konteyner çalışacaktır.
+
+```
+Unable to find image 'erdates/scripting101:latest' locally
+latest: Pulling from erdates/scripting101
+da7391352a9b: Pull complete
+14428a6d4bcd: Pull complete
+2c2d948710f2: Pull complete
+964f74000710: Extracting [==================================================>]  7.949kB/7.949kB
+```
+
+Alacağımız bu çıktı 75 megabytelık Ubuntu Docker imajının indirilme anını gösteriyor. Kurulum tamamlandıktan sonra yukarıda girdiğimiz `exec` komutu ile konteyner içine direkt `root` halinde dahil olacağız. Bu çıktı şu şekilde olacaktır.
+
+```
+root@44656d7998fa:/# 
+#Artık konteyner içinde root olarak yetkiliyiz.
+```
+Şimdi ise yeni oluşturuduğumuz sanal makine içinde `ls` komutunu gönderirsek
+
+```
+bin   dev  home  lib32  libx32  mnt  ornekler*  root  sbin  sys  usr
+boot  etc  lib   lib64  media   opt  proc      run   srv   tmp  var
+
+```
+
+şeklinde sahip olduğumuz dizinler karşımıza çıkacaktır. `cd /ornekler/` dersek örneklerin bulunduğu dizine erişmiş olacağız. `ornekler` dizinine eriştikten sonra `ls` diyerek bütün örneklere erişim sağlayabilirsiniz.  
+<br/>
+Ufak bir Ubuntu sistemi kullandığımız için bazı komutlar eksik olabilir, eksik olan komutlar için öncelikle `apt update` ardından `apt install komut` şeklinde komutu yükleyebilirsiniz.  
+<br/>
+Dilerseniz script ortamına bir bakalım, bulunduğumuz klasörde `nasa.sh` adlı dosyaya göz atalım. Peki bu `.sh` uzantısı ne? Bu uzantı Bash’in son 2 harfinden gelmekte ve bize bunun bir Bash script olduğunu belirtiyor. `cat nasa.sh` dediğimizde karşımıza NASA sistemine girmemizi sağlayan eğlenceli bir script çıkacak.  <br/>
+  
+```.term1
+cat nasa.sh
+```
+  
+```
+#!/bin/bash
+echo "NASA sistemine giriliyor"
+sleep 1
+echo "..."
+sleep 1
+echo "NASA sistemine girildi"
+sleep 1
+echo "..."
+sleep 1
+echo "NASA'ya hoşgeldiniz
+```  
+  
+İlk satırda karşımıza çıkan #!/bin/bash satırı bize bu scriptin çalışması için gerekli komutları sağlıyor, hatırladığınız üzere bin klasörü Linux komutlarının bulundurulduğu bir klasör. Ardından ise belirttiğimiz şekilde komutlar çalıştırılmaya başlanıyor.  
+  
+**Scriptler nasıl çalıştırılır?** `ls` komutunu çalıştırdığımızda pek çok .sh uzantılı dosya göreceğiz, bu dosyalar yeşil renk ile farklı gösterilmekteler. İsimlerinin yeşil olması bu dosyaların çalıştırılabilir olduğu anlamına gelmektedir. Eğer yazdığınız bir script yeşil renk ile yazılmamışsa çalıştır komutu gönderdiğiniz zaman scriptiniz görevini yapmayacaktır. Linux 101 eğitiminde 2.ünite 9. bölümde belirttiğimiz `chmod` komutu ile dosyamızı çalışır hale getirebiliriz.  
+  
+<br/>`chmod +x script_ismi.sh` komutunu kullanacağız<br/>
+<br/>Dosyamızı kullanıma hazır hale getirdik, peki nasıl çalıştıracağız? Kullandığımız shell ismini belirtip ardından dosyamızın adını yazarsak dosyamız çalışacaktır, `bash script_ismi.sh` veya `./script_ismi` şeklinde de kullanabiliriz. Kurs boyunca ben ./ ile dosyalarımızı çalıştıracağım, isterseniz sizler `bash script_ismi.sh` şeklinde çalıştırabilirsiniz.<br/>
+<br/>Dilerseniz biraz önce bahsettiğimiz `nasa.sh` dosyamızı çalıştırarak bize nasıl bir output(çıktı) verecek ona bakalım.
+`cat nasa.sh` ile scriptimize baktığımızda `echo` ve `sleep` komutları sırası ile çalışarak bizlere outputlar verdi.<br/>
+<br/>İsterseniz bir örnek daha olması için `adduser.sh` scripti ile kullanıcı oluşturma ve şifre atama işlemlerini yazdığımız script dosyasına yaptıralım. Scripti çalıştırma komutundan sonra istediğimiz kullanıcı ismini belirtmemiz gerekiyor.<br/>
+<br/>`./adduser.sh kullanıcı_adı` şeklinde çalıştırıp, `kullanıcı_adı` kısmına istediğiniz kullanıcı adını yazınız. Şu an işlemleri yaptığınız kullanıcı eğer root değilse ve bu işlem sırasında izin hatası alıyorsanız `sudo` komutu ile çalıştırmayı unutmayın. `cat adduser.sh` ile dosyayı incelediğimizde sırasıyla `echo, sleep, useradd` ve `passwd` komutlarının olduğunu göreceğiz. Bunları tek tek yazmak yerine scriptimiz içinde bir sıra ile yazarak otomatize etmiş oluyoruz. `tail -1 /etc/passwd` komutu ile oluşturduğunuz kullanıcıyı kontrol edebilirsiniz.<br/>
+  
+## Kabuk Karakterleri ( ? * [ ] ; ^ ~ )
+Bu karakterler CLI üzerinden kabuk ile etkileşime geçtiğimiz zamanda bize fonksiyonlar sağlayan araçlardır. <br/>
+<br/>`? Karakteri : ` Bir sorgu sağladığımızda bize harflendirme sınırlandırması sağlar. Örnek olarak `ls /bin/a?? ` sorgusunu gönderdiğimizde bize `/bin/apt & /bin/awk` çıktısını verecektir, böylece /bin altında bulunan a ile başlayan 3 karakterli içerikler gelecektir. <br/>
+<br/>`* Karakteri : ` Bu karakter "her" anlamına gelmektedir. `ls /bin/a*` sorgusunu gönderdiğimizde bize /bin altında bulunun a ile başlayan her içeriği gösterecektir. Fakat `ls` `/bin/*a` sorgusu gönderirsek /bin altında bulunun, a ile biten içerikleri gösterecektir. <br/>
+<br/>` [ ] Karakteri : ` Yaptığımız sorgular sırasında bizlere seçenekler sunan karakterin kullanımı şu şekildedir: `ls /bin/[a-c]* ` sorgusu bize a,b,c ile başlayan bütün eşleşmeleri getirecektir. <br/>
+<br/>`; Karakteri : ` Noktalı virgül işareti ise bize birden fazla sorgu yapmamızı sağlar, pipe ( | ) işareti ile karıştırmamalıyız. Pipe işareti bize komutların aralarında etkileşime girmemizi sağlamaktadır. `uname;date;whoami` komutlarını bu şekilde girdiğimizde bize işletim sistemi, tarih, kullanıcı bilgilerini döndürecektir. `uname|date|whoami` sorgusu ise bize sadece işletim sistemi bilgisini verecektir, çünkü komutlar birbirleriyle etkileşime girmeyeceği için sadece bir komut çalışacaktır. <br/>
+<br/>`^ Karakteri : ` Bu karakter olumsuzluk sorgusu içeren işlemler sırasında kullanılır.
+<br/>`ls -a [^a]* ` komutu, içinde bulunduğumuz klasörde a ile başlamayan bütün içerikleri bize sunar. <br/>
+<br/>`~ Karakteri : ` Tilde isminde olan bu karakter Linux içinde kullanıcıya ait /home dizinine eş değerdir.
+ <br/>`cd ~` sorgusu bizi direkt olarak /home/kullanıcı_adı dizinine götürecektir.
+Diğer karakterlere [buradan](/https://www.cs.ait.ac.th/~on/O/oreilly/unix/upt/ch08_19.htm) ulaşabilirsiniz. <br/>
+  
+## Değişkenler (env, export)
+Linux ortamında 2 tip değişken olmak üzere sistem ve kullanıcı tanımlı değişkenler vardır.<br/> 
+Sistem değişkenlerini CLI üzerinde env komutu ile görebiliriz. Hatta `env | wc` yazarsak 9’a yakın sistem değişkenimiz olduğunu görürüz. İlk sistem değişkeni(HOSTNAME) kullandığımız sunucu adını belirtilmekte, PWD değişkeni bulunduğumuz klasörü gösterir. `echo $PWD` komutu PWD’nin sahip olduğu değeri bize çıktı olarak verir. $ işareti ile belirttiğimiz kelimeler, değişken anlamı kazanır. <br/>
+<br/>**Sistem değişkenleri nasıl değiştirilir veya yeni değişken nasıl eklenir?**
+<br/>Linux sistemimize bir sistem değişkeni eklemek istediğimiz zaman öncelikle CLI üzerinden değişken ve tanımı belirttikten sonra `export` komutu ile sistem değişkenlerine yollayacağız. <br/>
+<br/>Örnek olarak diyelim ki yönettiğiniz sistemde sürekli IP adresleri üzerinden işlem yaptığınız 2 adet bilgisayar var, sürekli bu IP adreslerini tek tek yazmak yerine sistem değişkenleri olarak atayıp, işlemlerinizi değişkenler üzerinden yapabilirsiniz. Örnek ile bir göz atalım şimdi. <br/>
+<br/>Sisteminizdeki IP adresleri şu şekilde: <br/>
+`birinci_bilgisayar_ip = 192.23.203.45`
+`ikinci_bilgisayar_ip = 192.24.204.48`
+<br/>CLI üzerinden önce değişkenleri ve değerleri aralarında boşluk olmadan giriyoruz. <br/>
+`birinci_bilgisayar_ip=192.23.203.45`
+`ikinci_bilgisayar_ip=192.24.204.48`
+<br/>Girdiğimiz bu değişkenleri sistem değişkenlerine atamadığımız sürece bu değişkenler sistem değişkeni olarak geçmeyecektir. Bilgisayarınızı açıp kapattığınız zaman gideceklerdir. <br/>
+<br/>Değişkenleri görmek için<br/>
+`env | grep “birinci_bilgisayar_ip”` ve `env | grep “ikinci_bilgisayar_ip” `
+komutlarını gönderdiğimiz zaman CLI üzerinden bir sonuç gözükmeyecektir. Fakat 
+sırasıyla `export birinci_bilgisayar_ip` ve  `export ikinci_bilgisayar_ip` komutlarını girersek değişkenlerimiz tanımlanacaktır. <br/>
+<br/>Şimdi `env | grep “birinci_bilgisayar_ip` ya da `env | grep “ikinci_bilgisayar_ip `komutlarını gönderdiğimiz zaman sistem değişkenlerinin tanımlanmış bir şekilde ekranımıza bastırılacaktır. Değişkenleri sistemden silmek için `unset` komutunu kullanabiliriz.
+<br/>`unset birinci_bilgisayar_ip` komutunu girersek, değişkenimiz silinecektir. <br/>
+<br/>`Kullanıcı değişkenleri` bizim tanımladığımız değişkenlerdir örnek olarak /ornekler dizininde bulunan `toplama.sh` scriptine göz atalım. <br/>
+```.term1
+cd /ornekler
+cat toplama.sh
+```
+
+```
+birinci_deger=10 #Değişkenler ile değerlerin arasında boşluk olmamasına dikkat edelim.
+ikinci_deger=20
+echo $birinci_deger
+echo $ikinci_deger
+echo $((  birinci_deger+ikinci_deger  )) #Parantezler ve değişkenler arasında 2 birim boşluk bırakıyoruz.
+toplam=birinci_deger+ikinci_deger
+echo $((  toplam  )) #Toplam değişkenini ekrana bastırırken 2 birim boşluğu unutmuyoruz
+```
+<br/>Bu değişkenleri çağırmamız için $(değişken sembolü) ve parantezler ile çağırmamız lazım.
+<br/>Bu iki değerin toplamını yazabilmek için echo komutu ile değişkenleri çağırıyoruz.
+<br/>Ve bu iki değerin toplamını da toplam değişkenine atıyoruz.
+<br/>`./toplama.sh` dediğimiz zaman bize 10, 20, 30, 30 değerlerini döndürecektir. <br/>
+
+## Terminali Özelleştirmek  - ezprompt.net kullanımı  
+  
+Kullandığımız terminalde değişiklik yapabiliriz, laboratuvar ortamımızda terminal  bizlere `root@IP adresi ~/Bulunduğumuz Dizin` şeklinde default olarak verilmiştir ve yazı rengi olarak beyaz sunulmuştur. Bu kullanım şeklini sizler isterseniz kullanıcı bilgisini terminal üzerinden kaldırabilir hatta IP bilgisini de kaldırabilirsiniz, sadece bulunduğumuz dizinin gözükmesini sağlayabilirsiniz. Ayrıca terminalimizde gözüken bu bilgileri farklı renklere göre de tanımlayabilirsiniz. <br/>
+<br/>Terminali kullanış şeklimizin nasıl olduğunu, Linux kernelimizde bu bilgileri içinde barından bir değişken vardır. `echo $PS1` komutunu yazarsak karşımıza bilgilerimiz çıkacaktır. [ezpormt](http://ezprompt.net/) isimli websitesi üzerinden terminalinizin görüntüsünü dilediğiniz gibi değiştirebilirsiniz. Örneğin kullanıcı ismi beyaz, IP bilgisi gözükmesin, bulunduğumuz dizin yeşil renkte olsun şeklinde düzenleyebiliriz. Hatta kullanıcı ismi ile dizin bilgisinin arasında “:” olsun. [ezpormt](http://ezprompt.net/) üzerinden isteklerimize göre ayarlarımızı yaptıktan sonra bize <br/>
+<br/>`export PS1="\u:\[\e[32;40m\]\W\[\e[m\]"` şeklinde bir komut dizini vericektir. Bu `PS1` değişkenini ezprompt.net üzerinde konfigüre ettiğimiz şekilde değiştirecektir. Komutu çalıştırdığımızda (export PS1=...) terminalimizin özelleştiğini görebiliriz.  <br/>
+
+## Argümanlar
+  
+Argümanlar başlığı bash scripting alanında önemli bir yere sahiptir çünkü sorgularımızı argümanları kullanarak yapıyoruz. Labaratuvar içinde bulunan `arg.sh` adlı programımızın içeriği aşağıdaki gibidir:   <br/>
+
+```
+echo $0 $1 $2
+```
+
+Bu scriptimizin amacı bizim tarafımızdan verilen 0, 1, ve 2 numaralı değişkenleri ekrana yazdırmaktır. Scriptimizi çalıştırmak için `./arg.sh` yazdıktan sonra scriptin içine gönderilecek 1 ve 2 numaralı değişkenleri veriyoruz: <br/>
+
+```.term1
+ ./arg.sh açık kaynak fikirler
+```
+  
+Bu şekilde “açık”, “kaynak”, “fikirler” değişkenlerini CLI(komut satırı) üzerinden scripte gönderiyoruz, peki içinde echo komutu ve `$0 $1 $2` değişkenleri bulunan scriptleri yukarıda ki gibi çalıştırırsak ekranımıza nasıl bir çıktı gelecek? <br/>
+<br/>Çıktı `./arg.sh açık kaynak` şeklinde oluştu, peki “fikirler” girdisine ne oldu? Fark ettiyseniz yukarıda “1 ve 2 numaralı değişkenleri gönderiyoruz” dedik, çünkü script içinde sadece $0 $1 $2 değişkenlerine yer verdik, bu da demek oluyor ki bu script sadece 2 adet değişken alabilir. Nedeni ise $0 değişkeni programımızın çalıştırılma komutunu olmasıdır. Fikirler argümanına programın içinde yer bulabilmesi için bir yer göstermedik bu yüzden de çıktı olarak ekrana gelmedi. <br/>
+<br/>echo $0 $1 $2 $3 şeklinde programımızı düzenlersek  `./arg.sh açık kaynak fikirler`  şeklinde çalıştırırsak komutumuz girilen bütün argümanları ekrana bastıracaktır. Şimdi gelin diğer argüman çeşitlerine bakalım. <br/>
+
+<br/>**@ Argümanı :** Programın kendi adı hariç girilen bütün argümanları kabul eder ve `$1, $2, $3 ... `
+argümanlarına otomatik atar. `arg_@.sh` programına göz atarsak, şu şekildedir. <br/>
+
+```
+echo $@
+echo $1
+echo $2
+echo $3
+```
+
+Bu scripti `./arg_@.sh açık kaynak fikirler` şeklinde çalıştırırsak çıktımız aşağıdaki gibi olacaktır. <br/>
+```
+açık kaynak fikirler
+açık
+kaynak
+fikirler 
+```
+**# Argümanı :** Programın kaç adet argüman aldığını bize söyler. `arg_#.sh` scriptine bir göz atalım.
+
+```.term1
+cat arg_#.sh
+```
+
+```
+echo $@
+echo $#   
+```
+
+`./arg_# açık kaynak fikirler` şeklinde çalıştırırsak.
+
+```
+açık kaynak fikirler
+3         
+```
+
+Çıktısını alırız. <br/> 
+<br/> Örnek olması açısından bir program dilleri listesi üzerinden gidebiliriz, yazacağımız scripte 1’den fazla değer yollayacağız ve bu inputları bir değişkenler listesi içerisine atıp birinci indeksini ekrana yazdıracağız. <br/> 
+  
+diller.sh isimli script içerisine bakalım.  
+  
+```.term1
+cat diller.sh
+```
+
+```
+diller=(”$@”) #Girilen bütün inputlar bu değişkene gönderildi.
+echo ${diller[0]} ${diller[2]} 
+```
+`./diller.sh c python java` şeklinde argümanlar tanımlayalım. Çıktımız ilk ve son indeks olan c ve java argümanları olacaktır. Eğer bu örneğin sonuna `echo $*` eklersek bütün değişkenleri bastıran bir satır elde ederiz. <br/>
+  
+## Bash Ortamında Input Alma
+`toplama.sh` isimli örnekte değerlerimizi script içinde tanımlamıştık fakat çoğu zaman yazdığımız script ile etkileşime geçebilmemiz için input yolu ile yani kullanıcıdan alınan değerler ile işlemler yapmamız gerekecektir. `read` komutu ile bu işlemi sağlayacağız, hatta deneme amaçlı olarak CLI üzerinde direkt `read` yazarsak Linux bizden bir değer girmemizi bekleyecektir, değeri girip enter tuşuna bastığımız zamanda CLI üzerinde bir değişiklik olmayacaktır ve girilen değer kaybolacaktır. Fakat `read` komutunu script içine dahil ettiğimizde CLI üzerinden girdiğimiz komutu scriptin içine aktaracaktır ve bu şekilde işlem yapabilecektir. <br/>
+
+<br/>`toplama.sh` dosyamızın ilk 4 satırı soldaki gibiydi, read komutunu eklediğimiz de ise sağdaki gibi gözükecektir ve outputu(çıktısı) daha anlaşılır bir halde olacaktır:
+
+```
+birinci_deger=10          read birinci_deger   
+ikinci_deger=20           read ikinci_deger
+echo $birinci_deger       echo “Birinci değer değişkeni = ” $birinci_deger   
+echo $ikinci_deger        echo “İkinci değer değişkeni = ” $ikinci_deger
+       toplama.sh                        toplama_read.sh
+```
+
+Bu bilgiler ışığında `toplama_read.sh` scriptinin yapısını inceleyelim. <br/>
+
+<br/>Dosyamızı `./toplama_read.sh` şeklinde çalıştırdıktan sonra `read birinci_deger`  kısmı bize birinci_deger değişkenini sordu ve bizde istediğimiz değeri yazdık, `read ikinci_deger` kısmı içinde aynısı geçerli. Ardından `echo` komutu ile ekrana bastırılacak değerin hangisi olduğunu belirtip `$birinci_deger` tanımlaması ile değişkeni belirttik, sonra ikinci değeri de `echo` ile bastırdık. <br/>
+
+<br/>Bu scriptimizi test ettikten sonra göreceğimiz gibi sonuç çok kullanışlı olmadı, bu durumu düzeltmek için yapacağımız işlem `read` komutunun `-p (promt) ` parametresini kullanmak olacaktır. Değişkenlerin kontrolünü sağlamak için sonlarına echo komutlarını ekleyebiliriz. Buradaki örneği `toplama_read2.sh` adlı script dosyasında tekrar inceleyelim. <br/>
+
+```.term1
+cat toplama_read2.sh
+```
+
+```
+read -p “Birinci değer değişkeni = ” birinci_deger
+read -p “İkinci değer değişkeni = ” ikinci_deger
+echo ${birinci_deger}
+echo ${ikinci_deger}
+```
+
+Şeklinde düzenlersek scriptimizin daha kullanışlı olduğunu görebiliriz. Değişken alırken $ kullanılmadığına, değişken çıktı olarak gönderildiğinde ise $ ve {} kullanıldığına dikkat etmelisiniz.
+read komutunun -a(array-dizi) parametresi ile kullanırsak birden fazla değer girebiliriz, -s(secret) parametresi ise girilen değerin ekranda gözükmesini engeller. `read_a.sh` ve `read_s.sh` örnekleri ile parametrelere bir göz atalım. <br/>
+
+```.term1
+cat read_a.sh
+```
+
+```
+echo "Birinci küme değerleri = "
+read -a birinci_kume
+echo "İkinci küme değerleri = "
+read -a ikinci_kume
+echo ${birinci_kume[0]},${birinci_kume[1]}
+echo ${ikinci_kume[0]},${ikinci_kume[1]}
+```
+-a parametresi ile her küme için 2 adet değer alıyoruz ve girilen değerlerin indexlerini echo ile ekrana yazdırıyoruz. <br/>
+
+<br/>Indexleme; Tanımlanan veri setlerinde değerlerin yerlerini göstermektir. Örnek olarak bir alışveriş listesinde alınacak ilk ürün elma ikincisi ise armut ise bu listenin ilk indexi elma olur. Indexleme işlemlerinde değerler 0’dan başlar, ilk değer 0. indexe denk gelmektedir. <br/>
+
+```.term1
+cat read_sp.sh
+```
+
+```
+read -p "Kullanıcı ismi : " kullanici_ismi
+read -sp "Şifre : " sifre #s parametresi p ile beraber kullanılmalıdır.
+```
+
+-s parametresi girilen değişkenin ekranda görünmemesini sağlıyor, bu şekilde gizlilik gerektiren değişkenleri girebiliriz. -s parametresinin, -p(promt) parametresi ile beraber kullanılması gerekmektedir. <br/>
+  
+## Koşul İfadeleri
+
+Koşul ifadeleri yazılan scriptin kullandığı ve kullanacağı değişkenlerini, sistem değişkenlerini, dizin & dosya & klasör gibi birimlerinin durumlarını-değerlerini kontrol ederek script içinde bulunan algoritmanın nasıl ilerleyeceğini belirten ifadelerdir.
+Sorguları sağlayan koşul ifadeleri if, elif, else dir. <br/>
+`if` = Koşul durumların ilk adımıdır, en başta olur ve bir kez kullanılır. fi ile bitirmeniz gerekir.<br/>
+`elif` = Koşul durumlarının 2. 3. 4. ... durumlarını karşılaştırır.<br/>
+`else` = Hiçbir koşulu sağlamayan durumlarda kullanılır.
+<br/>if ifadesinin çalışma mantığını `if.sh` scripti içinde işlenmiştir. Script örneği içine bir komut yazacağız ve eğer böyle bir komut var ise echo komutu bize "Böyle bir komut var!" şeklinde bilgi verecek, eğer yoksa "Böyle bir komut yok!" şeklinde çıktı verecektir. <br/>
+
+```.term1
+cat if.sh
+```
+
+```
+if date #date komutunu kontrol ediyor
+then #if şartı sağlanıyorsa çalışacak komutları ifade ediyor.
+    echo "Böyle bir komut var!"
+else #if şartının sağlanmadığı durumları belirtir.
+    echo "Böyle bir komut yok!"
+fi
+```
+
+Şimdi daha farklı bir komut deneyelim, dışarıdan bir değer alıp bu değerin bir komut olup olmadığını kontrol edelim, sonucu da tekrar echo ile ekrana verelim.
+
+```.term1
+cat if2.sh
+```
+```
+if $1 #Atanan komutunu kontrol ediyor
+then #if şartı sağlanıyorsa çalışacak komutları ifade ediyor.
+    echo "Böyle bir komut var!"
+else #if şartının sağlanmadığı durumları belirtir.
+    echo "Böyle bir komut yok!"
+fi
+```
+
+`./if2.sh pwd` dediğimizde bize "Böyle bir komut var!" cevabını dönecektir, `./if2.sh pvd` dediğimizde ise "Böyle bir komut yok!" cevabını verecektir.  
+  
+Başka bir örnek ile elif kullanımını görelim. Diyelim ki CLI üzerinden scripte bir değer yolluyoruz ve bu değer 1’e eşitse kırmızı, 2’ye eşitse beyaz, 3’e eşitse siyah yazdırsın. Girilen değer 1, 2, 3 sayılarından birine eşit değilse de sarı yazdırsın. Bu durumu yukarıda bahsettiğimiz koşul ifadeleri ile eşleştirirsek.<br/> 
+if $1 = 1 > kırmızı<br/>
+elif $1 = 2 > beyaz<br/>
+elif $1 = 3 > siyah<br/>
+else > sarı<br/>
+Şeklinde olacaktır, eğer algoritmamızı görselleştirirsek şöyle gözükecektir.<br/>
+
+<br/><center><img src="{{site.baseurl}}/images/if.png"></center><br/>
+
+Şimdi ise koşul durumlarının script içinde nasıl yazıldığına göz atalım.<br/>
+
+```.term1
+cat kosul_ifadeleri.sh
+```
+
+```
+if [[  $1 = 1  ]]    #Değerin 1’e eşit olup olmadığını kontrol ediyoruz
+then   #1. durum sağlanırsa aktif hale girecek ve kendinden sonra ki komutu çalıştıracak.
+echo "Değer 1'e eşit, sonuç kırmızı" #Eğer ilk komut çalışsaydı bu komut devreye girecekti.
+elif [[  $1 = 2  ]] 
+then   
+echo "Değer 2'ye eşit, sonuç beyaz"
+elif [[  $1 = 3  ]]
+then
+echo "Değer 3'e eşit, sonuç siyah"
+else  #Artık sağlanacak bir koşul kalmadı bu yüzden then ifadesi kullanmıyoruz.
+echo "Değer [1,3] aralığına değil, sonuç sarı"
+fi    #Koşul durumunun bittiğini belirtiyoruz.
+```
+
+## Karşılaştırma Operatörleri
+
+Karşılaştırma operatörleri değişkenleri birbirleri ile kıyaslamaya yarar. Yazılan algoritma ve komutların akışını bu operatörler aracılığı ile sağlayabiliriz. Karşılaştırma operatörleri şu şekildedir: <br/>
+-eq (equal-eşittir) ; == ; Değişkenlerin birbirine eşit olma koşulunu kontrol eder. <br/>
+-ne (not equeal-eşit değil) ; != ; Değişkenlerin birbirine eşit olmama koşulunu kontrol eder. <br/>
+-lt (less than-...’dan az) ; < ; Bir değişkenin diğer değişkenden küçük olma durumunu kontrol eder. <br/>
+-gt (greater than-...’dan büyük) ; > ; Bir değişkenin diğer değişkenden büyük olma durumunu kontrol eder. <br/>
+-le (less or eqaul-küçük veya eşit) ; <= ; Bir değişkenin diğer değişkenden küçük veya eşit olma durumunu kontrol eder. <br/>
+-ge (greater or eqaul-büyük veya eşit) ; >= ; Bir değişkenin diğer değişkenden büyük veya eşit olma durumunu kontrol eder. <br/>
+Örnek olarak `karsılastırma_opt.sh` scriptini inceleyelim. Bu scripte 2 adet sayı değişken olarak veriliyor ve script değişkenleri 3 farklı if ile denetleyecek. <br/>  
+  
+İlk if başlığında 2 adet sorgu olacak, “değerler eşit mi değil mi?” <br/>
+İkinci if başlığında 3 adet sorgu olacak “ilk değer büyük mü? küçük mü? eşitler mi?” <br/>
+Üçüncü if başlığında 3 adet sorgu olacak “büyük veya eşit mi? küçük veya eşit mi? değerler geçerli mi?” <br/>
+  
+Örnekleri tekrar ederken then ve fi kullanımlarını unutmayınız. <br/>
+
+```.term1
+cat karsılastırma_opt.sh
+```
+
+```
+if [[  $1 -eq $2  ]] #-eq yerine == gelebilir
+then
+echo "Birinci ve ikinci sayı birbirine eşit"
+elif [[  $1 -ne $2  ]] #-ne yerine != gelebilir
+then
+echo "Birinci ve ikinci sayı birbirine eşit değil"
+fi #İlk sorguyu kapatıyoruz
+##
+if [[  $1 -lt $2  ]]
+then
+echo "Birinci değer, ikinci değerden küçük."
+elif [[  $1 -gt $2  ]]
+then
+echo "Birinci değer, ikinci değerden büyük"
+else
+echo "Birinci ve ikinci sayı birbirine eşit"
+fi #İkinci sorguyu kapatıyoruz
+##
+if [[  $1 -ge $2  ]]
+then
+echo “Birinci değer, ikinci değerden büyük veya eşit.”
+elif [[  $1 -le $2  ]]
+then
+echo “Birinci değer, ikinci değerden küçük veya eşit”
+else
+echo “Geçerli değerler giriniz...”
+fi #Üçüncü sorguyu kapatıyoruz
+```
+
+## And & Or Operatörleri - Ve Veya önermeleri
+
+True/False işlemlerinde 1 doğru 0 yanlış anlamına gelmektedir. Eğer bir koşul parametresi doğru ise sisteme 1, doğru değil ise 0 değerini döndürür. Peki hazırladığımız koşul durumu içerisinde 1’den fazla koşul parametresi olmasını nasıl sağlarız? Bunu da ``and`` ve ``or`` operatörleri ile sağlarız.<br/>
+Örnek `and.sh` ile and operatörünü bir yaş sorgusu modeli ile ele alalım. And operatörü “&&” veya -a şeklinde kullanılır. And operatörü için girilen iki sorgunun da doğru (1) çıktısı almış olması gerekir.<br/>
+
+
+```.term1
+cat and.sh
+```
+
+```
+if [[  $1 -gt 0 && $1 -lt 18  ]]
+then
+echo "Girilen yaş reşitlik aralığında değildir"
+else
+echo “Girilen yaş reşitlik aralığındadır”
+fi
+```
+
+Buradaki scriptimiz aldığı $1 değerini önce 0’dan büyük olup olmadığını sorguluyor, ikinci kısımda ise 18’den küçük olup olmadığını sorguluyor. Her iki sorguyu da karşılayan değerlere "Girilen yaş reşitlik aralığında değildir" çıktısı geliyor.<br/>
+Örnek `or.sh` ile or operatörünü basit bir oyun modeli ile ele alalım. Or operatörü “iki adet pipe işareti-||” veya -o olarak kullanılır. Or operatörü için girilen sorgulardan 1 tanesinin doğru (1) değerini almış olması yeterlidir.
+`or.sh` scriptini incelediğimizde girdiğimiz x değeri 5’den küçük olduğunda ya da 13’den büyük olunca oyunu kazanıyoruz. Bu koşulları sağlamadığında da kaybediyoruz. <br/>
+
+```.term1
+cat or.sh
+```
+
+```
+read -p "Bir değer giriniz = " x
+if [[ ( $x -lt 5 || $x -gt 13 ) ]]
+then
+echo "Oyunu kazandınız!"
+else
+echo "Oyunu kaybettiniz!"
+fi
+```
+
+## Dosya Doğrulama Operatörleri
+
+Yazdığımız scriptler ile dosyalarımızın durumlarını, erişim izinlerini, yazdırılabilir olup olmadıkları gibi dosya özelliklerini kontrol edip bunları otomatize edebiliriz. Bu bölümden itibaren if kullanımının ardından then satırını if ile aynı satırda yazacağız.  if [[  $1 -eq 5 ]]; then şeklinde kullanacağız. “;” işareti parametreleri aynı satırda yazmamızı sağlayacak bu şekilde scriptlerimiz daha anlaşılabilir olacaktır. <br/>
+İlk örnekte yazdığımız script değişken olarak girdiğimiz isimde bir dosya bulunup bulunmadığını kontrol edecer, girilen isimde bir dosya bulunmuyorsa, verilen isimde bir dosyayı oluşturur. <br/>
+Öncelikle kontrolünü yapacağımız dosya ismini girelim sonra if bloğumuz dosyanın kontrolünü yapsın, ardından girilen isimde bir dosyanın bulunup bulunmadığını echo ile belirtsin.  
+  
+`dosya_kontrol_e.sh` scriptimizin içeriğini analiz edelim <br/>
+
+```.term1
+cat dosya_kontrol_e.sh
+```
+
+```
+read -p "Dosya ismi giriniz = " dosya
+if [  -e $dosya  ]; then
+echo "$dosya adında bir dosya bulunmaktadır"
+else
+echo "$dosya adında bir dosya bulunmamaktadır."
+sleep 0.5
+echo "$dosya oluşturuluyor.."
+mkdir $dosya
+sleep 0.5
+echo "$dosya oluşturuldu."
+fi
+```
+
+if bloğunda olan -e parametresi dosyanın var olup olmadığını kontrol eden parametredir, diğer parametreler ise aşağıdaki şekilde kontroller yapar. <br/>
+-e = Dosyanın olup olmadığını kontrol eder ; exist<br/>
+-d = Dosyanın dizin olup olmadığını kontrol eder ; directory<br/>
+-s = Dosyanın dolu olup olmadığını kontrol eder ; size<br/>
+-r -w -x = Sırasıyla dosyanın okunabilir-yazdırılabilir-çalıştırılabilir kontrolünü sağlar ; read-write-execute<br/>
+-f = Dosyanın olup olmadığını kontrol eder ve regular olup olmadığını kontrol eder. (regular dosya = -r -w -x yetkileri bulunduran demek) <br/>
+Sıklıkla kullanılan operatörler bunlardır, bunların dışında farklı operatörler de vardır.
+Farklı parametre kullanımı için `dosya_kontrol.sh` scriptine göz atabilirsiniz. <br/>
+
+## Dosya İçerisine Metin Ekleme
+
+Yazdığımız bir script ile dosya ismi belirtip o dosyanın içine girip yazılar ekleyebiliriz, bu işlemi gerçekleştirebilmek için dosyanın öncelikle regular olması gerekiyor.
+ (-r-w-x yetkilerine sahip olması). Yazacağımız script görseldeki gibi bir algoritmaya sahip olacak.<br/>
+<br/><center><img src="{{site.baseurl}}/images/file_check.png"></center><br/>
+
+Öncelikle kullanıcıdan dosya ismini alıyoruz ve dosyasının regular file olup olmadığının sorgusunu yapıyoruz, ardından bu sorgudan alınan cevap ile bir başka sorgu daha oluşturuyoruz. Bu da bir if bloğunun altında if bloğunun oluşmasına neden oluyor, görsel içersinde bu durumu görebilirsiniz.  
+  
+Eğer dosyamız yazdırılabilir değilse script görevini tamamlamadan çıkış yapar, dosya yazdırılabilir ise dosyanın içine girip istediğimiz şekilde değişiklik yapabiliriz. Dosya içersinde önceden bulunan metinler var ise yazdıklarımız o metinin altında yer alacaktır. Peki yazma işleminden çıkış nasıl yapacağız? Bunu da Ctrl+D işlemi ile yapıyoruz, eğer Ctrl+C ile yaparsak son yazdığımız satır silinebilir.  
+
+-------  
+Burada koşul içinde koşul nasıl yazabileceğimize bir örnek veriyoruz.
+
+`dosya_metin_ekleme.sh` dosyası içeriği aşağıdaki gibidir. <br/>
+
+```.term1
+cat dosya_metin_ekleme.sh
+```
+
+```
+read -p “Dosya ismini giriniz = “ dosya
+if [ -f $dosya ]; then
+if [ -w $dosya ]; then
+echo “Bu dosya yazdırılabilir. Çıkış için CTRL+D yapınız.”
+cat >> $dosya
+else
+echo “Bu dosya yazdırılamaz.”
+fi
+else
+echo “Dosya mevcut değil”
+fi
+```
+
+Script yukarıdaki gibi yazdığımızda çalışacaktır, fakat sorguların ayırt edilmesi zor olacaktır. Script yazarken indentation kullanırsak, yazdığımız script içinde sorun çıktığında veya güncellemek gerektiğinde bunu çok daha kolay yapabiliriz. Burada bir birim boşluk bırakarak daha okunabilir `dosya_metin_ekleme2.sh` isimli bir script yaptık. Yeni dosyayı analiz ettiğimizde: <br/>
+
+```.term1
+cat dosya_metin_ekleme2.sh
+```
+
+```
+read -p “Dosya ismini giriniz = “ dosya
+if [ -f $dosya ]; then
+ if [ -w $dosya ]; then
+   echo “Bu dosya yazdırılabilir. Çıkış için CTRL+D yapınız.”
+   cat >> $dosya
+ else
+   echo “Bu dosya yazdırılamaz.”
+ fi
+else
+ echo “Dosya mevcut değil”
+fi
+```
+
+<br/>
+
+## Case Kullanımı
+
+Case ifadesi kullanılan değişkenin farklı değerler aldığında göstereceği eylemleri belirtmede kullanılan bir ifadedir. Örnek olarak değer x değişkeni A ise çıktısı B olur, C ise çıktısı D olur şeklinde. 
+Case kullanımını daha hızlı kavramak için örnekler üzerinden ilerleyelim.  
+  
+Örneklere `case.sh` ve `case2.sh` dosyaları üzerinden erişebilirsiniz.
+
+```.term1
+cat case.sh
+```
+
+```
+read -p “Bir plaka seçiniz (01,02,03,04) = “ plaka
+case $plaka in
+        “01” ) #Plaka değeri 01’e eşit olduğunda çalışacak durum
+        echo “$plaka, Adana iline aittir”;;
+        “02” ) #Plaka değeri 02’ye eşit olduğunda çalışacak durum
+        echo “$plaka, Adıyaman iline aittir”;;
+        “03” ) #Plaka değeri 03’e eşit olduğunda çalışacak durum
+        echo “$plaka, Afyon iline aittir”;;
+        “04” ) #Plaka değeri 04’e eşit olduğunda çalışacak durum
+        echo “$plaka, Ağrı iline aittir”;;
+        * ) #Girilebilecek olası farklı değerler için
+        echo “01-02-03-04 plakalarından birini giriniz. “
+esac #Case durumunun bittiğini belirtir
+```
+
+```.term1
+cat case2.sh
+```
+
+```
+marmara=10;ege=03;akdeniz=01;ic_anadolu=06;karadeniz=05;dogu_anadolu=04;guneydogu_anadolu=02
+read -p "Bir plaka seçiniz [01-02-03-04-05-06-10] = " plaka
+case $plaka in
+        $marmara)
+                echo "$plaka, Marmara bölgesine aittir";;
+
+        $ege)
+        	echo "$plaka, Ege bölgesine aittir";;
+        $akdeniz)
+        	echo "$plaka, Akdeniz bölgesine aittir";;
+        $ic_anadolu)
+        	echo "$plaka, İç Anadolu bölgesine aittir";;
+        $karadeniz)
+        	echo "$plaka, Karadeniz bölgesine aittir";;
+        $dogu_anadolu)
+                echo "$plaka, Doğu Anadolu bölgesine aittir";;
+        $guneydogu_anadolu)
+                echo "$plaka, Güney Doğu Anadolu bölgesine aittir";;
+        *) #Girilebilecek olası farklı değerler için
+        	echo "Geçerli plaka numarası giriniz... [01-81] ";;
+esac
+```
+
+## Dizi Kullanımları  
+
+Diziler birden çok veri barından yapılardır. Tüm meyvelerin isimlerinin bulunduğu bir yapı da dizidir, alışveriş listeniz de bir dizidir, sisteminize giriş yapan kullanıcıların IP bilgilerini otomatik ve düzenli şekilde içinde barındıran bir yapı da dizidir. <br/>
+Dizileri şu şekilde tanıtırız; ``dizi_ismi = (‘deger1’ ‘deger2’ ‘deger3’ ...)`` Kullanacağımız veri tipine göre verimizi tanıtlamalıyız. Örnekte görüldüğü gibi ‘deger‘ şeklinde belirtiyoruz  ‘’ işareti kullanmadan da verimizi tanımlayabiliriz fakat veriniz birden fazla kelime içeriyorsa muhakkak “deger” ya da ‘deger’ şeklinde belirtmeliyiz. <br/>
+Örnek olarak bir alışveriş listesi ve yapılacaklar listesi yazalım. Yazdığımız script bu listeleri, uzunluklarını, tek tek neler bulunduğunu bizlere söyleyecektir. <br/>
+
+```.term1
+cat dizi.sh
+```
+
+```
+alisveris_listesi=(“ekmek” ‘su’ bisküvi)
+yapilacaklar_listesi=(‘oda toplama’ ‘klasorleri duzenleme’ ‘notlara goz atma’)
+echo “–Alışveriş Listesi –“
+echo “Listenin tamamı ve liste uzunluğu”
+echo ${alisveris_listesi[@]} “||” ${#alisveris_listesi[@]}
+echo “İlk ürün = “ ${alisveris_listesi[0]}
+echo “İkinci ürün = “ ${alisveris_listesi[1]}
+echo “Üçüncü ürün = “ ${alisveris_listesi[2]}
+echo “–Yapılacaklar Listesi –“
+echo “Listenin tamamı ve liste uzunluğu”
+echo ${yapilacaklar_listesi[@]} “||” ${#yapilacaklar_listesi[@]}
+echo “İlk ürün = “ ${yapilacaklar_listesi[0]}
+echo “İkinci ürün = “ ${yapilacaklar_listesi[1]}
+echo “Üçüncü ürün = “ ${yapilacaklar_listesi[2]}
+```
+
+Alışveriş listemizde veriler birer kelime olduğu için özgür bir şekilde onları tanıabildik fakat yapılacaklar listesindeki her veri iki kelimeden oluştuğu için ‘deger’ şeklinde belirtiliyorlar. <br/>
+İkinci olarak `dizi2.sh` örneğine bakabiliriz. Bu örnekte ise script'e 4 adet IP adres bilgisi ekliyoruz  ve bu adresleri bir dizi içine tanımlıyoruz, ardından ise dizinin indexlerinden değerleri çekip ekrana yazıyoruz. <br/>
+
+```.term1
+cat dizi2.sh
+```
+
+```
+read -p "Birinci kullanıcı için IP bilgisini giriniz = " user1_IP
+read -p "İkinci kullanıcı için IP bilgisini giriniz = " user2_IP
+read -p "Üçüncü kullanıcı için IP bilgisini giriniz = " user3_IP
+read -p "Dördüncü kullanıcı için IP bilgisini giriniz = " user4_IP
+ip_adresses=(${user1_IP} ${user2_IP} ${user3_IP} ${user4_IP})
+echo "IP Listesi"
+echo "-- -- -- -- -- -- --"
+echo "Kullanıcılar:"
+echo ${ip_adresses[0]}
+echo "---"
+echo ${ip_adresses[1]}
+echo "---"
+echo ${ip_adresses[2]}
+echo "---"
+echo ${ip_adresses[3]}
+```
+
+## Döngüler 
+  
+## While  
+
+Döngüler bir sürecin-durumun sürekli olarak kontrolünü yapar ve bu kontrol esnasında tanımlanan duruma erişim sağlanana kadar bu süreci devam ettirir. While komutu bu şekilde kontrol edilen durum doğru olana kadar tekrar eden bir rutin'dir.
+
+
+Aritmetik bir örnek ile döngüler kısmını anlamaya çalışalım. <br/>
+```.term1
+cat while.sh
+```
+
+```
+x=0
+while [  $x -le 15  ] #Döngüye tanımlanan koşul, x değerinin 15’ten küçük ve eşit olana kadar olan değerleri 
+do #Yapılacak işlemleri atama
+    echo “X değeri = $x”
+    x=$(( x+1 ))
+    sleep 0.5 #Her arttırma işleminden sonra yarım saniye bekle
+done #Koşul sağlanınca durdurma kısmı
+```
+## For
+For komutu, işlemleri tanımlanan tekrar sayısı kadar yapılmasını sağlayan bir komuttur. Örnek olarak “girilen sayı kadar komutları tekrarla”, “dizin içinde bulunan dosya yazısı kadar ekrana IP değerini yazdır” gibi tekrar eden işlemleri yapmamızı sağlar. <br/>
+`for.sh` örneğinde  x değeri ilk olarak 1 değerine gidip echo komutunu çalıştırıyor, ardından 2 değerine gidiyor ve tanımlanan son değere kadar işlemleri gerçekleştiriyor. Bu şekilde de `for.sh` örneğinde 1’den 4’e kadar kullandığımız shell tipini ekrana bastırıyoruz. <br/>
+
+```.term1
+cat for.sh
+```
+
+```
+for x in 1 2 3 4 #{1..4..1} şeklinde de yazılabilir
+do #İşlemlerin yapılmaya başlanacağı kısım
+  echo $SHELL
+done # İşlemlerin sonlandırıldığı kısım 
+```
+
+`for2.sh` örneğinde ise x değerine 0 atayıp aritmetik işlem ile 4’e tamamlanana kadar aynı komutu tekrar çalıştıracağız(üstteki kullanımın farklı şekilde yapılması).
+
+```.term1
+cat for2.sh
+```
+
+```
+for ((  x=0;x<=4;x=x+1  ))
+do #İşlemlerin yapılmaya başlanacağı kısım
+  echo $SHELL | cut -c 6-9 # | ile iki komutu birleştirerek çalıştırdık
+done # İşlemlerin sonlandırıldığı kısım
+```
+
+Şimdi de `for3.sh` örneğinde konteyner içinde bulunduğumuz klasör ile etkileşime girerek for döngüsünü kullanalım. Bu örnekte bulunduğumuz dizin içinde var olan tüm (dizin, dosya...) yapıları listelenir.
+
+```.term1
+cat for3.sh
+```
+
+```
+for dosya in * #Buldugumuz dizindeki butun icerikler uzerinde gezmek icin
+do
+  if [ -e $dosya ] #”Gidilen icerik mevcut mu?” sorgusu
+  then #Mevcut ise alttaki komutlari calistir
+    echo $dosya
+  fi
+```
+
+Yapılan sorgunun algoritması görseldeki gibidir.
+<br/><center><img src="{{site.baseurl}}/images/for.png"></center><br/>
+
+Son olarak for döngüsü ile bulunduğumuz dizin içindeki dosyaları görüntülemeye yarayacak bir script yazalım.
+
+```.term1
+cat dosya_görüntüleme.sh
+```
+
+```
+echo “Dosyayı görüntülemek için y’ye basınız, diğer dosyaya geçmek için n’ye basınız”
+for dosya in $(ls *.sh)
+do
+    echo -n “$dosya görüntülensin mi? (y veya n) = “
+    read cevap
+if [ $cevap == ‘y’ ]
+then
+cat $dosya
+fi
+done
+```
+
+## Select
+Select programı değişkenlerimizin, bir liste içinde bulunan değere göre işlemler yapmasını sağlar. Bu tanım case komutu ile benzerlik taşır. <br/>
+
+```.term1
+cat select.sh
+```
+
+```
+echo “Bir ürün seçiniz...”
+select urun in Tişört Ayakkabı Saat #Değişkene atanabilecek değerler listesi
+do
+    echo “$urun sepete eklendi.”
+done
+```
+
+Şimdi select ve case programlarını beraber kullanacağımız bir script yazalım.
+```.term1
+cat select2.sh
+```
+
+```
+echo “Bir ürün seçiniz...”
+select urun in Tisort Ayakkabi Saat #Değişkene atanabilecek değerler listesi
+do
+    echo “$urun sepete eklendi.”
+    sleep 1
+    case $urun in
+    Tisort )
+        echo “V yaka $urun satın alındı”;;        
+    Ayakkabi )
+        echo “Mavi $urun satın alındı”;;
+    Saat )
+        echo “Deri kayışlı $urun satın alındı”;;
+    * )
+        echo “Geçerli bir ürün giriniz...”;;
+    esac
+done
+```
+
+Bu değişiklikler ile script daha interaktif bir hale geldi. Bu tip bir döngüden çıkmak için exit komutunu kullanmalıyız. <br/>
+
+ `select3.sh` örneğinde, geçerli bir değer girene kadar sürekli çalışan bir script görüyoruz. 
+  
+```.term1
+cat select3.sh
+```
+  
+```
+echo “Bir ürün seçiniz...”
+select urun in Tisort Ayakkabi Saat #Değişkene atanabilecek değerler listesi
+do
+    echo “$urun sepete eklendi.”
+    sleep 1
+    case $urun in
+    Tisort )
+        echo “V yaka $urun satın alındı”; exit;; #exit komutunu çalıştırmak için ... satın alındı” kısmından sonra ; ekliyoruz
+    Ayakkabi )
+        echo “Mavi $urun satın alındı”; exit;;
+    Saat )
+        echo “Deri kayışlı $urun satın alındı”; break;; #exit komutu yerine break komutu da kullanılabilir
+    * )
+        echo “Geçerli bir ürün giriniz...”;;
+    esac
+done 
+```
+  
+## Break ve Continue 
+  
+`select3.sh` örneğinde de gördüğümüz gibi exit ve break komutları ile işlemlerimizi, döngülerimizi durdurabiliyoruz fakat exit komutu aslında terminali kapatır, yaptığımız döngüyü kapatmıyor. Mesela Google Chrome kullanıyorsunuz ve Chrome tarayıcısını kapatmak için bilgisayarınızı kapatıp açıyorsunuz, bu şekilde örneklendirebiliriz.
+Break komutu ise sadece döngüyü durdurur ardından terminal ile etkileşime girmez. <br/>
+
+Şimdi bu işlemler için kullanacağımız ``break`` komutunu inceleyelim.
+```.term1
+cat break.sh
+```
+
+```
+for x in {1..10..1} #(seq 2 2 100) olarak da yazabilirsiniz
+do
+    if [ $x -eq 3 -o $x -eq 5 ]
+    then
+        break #x değerinin 3 ya da 5 olduğunda scripti durdurur
+    fi
+    pwd #x, 3 ve 5 olmadığı sürece pwd komutu bastır ve yarım saniye bekle
+    sleep 0.5
+done
+```
+``continue`` komutu, break komutuna nazaran programı durdurmak yerine es vermesini sağlar. Yukarıdaki örnekte break yerine continue kullanırsak x değerinin 3 veya 5 olduğunda çalışmayı durdurması yerine programın 3 veya 5 değerlerinde durmasını sağlar, yani x değeri 3 ve 5 olduğunda o block çalışmayacak. Aynı örnek ile continue komutuna bakalım. <br/>
+  
+```.term1
+cat continue.sh
+```
+
+```
+for x in {1..10..1}
+do
+    if [ $x -eq 3 -o $x -eq 5 ]
+    then
+        continue #x değerinin 3 ya da 5 olduğunda script es verir.
+    fi
+    pwd #x, 3 ve 5 olmadığı sürece pwd komutu bastır ve yarım saniye bekle
+    sleep 0.5
+done
+```
+
+## Fonksiyonlar
+
+Fonksiyonun matematikteki tanımına bakarsak, değişken sayıları girdi olarak kabul edip bunlardan bir çıktı  oluşmasını sağlayan kurallardır. Bir işlem türüdür. Yani bash ortamında tanımladığımız fonksiyonlar girdiğimiz değerler üzerinde işlemler yapmamıza olanak sağlayacaktır. Sürekli yaptığınız bir matematik işlemi script içindeki bir fonskiyonu çağırarak yapabilirsiniz. Toplama, çıkarma, tarih-formatlama gibi aritmetik işlemler script içinde çok tekrar ediliyorlarsa bunları bir fonksiyon ile yapmak çok mantıklı olacaktır. <br/>
+  
+Gelin ilk örnek olarak “girilen değerin sürekli iki katını alıp on ekleme” fonksiyonunu tanımlayalım.  
+
+```.term1
+cat fonksiyon1.sh
+```
+
+```
+read -p “Bir değer giriniz = “ x #Değişkeni kullanıcıdan alıyoruz
+function matematik_fonk(){ #Fonksiyon başlığını giriyoruz ve içine komutları yazacağımız {} bloğunu açıyoruz.
+    let y=2*x+10 #Girilen değere işlemler yaparak yeni bir değer elde ediyoruz.
+    echo “$y” #Yeni değeri ekrana bastırıyoruz.
+}
+matematik_fonk #Fonksiyonu çağırıyoruz ve girilen değere göre işlemi ekrana döndürüyor.
+```
+İkinci örnekte ise bilgisayarımız ile temasa geçen fonksiyonları ele alalım.
+
+```.term1
+cat fonksiyon2.sh
+```
+
+```
+function tarih_ve_takvim(){ #date ve cal komutlarını bu fonksiyonuna tanımlıyoruz
+    date
+    cal
+}
+
+function dizinler_ve_kullanıcı(){ #dizinleri gösteren ve kullanıcı adı fonksiyonları
+    ls /
+    whoami
+}
+tarih_ve_takvim #Fonksiyonları çağırıyoruz.
+dizinler_ve_kullanıcı
+```
+  
+## Kullanışlı Linux Komutları & Araçları
+Son olarak scripting yaparken işimize yarayacak Linux komutlarını ele alacağız. <br/>  
+  
+**alias** - Komutlara Takma İsim Atamak  
+  
+Mesela bir firmada çalışan olarak her gün en az 4-5 kez kontrol edeceğiniz bir dosya bulunduğunu düşünelim ve bu dosyayı kontrol etmek için bulunduğunuz dizinden çıkıp dosyanın bulunduğu dizini yazıp ardından görüntülemek istediğiniz içeriği istediğiniz formatta yazdırmak için sürekli uzun uzun yazmak zorunda kalırız. Bunu yapmanın çok daha kolay bir yolu var, özellikle bunu pek çok kez yapmak istediğiniz zaman. <br/>
+<br/>Örnek olarak /etc dizinin passwd adlı dosyasının ilk değerlerini kontrol etmek istiyorsunuz. <br/>
+<br/>Bunun için de `cat /etc/passwd | awk -F ':' '{print $1}'` komutunu yazmalısınız, bu oldukça uzun görünüyor. Bu komut dizisini her zaman girmek yerine gelin bu komut dizinini ikiye ayıralım ve takma isimler ile kolayca çağıralım. (`awk` komutunu ileride detaylı bir şekilde göreceğiz.) <br/>
+<br/>Takma isim atama formatı şu şekilde `alias takma_ad=‘atamak istenen komut dizini’` Örnek komut dizinimizi iki parçaya ayıracağımızı söylemiştik, ilk parçası dosyayı görüntüleme ikinci parçası ise çıktıyı bir filtreden geçirip istediğimiz çıktıyı aldıracaktır.  <br/>
+  
+```.term1 
+alias showpasswd='cat /etc/passwd'
+```
+
+```.term1 
+alias awkfilter='awk -F ":" "{print \$1}"'
+```
+
+```.term1 
+showpasswd | awkfilter
+``` 
+
+Uzun olan komut dizinimizi işte bu kadar kolay bir şekilde daha kullanışlı bir hale getirdik.
+Tanımlanan alias değerlerini `unalias takma_isim` komutuyla kaldırabilirsiniz. <br/>
+
+**awk**  
+
+awk komutu en fazla kullanılan yazı işleme araçlarından biridir, aslında awk bir programlama dilidir. Awk “. , : ; |” gibi bölümlere ayırılmış dosyaların istediğimiz şekilde çıktılarını almamızı sağlar. <br/>
+cat, head, tail gibi yazı düzenleme komutlarını Linux 101 eğitiminden hatırlıyorsunuzdur, bu komutlar ile aldığımız çıktıları awk ile belirttiğimiz filtrelerden sonra istediğimiz çıktıyı elde etmemizi sağlar. awk kullanımı aşağıdaki gibidir: <br/>
+`awk ‘{print $ıstenen_deger}’ awk.txt` şeklinde kullanılır, eğer awk.txt dosyasının tüm satırlarının birinci değerini istersek awk ‘{print $1}’ awk.txt şeklinde yazmamız gereklidir ve çıktımız da şöyle olacaktır:
+```
+1
+4
+7
+```
+Eğer 1 yerine 2 yazarsak, bu sefer ikinci sütunu getirecektir fakat bu tarz işlemleri cut komutu ile yapmak daha kolay olacaktır bu yüzden awk’yı işimize yarayacak şekilde kullanmaya başlayabiliriz. cat ogrenciler.txt komutu ile karşımıza 20 adet rastgele şekilde oluşturulmuş öğrencilerin bilgileri gelecektir. awk komutu ile bu dosyadan istediğimiz değeri çekelim şimdi. <br/>
+```.term1
+cat ogrenciler.txt | awk '{print $1}'
+```
+dersek bütün veri listesi tekrar karşımıza gelecek. Gördüğünüz gibi veriler birbirlerinden “,” işareti ile ayrılmıştır eğer biz verileri parçalamazsak bütün veriler bir kalıp gibi olacaktır ve kullanılamaz olacaklardır. <br/>
+awk komutuna “bana bu dosyayı virgülleri dikkate alarak parçalara ayır ve öğrencilerin ismi olan ikinci sütun değerlerini ver” demenin yolu ise `-F (file separator)` parametresi ile dosyayı ayırmak olacaktır. <br/>
+```.term1
+cat ogrenciler.txt | awk -F ',' '{print $2}'
+```
+komut dizinini gönderdiğimizde bize 20 öğrencinin de adını getirecektir eğer 2 yerine 6 değerini girersek bütün öğrencilerin IP değerleri karşımıza çıkacaktır. mockaroo isimli websitesi üzerinden random datalar elde edip kendi örneklerinizi yazabilirsiniz. <br/>
+
+```.term1
+cat ogrenciler.txt | awk -F ',' '{print $2, $3, $4, $5, $6}'
+```
+Şeklinde ise baştaki sıra numaralarını dahil etmeden bütün veri değerlerini çekebiliriz.
+```.term1
+cat ogrenciler.txt | awk -F ',' '{print "Ogrenci:" $2, $3,"| mail:" $4,"| IP:" $6}'
+```
+Formatında ise bilgileri listeleyerek elde edebiliriz.
+
+**cut**  
+
+cut komutu için awk komutunun 1-2 özellik eksik hali diyebiliriz fakat metinler ile istediğimiz şekilde oynamamız için güçlüdür. cut isminden belli olacağı gibi dosyalardan veri kırpmamızı sağlar.
+```.term1
+cut -d ',' -f2,3 ogrenciler.txt
+```
+şeklinde girdiğimiz zaman öğrenci setimizden “isim,soyisim“ şeklinde bizlere değerleri verecektir.
+
+
+**sed**  
+
+sed komutunun açılımı stream editör şeklindedir, bu komut aldığımız değerlerin akışını değiştirir yani istediğimiz değeri istediğimiz değer ile değiştirebiliriz. İsterseniz sed komutu ile ogrenciler.txt dosyamızda bulunun Female, Male bilgilerini Kadın, Erkek şeklinde değiştirelim ardından değişmiş halini öğrenciler_tr.txt dosyasına aktaralım böylece ilk dosyamıza zarar vermeyelim.<br/>
+```.term1
+sed 's/Female/Kadin/' ogrenciler.txt >> ogrenciler_tr.txt
+ ```  
+Şeklinde tanımladıktan sonra ogrenciler_tr dosyasını elde ediyoruz, gelin şimdi de ogrenciler_tr'de bulunan erkek öğrencilerin verilerini düzenleyelim ve örneği tamamlayalım.
+```.term1
+sed 's/Male/Erkek/' ogrenciler_tr.txt
+```
+Burada bahsetmek istediğim bir şey var arkadaşlar, bu eğitimi tamamladıktan sonra laboratuvar ortamında `nano` komutu ile örnek dosyalarını kontrol ederken Türkçe karakterler laboratuvar ortamında sorunlar çıkartıyordu. Ben de sed komutu ile 50'den fazla dosyada ki tüm Türkçe küçük ve büyük harfleri saniyeler içerisinde aşağıdaki gibi değiştirebildim.
+```term1
+sed -i 's/Türkçe karakter/İngilizce karakter/g' * 
+```
+
+**grep**
+
+Grep komutunu Linux 101 eğitimi içerisinde işlemiştik fakat tekrar hatırlatmak amacı ile bir üstünden geçelim çünkü ilerleyen komutlarda grep komutunu da kullanacağız. <br/>
+Grep, girilen değerin aranan dosya içinde olup olmadığını bize gösterir. Örnek olarak şöyle ele alalım, ogrenciler.txt dosyası içerisinde mail adresinde “.com” uzantısı bulunan öğrencileri ayrı bir dosyada tutalım.
+```.term1
+grep '.com' ogrenciler.txt > ogrenciler_com.txt`
+``` 
+olarak bunu gerçekleştiririz.<br/>
+Eğer grep komutunu `-c (count)` parametresi ile gönderirsek bize .com uzantısı kullanan öğrenci sayısını söyleyecektir.
+```.term1
+grep -c '.com' ogrenciler.txt
+``` 
+Şimdi ise diğer komutları da kullanarak `ogrenciler.txt` dosyasını virgüllerinden ayırarak IP adresleri 14 ile başlayan öğrencileri alalım.
+
+```.term1
+cat ogrenciler.txt | awk -F ',' '{print $6}' | grep  '14?*'
+``` 
+Başka bir örnek olarak da `history_kontrol.sh` adlı dosyayı ele alalım. Bu scripte bakacak olursak
+```.term1
+cat history_kontrol.sh
+```
+
+```
+date >> history_kontrol.txt ; cat history.txt | grep 'sudo' | nl >> history_kontrol.txt
+date >> history_kontrol.txt ; cat history.txt | grep 'root' | nl >> history_kontrol.txt
+```
+Şeklinde karşımıza çıkan bu örnek öncelikle çalıştırıldığında `history_kontrol.txt` dosyasına işlemin gerçekleştiği gün ve saati yazdırıyor. Ardından `history` komutu ile önceden girilen komutların yazdırıldığı history.txt dosyası içinde `sudo` veya `root` gibi önemli parametrelerin kullanılıp kullanılmadığını `grep` komutu ile filtreliyor.  
+
+
+**wc**
+
+wc komutu ise bir dosya içinde bulunan satır sayısını, kelime sayısını ve byte değerinin ne kadar olduğunu sıralı bir şekilde bize gösterir.
+```.term1
+cat ogrenciler.txt | grep 'Female' | wc
+```
+ sorgusunu gönderdiğimiz zaman bize 12 12 715 değerlerini döndürecektir. Bu değerler ise dosyamızda 12 satır, 12 kelime ve toplamda 715 byte olduğunu bize söyler. -l parametresi ise direkt bize kaç kere geçtiğini gösterir. Böylece ogrenciler.txt dosyasında 12 adet “Female” ifadesini bulunduran satır mevcuttur.<br/>
+Başka bir örnek olarak `ogrenci_sayisi.sh` dosyasına bakabiliriz. Bu örnek öğrenci sayısının 20'den az olduğu durumlarda bize uyarı verecek. Örnek esnasında `cut` ve `wc` komutlarını beraber kullanacağız, bu scriptte önemli olduğuna inandığım başka bir konuya da değineceğiz. "Komut dizini çıktısını değişkene atama".<br/>
+```.term1
+cat ogrenci_sayisi.sh
+```
+
+```
+sayi=`cat ogrenciler.txt | wc | cut -d" " -f6`
+#wc komutu ile ogrencilerin sayisini aldik
+#cut ile wc çıktısının ilk degerini aldik 
+#Degiskenden sonra ` ` ifadesi ile komut dizinini "sayi" degiskenine atadik
+#Komut dizinin cıktısı 19 oldugu icin "sayi" 19'a esit oldu
+if [ $sayi -le 20 ]; then
+echo "Yeterli sayida ogrenci yok."
+else
+echo "Yeterli sayida ogrenci var."
+fi
+```
+
+**tr**
+
+tr komutu, sed komutu gibi dosya içeriklerinde bulunan verileri kontrol etmemize yarayan bir komuttur. Kullanım şekli:
+`cat dosya | tr '[a-z]' '[A-Z]'`. Bu komut dizininden sonra ekrana bastırılan bütün değerler büyük harfler ile döndürülecektir.<br/>
+`ogrenciler.txt` dosyamız üzerinden gidersek, 
+```.term1
+cat ogrenciler.txt | tr '[a-z]' '[A-Z]'
+```
+
+ya da
+
+```.term1
+cat ogrenciler.txt | tr '[:lower:]' '[:upper:]'
+``` 
+şeklinde kullanabiliriz.
+<br/>
+Başka bir örnek olarak da ogrenciler.txt dosyasında virgüllerin yerlerine boşluk değerlerini atayalım.
+```.term1
+tr ',' ' ' < ogrenciler.txt
+```
+
+**sort**
+
+`sort` komutu sayılar değerleri küçükten büyüğe, kelimeleri ise alfabetik olarak sıralama yarayan bir komuttur.
+öğrenciler.txt dosyamızı öğrencilerin isimlerine göre alfabetik sırada sıralanmış bir şekilde çıktısını almak istersek
+```.term1
+cat ogrenciler.txt | awk -F ',' '{print $2,$3,$4,$5}' | sort
+```
+şeklinde alabiliriz. siparisler.txt dosyamız üzerinden de başka bir örneği ele alalım şimdi.
+```.term
+cat siparisler.txt
+```
+Dediğimiz zaman 20 satırlık müşteri, ülke, para birimi, mail, tutar şeklinde 6 birime bölünmüş bir metin dosyası karşımıza çıkacak. Önce awk ile `tutar` `para birimi` `müşteri` şeklinde bir çıktı alalım ve `sort` komutu ile az tutardan fazla tutara olacak şekilde sıralayalım.
+```.term1
+cat siparisler.txt | awk -F ',' '{print $6, $3, $1}' | sort
+```
+  
+**uniq**  
+  
+uniq, komutu unique sözcüğünden gelmektedir. Bu kelimenin Türkçe karşılığı ise “benzersiz”. Uniq komutumuz dosyalar içinde bulunan tekrar eden satırları ayıklamamızı sağlar. 
+Gelin şimdi öğrendiğimiz komutlar ile bu metini parçalara bölüp uniq ile sayılarını öğrenelim.
+Eğer siparisler.txt dosyamızdaki fiyatlar değerlerine bakıcak olursak 20 adet tutar var fakat bunların hepsi farklı farklı tutarlar değil.
+```.term1
+cat siparisler.txt | awk -F ',' '{print $6}' | sort | uniq
+```
+sorgusunu gönderdiğimiz zaman bize tüm siparişlerin tutarları küçükten büyüğe sıralanmış olarak gelecek. Bu sorgu içinde bulunan tutarların kaç kez geçtiğiniz öğrenmek için `uniq` komutuna -c(count) parametresini göndermemiz gerekecektir.
+```.term1
+cat siparisler.txt | awk -F ',' '{print $6}' | sort | uniq -c
+```
+sorgusunu gönderdiğimiz zaman her tutarın kaç kez tekrar ettiğini göreceğiz.
+  
+  
+**nl**  
+
+kısaltması nl olan number of lines komutu, çıktılarımızın satır başlarına kaçıncı satırda bulunduklarını yazarak liste işlemlerinde kullanılan bir komuttur.
+```.term1
+cat siparisler.txt | nl
+```
+dediğimiz zaman, satır başlarında numaralar eklenmiş şekilde bir çıktı alacağız. 
+```.term1
+cat siparisler.txt | nl > siparisler_nl.txt
+```
+şeklinde numaraların eklemiş olduğu bir dosya oluşturabiliriz.
+  
+**curl**  
+  
+Curl aracı bir web sayfasını HTTP protokolü ile elde etmemizi sağlar. Curl'i sanal makinemize kurduktan sonra örneklere geçebiliriz.<br/>
+```.term1
+apt update ; apt install curl -y
+```
+Peki curl aracını ne için kullanabiliriz? Websitemizin sağlıklı bir şekilde çalışıp çalışmadığını curl ile 
+çekerek kontrolünü sağlayabiliriz, eğer curl'i içeren bir script yazarsak belirli aralıklar ile websitemizin HTML dosyasını çekeceğiz ve 1 saat boyunca curl bir hata ile karşılaşınca bize haber verecek.
+```.term1
+cat curl.sh
+```
+
+```
+for y in {1..60..1}
+do
+curl -s www.github.com #-s ile HTML dosyasini sessiz modda calistirarak ekrana bastirmadik
+if [  $? == 0  ];then
+echo "github.com ayakta!"
+else
+echo "github.com ayakta değil!"
+fi
+sleep 10
+done
+```
+
+
+------
+<!-- Quiz bölümünü diğer quizlerde aynen kopyalayıp değiştirmemiz gerek.-->
+
+**[Eğitimler-Ana Sayfa](/)**
+
+-----
+## Konu tekrarı, kısa sınav
+>seçeneklerden doğru olanları seçtikten sonra **Gönder** butonuna basınız. Sonuçları <span style="color:green">**doğru**</span> ve <span style="color:red">**yanlış**</span> görebilirsiniz.
+
+
+
+
+{:.quiz}
+"Her" veya "Hepsi" anlamını taşıyan kabuk karakteri nedir?
+
+- ( ) @
+- (x) *
+- ( ) #
+- ( ) ?
+
+{:.quiz}
+Kabuk üzerinde aktif olan bir sistem değişkeni nasıl kaldırılır
+
+- ( ) alias
+- ( ) env
+- ( ) export
+- (x) unset
+
+{:.quiz}
+Bir script için 0 (sıfır) numaralı argüman nedir?
+
+- ( ) shell türü
+- (x) scriptin kendi ismi
+- ( ) verilen ilk argüman
+- ( ) kullanıcı adı
+
+{:.quiz}
+Script içersinde klavyeden girdi sağlayan komut hangisidir?
+
+- ( ) alias
+- (x) read
+- ( ) cat
+- ( ) echo
+
+{:.quiz}
+if sorgulamasını sonlandırmak için hangi komut kullanılır?
+
+- (x) fi
+- ( ) elif
+- ( ) if
+- ( ) then
+
+{:.quiz}
+Elimizde bir argüman listesi olsun "programlar = 'python,C,java,go' programlar[2] değeri nedir?
+
+- ( ) python
+- ( ) c
+- ( ) go
+- (x) java
+
+{:.quiz}
+Hangi read komutu parametresi yazılan değerlerin ekranda görüntülenmesini engeller?
+
+- ( ) -p
+- ( ) -d
+- (x) -s
+- ( ) -h
+
+{:.quiz}
+Aşağıdaki dosya operatör parametrelerinden hangisi yanlış tanımlanmıştır?
+
+- ( ) -e "Dosyanın var olup olmadığını sorgular"
+- (x) -f "Dosyanın boyutunu sorgular"
+- ( ) -d "Dosyanın dizin olup olmadığını sorgular"
+- ( ) -x "Dosyanın çalışıp çalışmadığını sorgular"

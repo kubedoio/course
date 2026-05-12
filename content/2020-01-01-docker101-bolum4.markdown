@@ -1,0 +1,906 @@
+---
+layout: post
+title:  "4. Docker Ağ yapıları"
+date:   2020-11-20
+author: "@senolcolak original- @jimcodified"
+tags: [docker101,turkce,operations,networking]
+categories: [beginner,docker101]
+terms: 2
+---
+  
+## Docker Ağ yapıları ve kullanımı
+---
+Bölüm içersinde Docker Networking kavramları hakkında bilgi edineceğiz. Linux işletim sistemi üzerinde birçok ağ aracı mevcut, docker kullanımı için birkaç temel ağ kavramını incelememiz gerekiyor. Köprü(Bridge) ağları hakkında bilgi edinerek ve son olarak Overlay ağ oluşturarak laboratuvar çalışmamızı bitireceğiz.  
+  
+Yarattığımız Konteynerlerin internet üzerinden erişilebilir servisleri olacak. Birden fazla Konteyner çalıştırıp tek bir servisi internete açacak ta olabiliriz, konteynerlerin izole bir ağ üzerinden birbirleri ile iletişim halinde olmaları gerek. Bu tür çözümler üretebilmek için Docker ağ yapılarını bilmemiz şart.
+  
+  
+> **Zorluk**: Başlangıç ve Orta
+
+> **Zaman**: Yaklaşık 45 dakika
+
+> **İçerik**:
+>
+> * [#1 - Ağ temelleri](#git1)
+> * [#2 - Bridge(köprü) ağlar](#git2)
+> * [#3 - Overlay(üst katman) ağlar](#git3)
+> * [#4 - Ağları temizlemek](#cleanup)
+
+
+# <a name="git1"></a>#1 - Ağ temelleri
+
+## <a name="list_networks"></a>Adım 1: 'docker network' komutu 
+
+`docker network` komutu konteyner ağlarını yönetmek ve ayarlamak için kullanabileceğimiz komuttur. Sağdaki(üsste) ilk ekrandan `docker network` komutunu çalıştırın.
+
+```.term1
+docker network
+```
+
+```
+
+Usage:	docker network COMMAND
+
+Manage networks
+
+Options:
+      --help   Print usage
+
+Commands:
+  connect     Connect a container to a network
+  create      Create a network
+  disconnect  Disconnect a container from a network
+  inspect     Display detailed information on one or more networks
+  ls          List networks
+  prune       Remove all unused networks
+  rm          Remove one or more networks
+
+Run 'docker network COMMAND --help' for more information on a command.
+```
+
+Komut çıktısı ile `docker network` ile kullanabileceğiniz alt komutların listesi gelecektir. Çıktıdan görebileceğiniz gibi `docker network` komutu sizin ağlar yaratmanızı, ağları listelemenizi, ağları incelemenizi ve ağları silmenizi sağlar. Bu komut ayrıca konteynerlerinizi ağlara bağlamanızı ve ayırmanızı sağlar.
+
+## <a name="list_networks"></a>Adım 2: Ağları listelemek
+
+Bulunduğunuz Docker sunucusu üzerindeki var olan konteyner ağlarını görebilmek için `docker network ls` komutunu çalıştırmalısınız.
+
+```.term1
+docker network ls
+```
+```
+NETWORK ID          NAME                DRIVER              SCOPE
+3430ad6f20bf        bridge              bridge              local
+a7449465c379        host                host                local
+06c349b9cc77        none                null                local
+```
+Yukarıdaki çıktı, Docker'ın standart kurulumunun parçası olarak oluşturulan konteyner ağlarını gösteriyor.
+
+Oluşturduğunuz yeni ağlar'da `docker network ls` çıktısı içinde yer alacaktır.
+
+Gördüğünüz gibi her bir network için bir (kimlik) `ID` ve (isim) `NAME` vardır. Her network aynı zamanda bir sürücü(driver) ile eşleştirilmiştir. "bridge" (köprü) ve "host" olan ağların NAME(isim) ve DRIVER(sürücü) aynı olduğunu görebilirsiniz.
+
+## <a name="inspect"></a>Adım 3: Bir ağı incelemek (inspect)
+
+`docker network inspect` komutunu kullanarak docker ağ yapısını derinlemesine inceleyebilirsiniz. Bu incelemeniz sırasında göreceğiniz detaylar; name, ID, driver, IPAM driver, subnet info, connected containers, ve daha bir çok ayrıntıdır.
+
+`docker network inspect <network>` komutunu kullanırsanız sadece belirttiğiniz konteyner ağı hakkında bilgi edinebilirsiniz. Docker networklerinin sadece Docker çalıştıran sunucunuz üzerinde olduğunu unutmayın lütfen. Aşağıdaki komut `bridge` ağı ile ilgili ayrıntıları gösterecektir.
+
+```.term1
+docker network inspect bridge
+```
+
+Aşağıdakine benzer bir çıktı olacaktır.
+```
+[
+    {
+        "Name": "bridge",
+        "Id": "3430ad6f20bf1486df2e5f64ddc93cc4ff95d81f59b6baea8a510ad500df2e57",
+        "Created": "2017-04-03T16:49:58.6536278Z",
+        "Scope": "local",
+        "Driver": "bridge",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": [
+                {
+                    "Subnet": "172.17.0.0/16",
+                    "Gateway": "172.17.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Containers": {},
+        "Options": {
+            "com.docker.network.bridge.default_bridge": "true",
+            "com.docker.network.bridge.enable_icc": "true",
+            "com.docker.network.bridge.enable_ip_masquerade": "true",
+            "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
+            "com.docker.network.bridge.name": "docker0",
+            "com.docker.network.driver.mtu": "1500"
+        },
+        "Labels": {}
+    }
+]
+```
+
+> **NOT:** `docker network inspect` komutunun kullanım şekli `docker network inspect <network>` şeklinde olmalıdır, burada `<network>` ağ ismi veya ağ ID olabilir. Yukarıda gördüğünüz örnek içersinde "bridge" isimli ağın ayrıntılarını gösteriyoruz. Buradaki "bridge" kullanımı sürücü(driver) için değildir!  
+  
+## <a name="list_drivers"></a>Adım 4: Ağ sürücü eklentilerinin listesi (List network driver plugins)
+
+`docker info` komutu, kurulu Docker servisi ile ilgili oldukça fazla ve ayrıntılı bilgi sağlar.
+
+`docker info` komutunu çalıştıralım ve "network pugins" kısmına bir bakalım.
+
+```.term1
+docker info
+```
+```
+Containers: 0
+ Running: 0
+ Paused: 0
+ Stopped: 0
+Images: 0
+Server Version: 17.03.1-ee-3
+Storage Driver: aufs
+<Snip>
+Plugins:
+ Volume: local
+ Network: bridge host macvlan null overlay
+Swarm: inactive
+Runtimes: runc
+<Snip>
+```
+
+yukarıdaki çıktı **bridge**, **host**,**macvlan**, **null**, ve **overlay** sürücülerini gösteriyor.
+
+# <a name="git2"></a>#2 - Bridge(köprü) Ağlar
+
+## <a name="connect-container"></a>Adım 1: Temeller
+
+Her sıfır Docker kurulumu **bridge** isminde bir ağı otomatik olarak kurar. Bunu `docker network ls` yaparak görebiliriz.
+
+```.term1
+docker network ls
+```
+```
+NETWORK ID          NAME                DRIVER              SCOPE
+3430ad6f20bf        bridge              bridge              local
+a7449465c379        host                host                local
+06c349b9cc77        none                null                local
+```
+
+Yukarıda görebileceğimiz gibi **bridge** ağı *bridge* sürücüsü(driver) ile ilişkilendirilmiştir. Ağın ve sürücünün birbiri ile bağlantılı olduğunu bilmemiz çok önemlidir fakat isim ve sürücü aynı şey demek değildir.Burada size göstereceğimiz örnek içersinde ağ ve sürücü aynı isimdedirler fakat lütfen ikisini birbiri ile karıştımayın!  
+  
+Yukarıda gördüğünüz örnekte **bridge** ağı "SCOPE" olarak yerel(local) tanımına sahiptir. Yani buradaki ağ sadece Docker çalışan sunucu üzerinde varlığını sürdürür, erişim alanı sunucu üzerindeki ağ dır. Bu durum *bridge*(köprü) sürücüsü kullanan tüm ağlar için geçerlidir - *bridge* sürücüsü tek-suncu'lu bir ağ tanımı yapar. *bridge* olan bir sürücü varlığını sadece bulunduğu bilgisayarda gösterebilir.
+
+Bridge üzerinde tanımlayacağınız ip adresleri ve işlemler sadece çalışan bilgisayar için varlığını sürdürecektir. Yerel Ağ(Local network) üzerindeki diğer bilgisayarların bridge üzerindeki ağ ile iletişimi yoktur.
+
+*bridge* sürücüsü ile yaratılmış tüm ağlar Linux bridge (sanal switch - virtual switch) ile desteklenmektedir. Linux bridge sanallaştırma yöntemlerinde(XEN,KVM) ve LXC,Vagrant gibi konteyner sanallaştırması yöntemlerinde oldukça sık şekilde kullanılmaktadır. Linux bir sunucu üzerinde oluşturacağınız sanallaştırma ortamında mutlaka dışarıdaki ağlar ile olan bağlantıyı linux bridge ile yapmanız gerekir. (OVS)Open Virtual Switch bile kendisini alt katmanda Linux bridge ile eşleştirir.
+
+`brctl` uygulamasını kurun ve kullanın, bu sayede Docker sunucusu üzerinde çalışan Bridge ağlar ile ilgili bilgi edinebilirsiniz.. bu programı kurmak için çalıştırmanız gereken komut `sudo apt-get install bridge-utils`.
+
+```.term1
+apt update
+apt install -y bridge-utils
+```
+
+Sonrasında `brctl show` komutunu çalıştırarak Docker sunucusu üzerinde çalıştan birdge(köprü ağ) ağlarını listeleyebilirsiniz.
+
+```.term1
+brctl show
+```
+```
+bridge name	bridge id		STP enabled	interfaces
+docker0		8000.024252ed52f7	no
+```  
+
+Bridge networkler çok kullanışlıdırlar ve aynı zamanda çok basit yapılardır, network sorunları ile uğraştığım on yıllar içinde network bridge kaynaklı hiç bir problem görmedim.
+
+Yukarıda yazdığınız komutun çıktısı size **docker0** isimli bir bridge verecektir. Bu birdge(köprü ağ) **bridge** ismini taşıyan ağ için docker tarafından otomatik olarak kurulmuştur. Şuanda herhangi bir sanal ağ bağdaştırıcı(interface) bağlı olmadığını görebilirsiniz. en sağdaki "interfaces" kısmı size bağlı bulunan VIF (Virtual Interface) veya sanal ağ bağdaştırıcı bilgisini verir.  
+  
+Bu duruma şöyle örnek verebiliriz, docker konteynerlerin ağ bağdaştırıcıları ve kabloları olsun, buradaki interfaces yazan kolonda eğer kablonuz bağlı ise, konteynerinizin ağ bilgisini görürsünüz.
+
+`ip a` komutunu çalıştırarak **docker0** bridge(köprü ağ) ile ayrıntılı bilgi edinebilirsiniz.
+
+```.term1
+ip a
+```
+```
+<Snip>
+3: docker0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default
+    link/ether 02:42:52:ed:52:f7 brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 scope global docker0
+       valid_lft forever preferred_lft forever
+```
+
+## <a name="connect-container"></a>Adım 2: Bir konteyner bağlamak
+
+**bridge** ağı, yeni konteynerler için varsayılan ağ dır. Bunun anlamı, farklı bir şekilde tanım yapmadığınız sürece, tüm konteynerler **bridge** olan ağ üzerine erişim sağlayacaklardır. Yani **bridge** olan ağ için konfigürasyon içersinde herhangi bir tanıma ihtiyaç yoktur.  
+  
+`docker run -dt ubuntu sleep infinity` komutunu çalıştıralım ve yeni bir konteyner oluşturalım.
+
+```.term1
+docker run -dt ubuntu sleep infinity
+```
+```
+Unable to find image 'ubuntu:latest' locally
+latest: Pulling from library/ubuntu
+d54efb8db41d: Pull complete
+f8b845f45a87: Pull complete
+e8db7bf7c39f: Pull complete
+9654c40e9079: Pull complete
+6d9ef359eaaa: Pull complete
+Digest: sha256:dd7808d8792c9841d0b460122f1acf0a2dd1f56404f8d1e56298048885e45535
+Status: Downloaded newer image for ubuntu:latest
+846af8479944d406843c90a39cba68373c619d1feaa932719260a5f5afddbf71
+```
+
+Bu komut `ubuntu:latest` imajını temel alan ve ubuntu dağıtımının son sürümünü içeren bir konteyner çalıştıracaktır ve `sleep` komutu sayesinde başlatılmış konteyner arka planda çalışmaya devam edecektir. Bunu doğrulamak için `docker ps` komutu ile konteynerin halen çalıştığını gözlemleyebilirsiniz.
+
+```.term1
+docker ps
+```
+```
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+846af8479944        ubuntu              "sleep infinity"    55 seconds ago      Up 54 seconds                           heuristic_boyd
+```
+
+`docker run` komutunda herhangi bir ağ tanımı yapılmadığı için konteyner **bridge** ağını herhangi bir konfigürasyona gerek olmadan ekler.
+  
+`brctl show` komutunu şimdi tekrar çalıştıralım.  
+  
+```.term1
+brctl show
+```
+```
+bridge name	bridge id		STP enabled	interfaces
+docker0		8000.024252ed52f7	no		vethd630437
+```
+
+**docker0** bridge üzerine bağlanmış bir (ağ bağdaştırıcısı) -interface olduğunu görebilirsiniz. Bu ağ bağdaştırıcısı veya VID doğrudan **docker0** bridge(köprü ağı) üzerine bağlanacaktır.  
+  
+Şimdi **bridge** ağını tekrar 'ispect' ederek inceleyebilirsiniz, bunun için`docker network inspect bridge` komutunu kullanmanız gerekir, bu sayede yeni yaratılmış olan konteyner'in **bridge** üzerinde bağlı olduğunu görebilirsiniz.
+
+```.term1
+docker network inspect bridge
+```
+```
+<Snip>
+        "Containers": {
+            "846af8479944d406843c90a39cba68373c619d1feaa932719260a5f5afddbf71": {
+                "Name": "heuristic_boyd",
+                "EndpointID": "1265c418f0b812004d80336bafdc4437eda976f166c11dbcc97d365b2bfa91e5",
+                "MacAddress": "02:42:ac:11:00:02",
+                "IPv4Address": "172.17.0.2/16",
+                "IPv6Address": ""
+            }
+        },
+<Snip>
+```
+
+## <a name="ping_local"></a>Adım 3: Ağ bağlantısını test edelim
+
+önceki `docker network inspect` komutu çıktısı bize yeni konteynerin IP address bilgisini verir. Önceki örnek için bu adres "172.17.0.2" 'tir, muhtemelen sizin gördüğünüz adres daha farlıdır.  
+  
+Docker sunucunuz üzerinden `ping -c5 <IPv4 Adresi>` komutunu yazarak (`<IPv4 adresi>` sizin ortamınızdan olmalı)konteyner networkünün erişilebilir olduğunu görebilirsiniz. 
+
+```
+ping -c5 172.17.0.2
+PING 172.17.0.2 (172.17.0.2) 56(84) bytes of data.
+64 bytes from 172.17.0.2: icmp_seq=1 ttl=64 time=0.055 ms
+64 bytes from 172.17.0.2: icmp_seq=2 ttl=64 time=0.031 ms
+64 bytes from 172.17.0.2: icmp_seq=3 ttl=64 time=0.034 ms
+64 bytes from 172.17.0.2: icmp_seq=4 ttl=64 time=0.041 ms
+64 bytes from 172.17.0.2: icmp_seq=5 ttl=64 time=0.047 ms
+
+--- 172.17.0.2 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4075ms
+rtt min/avg/max/mdev = 0.031/0.041/0.055/0.011 ms
+```
+
+Yukarıda gördüğümüz çıktı bize **bridge** ağı üzerinden konteyner üzerine erişebildiğimizi gösterir. Fakat aynı zamanda konteynerin dış dünya ile bağlantısı olduğu anlamına da gelir. isterseniz konteyner üzerine bağlanalım, sonrasında `ping` programını kuralım, ve `www.github.com` pingleyelim.
+
+Öncelikle konteyner ID ye ihtiyacımız olacak, `docker ps` komutu ile bunu öğrenebiliriz.
+
+```.term1
+docker ps
+```
+```
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+846af8479944        ubuntu              "sleep infinity"    7 minutes ago       Up 7 minutes                            heuristic_boyd
+```
+
+Sonrasında, konteyner içerisine bağlanalım ve bir shell(kabuk) çalıştıralım. bunu yapmak için `docker exec -it <CONTAINER ID> /bin/bash` komutunu yazmalıyız..
+
+```
+docker exec -it yourcontainerid /bin/bash
+root@846af8479944:/#
+```
+
+Daha sonra, ping programını kurmamız gerekir. Yani, `apt-get update && apt-get install -y iputils-ping` komutunu çalıştırabiliriz.
+
+```.term1
+apt-get update && apt-get install -y iputils-ping
+```
+
+www.github.com adresini pingleyebilmek için `ping -c5 www.github.com` çalıştıralım.
+```.term1
+  ping -c5 www.github.com
+```
+```
+PING www.docker.com (104.239.220.248) 56(84) bytes of data.
+64 bytes from 104.239.220.248: icmp_seq=1 ttl=45 time=38.1 ms
+64 bytes from 104.239.220.248: icmp_seq=2 ttl=45 time=37.3 ms
+64 bytes from 104.239.220.248: icmp_seq=3 ttl=45 time=37.5 ms
+64 bytes from 104.239.220.248: icmp_seq=4 ttl=45 time=37.5 ms
+64 bytes from 104.239.220.248: icmp_seq=5 ttl=45 time=37.5 ms
+
+--- www.docker.com ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4003ms
+rtt min/avg/max/mdev = 37.372/37.641/38.143/0.314 ms
+```
+
+Son olarak bağlantımızı kesip konteyner üzerinden çıkalım. Bunun için `exit` yazmamız yeterli.
+
+```.term1
+exit
+```
+
+Bu testi yaptığımız konteyneri durdurlmalıyız, bunun için `docker stop <CONTAINER ID>` yazmamız yeterli.  
+  
+```
+docker stop [SizinKonteynerID'niz]
+```
+
+Burada yaptığımız deneme sonrası gördükki konteyner üzerinden internet erişimimiz var ve dış dünyaya bağlanabiliyoruz.  
+  
+## <a name="nat"></a>Adım 4: Dış bağlantı için NAT yapılandırması
+
+Bu örnekte yeni bir **NGINX** konteyner çalıştıracağız ve Docker sunucusu üzerindeki 8080 portunu konteyner üzerindeki 80 portu ile eşleştireceğiz(map edeceğiz). Bunun anlamı Docker sunucusu üzerindeki 8080 portu üzerine gelen istekler konteyner içersindeki 80 portu üzerine yönlenecekler.
+
+
+> **NOT:** Standart NGINX imajı ile bir konteyner çalıştırırsanız, varsayılan olarak 80 portu üzerine bu eşleştirmeyi yapacaktır.  
+  
+Standart NGINX imajını temel alan bir konteyner çalıştıralım, ve 8080 ile 80 portu eşleştirmemiz olsun `docker run --name web1 -d -p 8080:80 nginx`.
+
+```.term1
+docker run --name web1 -d -p 8080:80 nginx
+```
+```
+Unable to find image 'nginx:latest' locally
+latest: Pulling from library/nginx
+6d827a3ef358: Pull complete
+b556b18c7952: Pull complete
+03558b976e24: Pull complete
+9abee7e1ef9d: Pull complete
+Digest: sha256:52f84ace6ea43f2f58937e5f9fc562e99ad6876e82b99d171916c1ece587c188
+Status: Downloaded newer image for nginx:latest
+4e0da45b0f169f18b0e1ee9bf779500cb0f756402c0a0821d55565f162741b3e
+```
+
+`docker ps` komutunu çalıştırarak çalışan konteynerin hangi portu bağladığını ve çalışıp çalışmadığını kontrol edelim.
+
+```.term1
+docker ps
+```
+```
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                           NAMES
+4e0da45b0f16        nginx               "nginx -g 'daemon ..."   2 minutes ago       Up 2 minutes        443/tcp, 0.0.0.0:8080->80/tcp   web1
+```
+
+Göreceğiniz gibi en üstte **web1** isminde bir NGINX imajını temel almış konteyner çalıştığını görüyoruz. Ayrıca portların nasıl bağlandığı ile ilgili  - `0.0.0.0:8080->80/tcp` bilgisini görüyoruz burada söylenmek istenen Docker sunucusu üzerindeki 8080 portunun **web1** konteyneri içindeki 80 portuna bağlı olduğu bilgisidir. Bu port bağlantısı sayesinde çalışmış olan konteynera dışarıdaki ağlar üzerinden bağlantı sağlanabilir. Yani yaptığımız şey basit olarak bir NAT operasyonuydu, bu NAT operasyonunu sunucumuzun üzerindeki bir konteynerin bir portuna verdik.
+
+Şuanda konteynerin çalıştığını ve docker host üzerindeki bir port üzerinden yönlenen bir port ile çalışan bi NGINX sunucusu olduğunu görebilirsiniz.  
+  
+Sağ tarafta gördüğünüz iki bilgisayar simülasyonu içersinde Üstteki terminal üzerinde çalışan sunucu ve alttaki terminal üzerindeki sunucu farklı bilgisayarları temsil etmektedir. Docker çalışan sunucu üzerinden `curl 127.0.0.1:8080` komutu ile erişebileceğiniz çıktıyı "127.0.0.1" ip adresi yerine diğer sunucunun ip adresini yazarak ulaşabilirsiniz.  
+  
+Örnek: lütfen 172.20.0.9 adresini üstteki ip adresi ile değitirin!  
+  
+```.term2
+curl 172.20.0.9:8080
+```
+
+```
+<!DOCTYPE html>
+<html>
+<Snip>
+<head>
+<title>Welcome to nginx!</title>
+    <Snip>
+<p><em>Thank you for using nginx.</em></p>
+</body>
+</html>
+```
+
+curl komutunu farklı bir ip ve port için kullanırsanız aynı çıktı gelmeyecektir.  
+
+> **NOT:** Buradaki port yönlendirme işlemi aslında port address translation (PAT) yöntemidir.
+
+# <a name="git3"></a>#3 - Overlay(üst katman) Ağlar
+
+## <a name="connect-container"></a>Adım 1: Temeller
+
+Bu örnek içinde yeni bir Swarm oluşturacaksınız, bir worker node ekleyecek ve işlemin gerçekleştiğini kontrol edeceksiniz. Docker Swarm, birden fazla docker sunucu çalıştırmak istediğinizde ve onların bir docker sunucu gibi çalışmasını istediğinizde kullandığınız bir çözümdür.  
+  
+Bu komutu üstteki terminalde çalıştıralım `docker swarm init --advertise-addr $(hostname -i)`.
+
+```.term1
+docker swarm init --advertise-addr $(hostname -i)
+```
+
+```
+Swarm initialized: current node (rzyy572arjko2w0j82zvjkc6u) is now a manager.
+
+To add a worker to this swarm, run the following command:
+
+    docker swarm join \
+    --token SWMTKN-1-69b2x1u2wtjdmot0oqxjw1r2d27f0lbmhfxhvj83chln1l6es5-37ykdpul0vylenefe2439cqpf \
+    10.0.0.5:2377
+
+To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+```
+
+Birinci terminalden aldığınız çıktıda `docker swarm join ...` ile başlayan kısmı alıp ikinci terminale yapıştıralım.
+
+```
+docker swarm join \
+>     --token SWMTKN-1-69b2x1u2wtjdmot0oqxjw1r2d27f0lbmhfxhvj83chln1l6es5-37ykdpul0vylenefe2439cqpf \
+>     10.0.0.5:2377
+This node joined a swarm as a worker.
+```
+
+Şimdi `docker node ls` komutunu çalıştıralım ve her iki node çalışıyormu kontrol edelim.
+
+```.term1
+docker node ls
+```
+```
+ID                           HOSTNAME  STATUS  AVAILABILITY  MANAGER STATUS
+ijjmqthkdya65h9rjzyngdn48    node2   Ready   Active
+rzyy572arjko2w0j82zvjkc6u *  node1   Ready   Active        Leader
+```
+
+`ID` ve `HOSTNAME` için verilen değerler sizin için farklı olabilir. Burada önemli olan iki bilgisayarın bir araya gelip bir Docker Swarm üzerinde *ready* ve *active* statülerine sahip olmasıdır.
+
+## <a name="create_network"></a>Adım 2: Bir overlay(üst katman) ağ yaratmak
+
+Bir Swarm başlattığımıza göre, Swarm içerisindeki her bilgisayardan erişilebilen ağlar yaratabiliriz. Bunu yapabilmek için **overlay** (üst katman) ağlar yaratabiliriz.
+
+"overnet" isminde bir ağ yaratalım, bunun için `docker network create -d overlay overnet` komutunu çalıştırmamız yeterli olacaktır.  
+  
+```.term1
+docker network create -d overlay overnet
+```
+```
+wlqnvajmmzskn84bqbdi1ytuy
+```
+
+`docker network ls` komutunu kullanarak overlay ağımızın başarılı şekilde yaratıldığını görebiliriz.
+
+```.term1
+docker network ls
+```
+```
+NETWORK ID          NAME                DRIVER              SCOPE
+3430ad6f20bf        bridge              bridge              local
+a4d584350f09        docker_gwbridge     bridge              local
+a7449465c379        host                host                local
+8hq1n8nak54x        ingress             overlay             swarm
+06c349b9cc77        none                null                local
+wlqnvajmmzsk        overnet             overlay             swarm
+```
+
+Yukarıdaki çıktıda en alt satırda "overnet" ismindeki ağı görebilirsiniz. DRIVER olarak **Overlay** sürücüsü ile bağlı olduğuna dikkat edin, ayrıca SCOPE olarak tüm **swarm** üzerinde erişimi olduğunu görebiliriz.
+
+> **NOT:** Swarm oluşturulduğunda, iki ayrı ağ daha oluşur (ingress and docker_gwbridge) ve bunlar varsayılan olarak tüm swarm üzerinde tanımlanırlar.  
+
+Şimdi ikinci sunucumuza (sağ alttaki Terminal) bağlanalım ve ağ bilgilerini almak için `docker network ls` komutunu tekrar çalıştıralım.  
+  
+```.term2
+docker network ls
+```
+```
+NETWORK ID          NAME                DRIVER              SCOPE
+55f10b3fb8ed        bridge              bridge              local
+b7b30433a639        docker_gwbridge     bridge              local
+a7449465c379        host                host                local
+8hq1n8nak54x        ingress             overlay             swarm
+06c349b9cc77        none                null                local
+```
+
+Gördüğümüz gibi "overnet" ağı ikinci sunucu üzerinde mevcut **değil**. Herhangi bir hata yok, bunun çok basit bir sebebi var. Bunun sebebi overlay ağlar sadece ihtiyaç duyulduğunda diğer sunucuda yaratılırlar. Bu durum  genellikle bir servisin her iki sunucu üzerindeki konteynerleri etkildiğinde değişir. Birazdan örnek içinde bu durumu göstereceğiz.  
+  
+`docker network inspect <network>` komutunu kullanarak "overnet" ağı ile ilgili daha derinlemesine bilgi alalım. Bu komutu birinci terminalden çalıştırmanız gerekiyor çünkü henüz bu ağ ikinci node üzerinde aktif değil.  
+  
+```.term1
+docker network inspect overnet
+```
+```
+[
+    {
+        "Name": "overnet",
+        "Id": "wlqnvajmmzskn84bqbdi1ytuy",
+        "Created": "0001-01-01T00:00:00Z",
+        "Scope": "swarm",
+        "Driver": "overlay",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": []
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Containers": null,
+        "Options": {
+            "com.docker.network.driver.overlay.vxlanid_list": "4097"
+        },
+        "Labels": null
+    }
+]
+```
+
+## <a name="create_service"></a>Adım 3: Bir servis yaratın
+
+Bir swarm oluşturduk ve üzerine bir overlay ağ yarattık. Şimdi yapmamız gereken bu ağ üzerinde tanımlı olacak bir servis yaratmak.
+
+Aşağıdaki komutu birinci(üstteki) terminal içersinden çalıştırın. Bu sayede *myservice* isminde bir servisi *overnet* ağı üzerinde iki görev/replika şeklinde tanımlayabiliriz.  
+  
+```.term1
+docker service create --name myservice \
+--network overnet \
+--replicas 2 \
+ubuntu sleep infinity
+```
+```
+ov30itv6t2n7axy2goqbfqt5e
+```
+
+Servisin başladığından ve her iki replikanın aktif olduğundan emin olalım, bunun için `docker service ls` komutunu kullanabiliriz.
+
+```.term1
+docker service ls
+```
+```
+ID            NAME       MODE        REPLICAS  IMAGE
+ov30itv6t2n7  myservice  replicated  2/2       ubuntu:latest
+```
+
+`REPLICAS` sütunu içindeki `2/2` yazısı bize her iki görevin başladığını ve çalıştığını gösterecektir.  
+  
+Replikaların her birinin Swarm üzerindeki iki aynı node üzerinde çalıştığından emin olalım, bunun için `docker service ps myservice` komutunu kullanabiliriz.  
+  
+```.term1
+docker service ps myservice
+```
+```
+ID            NAME         IMAGE          NODE     DESIRED STATE  CURRENT STATE               ERROR  PORTS
+riicggj5tuta  myservice.1  ubuntu:latest  node2  Running        Running about a minute ago
+nlozn82wsttv  myservice.2  ubuntu:latest  node1  Running        Running about a minute ago
+```
+
+`ID` ve `NODE` değerleri sizin için farklı olabilir. Önemli olan her bir görev/replika(task/replica) farklı bir node üzerinde çalışıyor.  
+  
+Şimdi "overnet" ağı üzerindeki çalıştırdığımız replikasyon görevi olduğu için ikinci sunucudan (alltaki terminal) `docker network ls` komutu bize "overnet" ağını gösterecektir.  
+  
+```.term2
+docker network ls
+```
+```
+NETWORK ID          NAME                DRIVER              SCOPE
+55f10b3fb8ed        bridge              bridge              local
+b7b30433a639        docker_gwbridge     bridge              local
+a7449465c379        host                host                local
+8hq1n8nak54x        ingress             overlay             swarm
+06c349b9cc77        none                null                local
+wlqnvajmmzsk        overnet             overlay             swarm
+```
+
+Aynı şekilde ikinci terminalden(alltaki) `docker network inspect overnet` komutunu çalıştırdığımızda bize ayrıntılı bir şekilde "overnet" ağı ile ilgili ayrıntıları listeler.  
+  
+```.term2
+docker network inspect overnet
+```
+```
+[
+    {
+        "Name": "overnet",
+        "Id": "wlqnvajmmzskn84bqbdi1ytuy",
+        "Created": "2017-04-04T09:35:47.526642642Z",
+        "Scope": "swarm",
+        "Driver": "overlay",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": [
+                {
+                    "Subnet": "10.0.0.0/24",
+                    "Gateway": "10.0.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Containers": {
+            "fbc8bb0834429a68b2ccef25d3c90135dbda41e08b300f07845cb7f082bcdf01": {
+                "Name": "myservice.1.riicggj5tutar7h7sgsvqg72r",
+                "EndpointID": "8edf83ebce77aed6d0193295c80c6aa7a5b76a08880a166002ecda3a2099bb6c",
+                "MacAddress": "02:42:0a:00:00:03",
+                "IPv4Address": "10.0.0.3/24",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {
+            "com.docker.network.driver.overlay.vxlanid_list": "4097"
+        },
+        "Labels": {},
+        "Peers": [
+            {
+                "Name": "node1-f6a6f8e18a9d",
+                "IP": "10.0.0.5"
+            },
+            {
+                "Name": "node2-507a763bed93",
+                "IP": "10.0.0.6"
+            }
+        ]
+    }
+]
+```
+Docker 1.12'den itibaren, `docker network inspect` komutunun sadece yerelde çalışan konteynerleri/görevleri göstermektedir. Bunun anlamı, yukarıdaki örnek için  `10.0.0.3` ip'si ikinci node üzerinde çalışan ip bilgisidir. Buradaki bu ip bilgisini kendi ortamınız için not edin lütfen. Bir sonraki test içersinde onu kullanacağız.  
+
+## <a name="test"></a>Adım 4: Ağı test edelim
+  
+Bu adımı tamamlamak için yukarıda belirttiğimiz gibi önceki adımda öğrendiğimiz **node2** için tanımlı olan servis görevini çalıştıran IP adresine ihtiyacımız olacak (`10.0.0.3`).
+
+Birinci terminal ekranından(üstteki) burada yazılı olan komutu çalıştırın.  
+  
+```.term1
+docker network inspect overnet
+```
+```
+[
+    {
+        "Name": "overnet",
+        "Id": "wlqnvajmmzskn84bqbdi1ytuy",
+        "Created": "2017-04-04T09:35:47.362263887Z",
+        "Scope": "swarm",
+        "Driver": "overlay",
+        "EnableIPv6": false,
+        "IPAM": {
+            "Driver": "default",
+            "Options": null,
+            "Config": [
+                {
+                    "Subnet": "10.0.0.0/24",
+                    "Gateway": "10.0.0.1"
+                }
+            ]
+        },
+        "Internal": false,
+        "Attachable": false,
+        "Containers": {
+            "d676496d18f76c34d3b79fbf6573a5672a81d725d7c8704b49b4f797f6426454": {
+                "Name": "myservice.2.nlozn82wsttv75cs9vs3ju7vs",
+                "EndpointID": "36638a55fcf4ada2989650d0dde193bc2f81e0e9e3c153d3e9d1d85e89a642e6",
+                "MacAddress": "02:42:0a:00:00:04",
+                "IPv4Address": "10.0.0.4/24",
+                "IPv6Address": ""
+            }
+        },
+        "Options": {
+            "com.docker.network.driver.overlay.vxlanid_list": "4097"
+        },
+        "Labels": {},
+        "Peers": [
+            {
+                "Name": "node1-f6a6f8e18a9d",
+                "IP": "10.0.0.5"
+            },
+            {
+                "Name": "node2-507a763bed93",
+                "IP": "10.0.0.6"
+            }
+        ]
+    }
+]
+```
+
+Servis görevini(service task) çalıştıran konteyner için  listelenen IP adresinin, ikinci node üzerinde  çalışan hizmet görevi(servis task) konteyner'i IP adresinden farklı olduğuna dikkat edin. Yani aynı hizmet görevi için çalışan her bir replika konteyner'in farklı bir ip adresi var, ayrıca bu iki service tastk konteynerinin aynı ağ üzerinde olduklarını unutmayın.
+
+Servis görevi(service task) ID bilgisini alabilmek için tekrar `docker ps` komutunu çalıştıralım.  
+
+```.term1
+docker ps
+```
+```
+CONTAINER ID        IMAGE                                                                            COMMAND                  CREATED             STATUS              PORTS                           NAMES
+d676496d18f7        ubuntu@sha256:dd7808d8792c9841d0b460122f1acf0a2dd1f56404f8d1e56298048885e45535   "sleep infinity"         10 minutes ago      Up 10 minutes                                       myservice.2.nlozn82wsttv75cs9vs3ju7vs
+<Snip>
+```
+
+Servis görevi(service task) konteyner'ine bağlanmak için ID bilgisini aldık, şimdi `docker exec -it <CONTAINER ID> /bin/bash` komutunu kullanalım ve konteyner içine bağlanalım.  
+  
+```
+docker exec -it yourcontainerid /bin/bash
+root@d676496d18f7:/#
+```
+  
+Ping komutunu kurun ve diğer servis görevi(service task) konteyneri üzerinde çalışan `10.0.0.3` ip adresini (sizin için farklı olacaktır) pingleyin.  
+  
+```.term1
+apt-get update && apt-get install -y iputils-ping
+```
+
+şimdi `10.0.0.3` adresini pingleyelim.
+
+```
+root@d676496d18f7:/# ping -c5 10.0.0.3
+....
+```
+
+Yukarıdaki çıktı bize **myservice** isimli servisin her iki node üzerine dağılmış bir şekilde aynı ağ üzerinde olduklarını gösteriyor ve ayrıca bu tanımlanmış overlay ağını iletişim için kullanabildiklerini gösteriyor.  
+  
+## <a name="discover"></a>Adım 5: Servis keşfinin testi (service discovery)
+
+Artık overlay ağ kullanan bir servisimiz olduğuna göre, servislerin keşfini test edebiliriz.
+
+Şuan konteynerin içinde değilseniz, konteynırda tekrar bir oturum açın. Bunu yapmak için  `docker exec -it <CONTAINER ID> /bin/bash` komutunu kullanabilirsiniz.
+
+Konteyner içinden `cat /etc/resolv.conf` çalıştırın.  
+  
+```
+docker exec -it yourcontainerid /bin/bash
+```
+```.term1
+cat /etc/resolv.conf
+```
+```
+search ivaf2i2atqouppoxund0tvddsa.jx.internal.cloudapp.net
+nameserver 127.0.0.11
+options ndots:0
+```
+
+Bizim ilgilendiğimiz değer buradaki `nameserver 127.0.0.11` bilgisi. Buradaki değer sayesinde, konteyner içersindeki tüm DNS sorguları, gömülü olarak çalışan bir DNS çözümleyicisine gider (127.0.0.11:53 üzerinde çalışan). Tüm Docker konteynerleri buradaki adres üzerinde bir DNS sunucusu çalıştırırlar.  
+  
+> **NOT:** Dosya içersindeki (resolv.conf) diğer değerler çok daha farklı olabilir, ama biz temelde DNS çözümlemesi ile ilgileniyoruz.
+
+"myservice" ismini konteyner içersinden pinglemeye çalışalım, bakalım bize nasıl bir sonuç dönecek `ping -c5 myservice`.
+
+```
+root@d676496d18f7:/# ping -c5 myservice
+PING myservice (10.0.0.2) 56(84) bytes of data.
+64 bytes from 10.0.0.2: icmp_seq=1 ttl=64 time=0.020 ms
+64 bytes from 10.0.0.2: icmp_seq=2 ttl=64 time=0.052 ms
+64 bytes from 10.0.0.2: icmp_seq=3 ttl=64 time=0.044 ms
+64 bytes from 10.0.0.2: icmp_seq=4 ttl=64 time=0.042 ms
+64 bytes from 10.0.0.2: icmp_seq=5 ttl=64 time=0.056 ms
+
+--- myservice ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4001ms
+rtt min/avg/max/mdev = 0.020/0.042/0.056/0.015 ms
+```
+
+Gördüğümüz gibi `myservice` konteyner içersinden tanımlı bir dns adresidir `myservice` servisinin adını kullanarak pingleyebiliyoruz. Bir diğer önemli nokta geri dönen değerin `10.0.0.2` ip'si olmasıdır. Bir sonraki birkaç adımda bu ip adresinin `myservice` için tanımlanmış olan bir (VIP) Virtual IP (sanal ip) olduğunu göreceğiz.  
+  
+`exit` yazarak konteyner içersinden çıkalım ve docker sunucumuz üzerine bağlanalım.  
+  
+```
+root@d676496d18f7:/# exit
+```
+
+"myservice" servisimizi inceleyelim, bunun için  `docker service inspect myservice` komutunu kullanabiliriz. VIP değerinin `ping -c5 myservice` ile geri dönen değer olduğunu buradaki incelememiz sırasında görebiliriz.
+
+```.term1
+docker service inspect myservice
+```
+```
+[
+    {
+        "ID": "ov30itv6t2n7axy2goqbfqt5e",
+        "Version": {
+            "Index": 19
+        },
+        "CreatedAt": "2017-04-04T09:35:47.009730798Z",
+        "UpdatedAt": "2017-04-04T09:35:47.05475096Z",
+        "Spec": {
+            "Name": "myservice",
+            "TaskTemplate": {
+                "ContainerSpec": {
+                    "Image": "ubuntu:latest@sha256:dd7808d8792c9841d0b460122f1acf0a2dd1f56404f8d1e56298048885e45535",
+                    "Args": [
+                        "sleep",
+                        "infinity"
+                    ],
+<Snip>
+        "Endpoint": {
+            "Spec": {
+                "Mode": "vip"
+            },
+            "VirtualIPs": [
+                {
+                    "NetworkID": "wlqnvajmmzskn84bqbdi1ytuy",
+                    "Addr": "10.0.0.2/24"
+                }
+            ]
+        },
+<Snip>
+```
+
+Yukarıdaki tanımlar içersinde "VirtualIPs" içersinde `10.0.0.2` ip adresini görebilirsiniz. Buradaki VIP tanımı `10.0.0.2` ip adresidir fakat buradaki değer kurulumlara göre değişiklik gösterebilir(sizin ekranınıza farklı bir çıktı gelecektir). Buradaki en önemli nokta, tanımlı olan değer ile bizim konteyner içersinden `ping -c5 myservice` elde ettiğimiz değerin aynı olmasıdır.  
+  
+**node2** (alttaki terminal) üzerinden konteyner içersinde yeni bir `docker exec` oturumu açarak `ping -c5 service` yapmayı deneyebilirsiniz. Sonucun yine tanımlı olan VIP olduğunu görebilirsiniz.
+
+# <a name="cleanup"></a>Şimdide yaptıklarımızı temizleyelim
+
+Umarım bu laboratuvarda Docker ağlarının nasıl çalıştığı hakkında biraz bilgi edinebildiniz. Beraber 
+oluşturduğumuz servisi, başlattığımız konteynerleri temizleyelim ve sonunda Swarm modunu devre dışı bırakalım.
+
+`docker service rm myservice` komutunu çalıştıralım ve *myservice* servisini silelim.
+
+```.term1
+docker service rm myservice
+```
+
+`docker ps` komutunu çalıştıralım ve çalışan konteynerleri görelim.  
+  
+```.term1
+docker ps
+```
+```
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                           NAMES
+846af8479944        ubuntu              "sleep infinity"         17 minutes ago      Up 17 minutes                                       heuristic_boyd
+4e0da45b0f16        nginx               "nginx -g 'daemon ..."   12 minutes ago      Up 12 minutes       443/tcp, 0.0.0.0:8080->80/tcp   web1
+```
+
+`docker kill <KONTEYNER ID ...>` kullanarak çalışan ubuntu ve nginx konteynerini durdurabilirsiniz.  
+  
+```
+docker kill yourcontainerid1 yourcontainerid2
+```
+
+Son olarak, Swarm içinden node1 ve node2 sunucularını çıkaralım. Bunun için `docker swarm leave --force` komutunu kullanabiliriz. 
+
+node1 üzerinde (üstte)`docker swarm leave --force` komutunu çalıştıralım.
+
+```.term1
+docker swarm leave --force
+```
+
+mode2 üzerinde (altta)`docker swarm leave --force` komutunu çalıştıralım.
+
+```.term2
+docker swarm leave --force
+```
+
+-----
+
+<!-- Quiz bölümünü diğer quizlerde aynen kopyalayıp değiştirmemiz gerek.-->
+
+
+-----
+## Konu tekrarı, kısa sınav
+>seçeneklerden doğru olanları seçtikten sonra **Gönder** butonuna basınız. Sonuçları <span style="color:green">**doğru**</span> ve <span style="color:red">**yanlış**</span> görebilirsiniz.
+
+
+{:.quiz}
+Docker imajları varsayılan olarak nereden indirilirler?
+- ( ) Docker Trusted Registry
+- (x) Docker Hub
+- ( ) Varsayılan yoktur
+- ( ) Docker Store
+
+{:.quiz}
+Docker imajlarını nasıl listelersiniz?
+- (x) docker image ls
+- ( ) docker run
+- ( ) docker container ls
+
+{:.quiz}
+Aşağıdakilerden hangisi ubuntu 20.10(groovy) bir konteyner içerisinde komut satırına bağlanır?
+- ( ) docker run ubuntu:groovy /bin/bash
+- (x) docker run -it ubuntu:groovy /bin/bash
+- ( ) docker pull ubuntu:groovy -c /bin/bash 
