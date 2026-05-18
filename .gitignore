@@ -1,0 +1,17 @@
+# Environments
+.env
+
+# Certificates and Keys
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large binary/generated data
+images/alpine-rootfs-flat/
