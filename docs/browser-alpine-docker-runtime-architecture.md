@@ -124,7 +124,7 @@ Modules `virtio` and `9p` are required for the root filesystem mount. The `base`
 | **SharedArrayBuffer** | Required for multi-threaded Wasm (if enabled) | Needs COOP/COEP headers. Without it, v86 falls back to single-threaded JIT. |
 | **CPU emulation speed** | ~10–50% of native host CPU | Depends on browser's Wasm engine and whether JIT compilation is active. |
 | **Filesystem loading** | On-demand (lazy) | v86 9p only fetches files the guest actually accesses. The full image is ~120 MB compressed but not all loaded at once. |
-| **State snapshot size** | 512 MB raw RAM → ~100–200 MB compressed | `localStorage` limit (~5–10 MB) makes full snapshots impractical. Use `IndexedDB` or server-side storage for production. |
+| **State snapshot size** | 512 MB raw RAM | Snapshots are stored in IndexedDB; browser quota still makes this best-effort. |
 
 ### Performance mitigation strategies
 
@@ -149,15 +149,20 @@ Browsers cannot open arbitrary TCP/UDP sockets. v86 implements a **virtio-net** 
 
 ### Current configuration
 
-The network relay URL is **commented out** as a placeholder:
+Compose exposes a local relay at `/ws/v86/`, and the frontend points v86 at the
+current page origin:
 
 ```javascript
-// network_relay_url: "wss://relay.example.com",
+net_device: {
+    type: "virtio",
+    relay_url: (window.location.protocol === "https:" ? "wss://" : "ws://") +
+        window.location.host + "/ws/v86/",
+}
 ```
 
-To enable outbound internet:
+For non-Compose deployments:
 1. Deploy or use a public Wisp/WebSocket relay.
-2. Uncomment the line in `src/v86-runtime.js`.
+2. Set `net_device.relay_url` in `src/v86-runtime.js`.
 3. The VM will DHCP via `udhcpc` and route through `virtio-net`.
 
 ### Relay setup (self-hosted)
@@ -169,7 +174,7 @@ go install github.com/MercuryWorkshop/wisp-server-go@latest
 wisp-server-go -bind 0.0.0.0:5001
 ```
 
-Then set `network_relay_url: "wss://your-host:5001"`.
+Then set `net_device.relay_url` to the relay URL.
 
 ---
 
@@ -185,8 +190,8 @@ v86 provides `save_state()` and `restore_state()` APIs that capture the full VM 
 
 | Aspect | Current Implementation | Limitation |
 |--------|------------------------|------------|
-| Storage medium | `localStorage` (base64) | ~5–10 MB limit. Full 512 MB RAM snapshots will not fit. |
-| Better alternative | `IndexedDB` or server upload | Can handle 100–200 MB compressed snapshots. |
+| Storage medium | IndexedDB | Browser quota applies. Full 512 MB RAM snapshots may still fail under low quota. |
+| Better alternative | Server upload | Useful when browser quota is too low or cross-device restore is needed. |
 | UI | "Save State" / "Restore State" buttons | Best-effort; warns user if save fails. |
 
 ### Filesystem persistence
@@ -314,5 +319,5 @@ The implementation is **accepted** only when all of the following commands produ
 | Kernel flavor | `linux-virt` | Smaller than `linux-lts`; verified to include all Docker features. |
 | Filesystem format | v86 9p (flat + JSON) | On-demand loading; no disk image required; kernel/initrd discovered automatically. |
 | Init system | OpenRC | Native to Alpine; integrates cleanly with `docker-openrc`. |
-| Network | Optional WebSocket relay | Browser security model requires it; disabled by default. |
+| Network | Optional WebSocket relay | Browser security model requires it; Compose starts one by default. |
 | Persistence | Disposable default, opt-in save/restore | Simplicity first; snapshots are best-effort due to browser storage limits. |

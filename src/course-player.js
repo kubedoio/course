@@ -129,27 +129,49 @@
 
             var list = document.createElement("div");
             list.className = "course-lessons";
-            (course.lessons || []).forEach(function(lesson) {
-                var button = document.createElement("button");
-                button.type = "button";
-                button.className = "lesson-link";
-                button.dataset.courseId = course.id;
-                button.dataset.lessonId = lesson.id;
-                var status = getProgress(course.id, lesson.id);
-                button.classList.toggle("is-completed", status === "completed");
-                button.classList.toggle("is-in-progress", status === "in_progress");
-                button.innerHTML = '<span class="lesson-state" aria-hidden="true">' + lessonStateIcon(status) + '</span>' +
-                    '<span class="lesson-copy"><span class="lesson-title-text">' + escapeHtml(lesson.title) + '</span>' +
-                    '<small>' + escapeHtml(formatCompatibility(lesson.vm_compatible)) + ' · ' +
-                    escapeHtml(String(lesson.duration_minutes || "?")) + ' min</small></span>';
-                button.addEventListener("click", function() {
-                    selectLesson(course.id, lesson.id);
+            
+            if (course.sections && course.sections.length) {
+                course.sections.forEach(function(section) {
+                    var sectionEl = document.createElement("div");
+                    sectionEl.className = "curriculum-section";
+                    sectionEl.innerHTML = '<div class="curriculum-section-title">' + escapeHtml(section.title) + '</div>';
+                    
+                    var sectionList = document.createElement("div");
+                    sectionList.className = "curriculum-section-lessons";
+                    (section.lessons || []).forEach(function(lesson) {
+                        sectionList.appendChild(renderLessonButton(course, lesson));
+                    });
+                    sectionEl.appendChild(sectionList);
+                    list.appendChild(sectionEl);
                 });
-                list.appendChild(button);
-            });
+            } else {
+                (course.lessons || []).forEach(function(lesson) {
+                    list.appendChild(renderLessonButton(course, lesson));
+                });
+            }
+            
             group.appendChild(list);
             tree.appendChild(group);
         });
+    }
+
+    function renderLessonButton(course, lesson) {
+        var button = document.createElement("button");
+        button.type = "button";
+        button.className = "lesson-link";
+        button.dataset.courseId = course.id;
+        button.dataset.lessonId = lesson.id;
+        var status = getProgress(course.id, lesson.id);
+        button.classList.toggle("is-completed", status === "completed");
+        button.classList.toggle("is-in-progress", status === "in_progress");
+        button.innerHTML = '<span class="lesson-state" aria-hidden="true">' + lessonStateIcon(status) + '</span>' +
+            '<span class="lesson-copy"><span class="lesson-title-text">' + escapeHtml(lesson.title) + '</span>' +
+            '<small>' + escapeHtml(formatCompatibility(lesson.vm_compatible)) + ' · ' +
+            escapeHtml(String(lesson.duration_minutes || "?")) + ' min</small></span>';
+        button.addEventListener("click", function() {
+            selectLesson(course.id, lesson.id);
+        });
+        return button;
     }
 
     async function selectLesson(courseId, lessonId) {
@@ -271,8 +293,43 @@
                 button.textContent = "Saving";
                 await updateLessonProgress(button.dataset.courseId, button.dataset.lessonId, "completed", { render: true });
                 button.textContent = "Completed";
+                showToast("Lesson completed!", "success");
             });
         });
+
+        root.querySelectorAll(".nav-prev, .nav-next").forEach(function(button) {
+            button.addEventListener("click", function() {
+                selectLesson(button.dataset.courseId, button.dataset.lessonId);
+                // Scroll to top of lesson viewer
+                root.scrollTop = 0;
+            });
+        });
+    }
+
+    function showToast(message, type) {
+        var container = document.getElementById("toast-container");
+        if (!container) {
+            container = document.createElement("div");
+            container.id = "toast-container";
+            container.className = "toast-container";
+            document.body.appendChild(container);
+        }
+
+        var toast = document.createElement("div");
+        toast.className = "toast " + (type === "success" ? "toast-success" : "");
+        
+        var icon = type === "success" ? "✓" : "ℹ";
+        toast.innerHTML = '<span class="toast-icon">' + icon + '</span>' +
+            '<span class="toast-message">' + escapeHtml(message) + '</span>';
+        
+        container.appendChild(toast);
+
+        setTimeout(function() {
+            toast.style.animation = "toast-out 0.3s ease forwards";
+            setTimeout(function() {
+                if (toast.parentNode) container.removeChild(toast);
+            }, 300);
+        }, 3000);
     }
 
     function markdownToHtml(markdown) {
@@ -293,6 +350,19 @@
         var match = token.match(/^```([^\n]*)?\n?([\s\S]*?)```$/);
         var lang = match && match[1] ? match[1].trim() : "text";
         var code = match ? match[2].replace(/\n$/, "") : token;
+        
+        if (lang === "verify") {
+            var lines = code.split("\n");
+            var cmd = lines[0] || "";
+            var expected = lines[1] || "OK";
+            return '<div class="verify-block">' +
+                '<div class="verify-header"><span>Lab Validation</span></div>' +
+                '<div class="verify-body">' +
+                '<p>Click to verify you have completed the task correctly in the terminal.</p>' +
+                '<button type="button" class="btn btn-secondary code-action verify" data-command="' + attr(cmd) + '" data-expected="' + attr(expected) + '">Verify Task</button>' +
+                '</div></div>';
+        }
+
         var runnable = lang === "bash" || lang === "sh" || lang === "shell" || lang.indexOf("term") !== -1;
         return '<div class="code-block">' +
             '<div class="code-toolbar"><span>' + escapeHtml(lang) + '</span>' +
@@ -423,6 +493,21 @@
         localStorage.setItem(STORAGE_KEY_PROGRESS, JSON.stringify(progressIndex));
     }
 
+    function getCourseStats(course) {
+        var lessons = course.lessons || [];
+        var total = lessons.length;
+        var completed = lessons.filter(function(lesson) {
+            return getProgress(course.id, lesson.id) === "completed";
+        }).length;
+        var percent = total ? Math.round((completed / total) * 100) : 0;
+        return {
+            total: total,
+            completed: completed,
+            percent: percent,
+            label: completed + " / " + total + " complete · " + percent + "%"
+        };
+    }
+
     function formatCourseProgress(course) {
         var lessons = course.lessons || [];
         var total = lessons.length;
@@ -462,6 +547,65 @@
         var area = document.createElement("textarea");
         area.value = text;
         document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        document.body.removeChild(area);
+    }
+
+    function attr(value) {
+        return escapeHtml(value).replace(/"/g, "&quot;");
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    window.CoursePlayer = {
+        init: init,
+        selectLesson: selectLesson
+    };
+})();
+lue === true) return "VM lab";
+        if (value === "theory-only") return "Theory";
+        if (value === "source-material") return "Source";
+        return String(value || "Lesson");
+    }
+
+    function copyText(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text);
+            return;
+        }
+        var area = document.createElement("textarea");
+        area.value = text;
+        document.body.appendChild(area);
+        area.select();
+        document.execCommand("copy");
+        document.body.removeChild(area);
+    }
+
+    function attr(value) {
+        return escapeHtml(value).replace(/"/g, "&quot;");
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    window.CoursePlayer = {
+        init: init,
+        selectLesson: selectLesson
+    };
+})();
+ent.body.appendChild(area);
         area.select();
         document.execCommand("copy");
         document.body.removeChild(area);

@@ -73,7 +73,14 @@
             messages.push("WARN: localStorage is not available. State will not persist across refreshes.");
         }
 
-        // 7. Canvas 2D context (required for v86 screen output)
+        // 7. IndexedDB (optional — large VM state snapshots)
+        if (typeof indexedDB === "object") {
+            messages.push("PASS: IndexedDB is available for VM state snapshots.");
+        } else {
+            messages.push("WARN: IndexedDB is not available. Save State and Restore State will not work.");
+        }
+
+        // 8. Canvas 2D context (required for v86 screen output)
         var canvas = document.createElement("canvas");
         if (canvas.getContext && canvas.getContext("2d")) {
             messages.push("PASS: Canvas 2D context is supported.");

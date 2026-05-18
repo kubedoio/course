@@ -59,9 +59,25 @@
         }
 
         // ------------------------------------------------------------------
+        // Sidebar Toggle Logic
+        // ------------------------------------------------------------------
+        var btnToggle = document.getElementById("sidebar-toggle");
+        var layout = document.querySelector(".layout");
+        if (btnToggle && layout) {
+            btnToggle.addEventListener("click", function() {
+                layout.classList.toggle("sidebar-collapsed");
+                // Trigger resize to fix terminal layout
+                setTimeout(onWindowResize, 350);
+            });
+        }
+
+        // ------------------------------------------------------------------
         // 3. Register reactive UI updaters
         // ------------------------------------------------------------------
         window.LabState.onStateChange(updateUiForState);
+
+        resetStaleRuntimeState();
+
         window.LabState.onLog(appendLogEntry);
 
         // Replay any logs that survived a page refresh
@@ -83,6 +99,21 @@
         window.addEventListener("resize", onWindowResize);
 
         window.LabState.addLog("Application ready. Click 'Boot VM' to start Alpine Linux.");
+    }
+
+    function resetStaleRuntimeState() {
+        var state = window.LabState.getState();
+        var emulator = window.V86Runtime && window.V86Runtime.getEmulator &&
+            window.V86Runtime.getEmulator();
+        var staleRunningState = state === "booting" ||
+            state === "alpine_ready" ||
+            state === "docker_ready" ||
+            state === "network_online";
+
+        if (!emulator && staleRunningState) {
+            window.LabState.setState("not_booted");
+            window.LabState.addLog("Previous VM session ended; ready for a fresh boot.");
+        }
     }
 
     /**
@@ -110,29 +141,31 @@
         var btnSave = document.getElementById("btn-save");
         var btnRestore = document.getElementById("btn-restore");
 
+        var hasEmulator = window.V86Runtime && window.V86Runtime.getEmulator &&
+            !!window.V86Runtime.getEmulator();
+
         // Boot is only useful when there is no active VM.
         if (btnBoot) {
-            var isRunning = (state === "booting" ||
-                             state === "alpine_ready" ||
-                             state === "docker_ready" ||
-                             state === "network_online");
+            var isRunning = hasEmulator && (state === "booting" ||
+                                            state === "alpine_ready" ||
+                                            state === "docker_ready" ||
+                                            state === "network_online");
             btnBoot.disabled = isRunning;
         }
 
-        // Reset needs a running VM (and is dangerous while still booting,
-        // but v86 supports restart at any time, so we allow it post-booting).
+        // Reset needs a running VM.
         if (btnReset) {
-            btnReset.disabled = (state === "not_booted" || state === "booting");
+            btnReset.disabled = !hasEmulator || state === "booting";
         }
 
         // Save state only makes sense once the VM has reached a stable milestone.
         if (btnSave) {
-            btnSave.disabled = (state === "not_booted" || state === "booting" || state === "error");
+            btnSave.disabled = !hasEmulator || state === "not_booted" || state === "booting" || state === "error";
         }
 
         // Restore requires a running emulator instance to feed state into.
         if (btnRestore) {
-            btnRestore.disabled = (state === "not_booted" || state === "booting");
+            btnRestore.disabled = !hasEmulator || state === "booting";
         }
     }
 

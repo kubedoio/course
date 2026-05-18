@@ -12,6 +12,14 @@ services:
       timeout: 5s
       retries: 5
 
+  v86-relay:
+    image: ${V86_RELAY_IMAGE:-bellenottelling/websockproxy:latest}
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+
   progress-api:
     build:
       context: ./progress-api
@@ -78,7 +86,7 @@ services:
       - --client-secret=${OAUTH2_PROXY_CLIENT_SECRET:-change-this-client-secret}
       - --redirect-url=${PUBLIC_ORIGIN:-http://lab.localhost:8080}/oauth2/callback
       - --cookie-secret=${OAUTH2_PROXY_COOKIE_SECRET:-MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=}
-      - --cookie-secure=false
+      - --cookie-secure=${OAUTH2_PROXY_COOKIE_SECURE:-false}
       - --email-domain=*
       - --scope=openid email profile
       - --upstream=static://202
@@ -87,6 +95,7 @@ services:
       - --pass-access-token=true
       - --pass-authorization-header=true
       - --skip-provider-button=true
+      - --code-challenge-method=S256
     extra_hosts:
       - "lab.localhost:host-gateway"
     depends_on:

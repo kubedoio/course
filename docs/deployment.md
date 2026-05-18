@@ -33,6 +33,7 @@ Change every value in `.env` before using the stack on a shared network.
 | `oauth2-proxy` | OIDC client that authenticates users through Keycloak. |
 | `progress-api` | SQLite-backed API for per-user lesson completion state. |
 | `gateway` | nginx reverse proxy exposing the protected lab and Keycloak under one public origin. |
+| `v86-relay` | WebSocket network relay used by the browser VM for outbound network access. |
 
 ## SSO Layout
 
@@ -69,6 +70,107 @@ The imported realm includes redirect URIs for both `8080` and `18080`.
 There is also a public `browser-lab-spa` client for later direct in-browser OIDC
 work if you decide to add login awareness inside the JavaScript app itself.
 
+## External Access / Reverse Proxy
+
+The stack works behind an external reverse proxy (Nginx, Traefik, Caddy,
+Cloudflare Tunnel, etc.).
+
+### 1. Set `PUBLIC_ORIGIN`
+
+In `.env`, set `PUBLIC_ORIGIN` to the URL users will see:
+
+```bash
+# Example: behind an HTTPS reverse proxy
+PUBLIC_ORIGIN=https://lab.example.com
+```
+
+### 2. Enable secure cookies (HTTPS only)
+
+When TLS terminates at the reverse proxy, enable the secure cookie flag:
+
+```bash
+OAUTH2_PROXY_COOKIE_SECURE=true
+```
+
+### 3. Forward headers
+
+The gateway nginx detects `X-Forwarded-Proto` and `X-Forwarded-Host` so that
+Keycloak and oauth2-proxy generate correct redirect URLs.
+
+**Nginx example:**
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name lab.example.com;
+
+    location / {
+        proxy_pass http://localhost:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+    }
+}
+```
+
+**Traefik example (labels on the gateway container):**
+
+```yaml
+labels:
+  - "traefik.enable=true"
+  - "traefik.http.routers.lab.rule=Host(`lab.example.com`)"
+  - "traefik.http.routers.lab.tls.certresolver=letsencrypt"
+  - "traefik.http.services.lab.loadbalancer.server.port=8080"
+  - "traefik.http.middlewares.lab-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+```
+
+### 4. Keycloak realm (optional)
+
+The imported realm already includes a wildcard (`*`) redirect URI for the
+oauth2-proxy client so it works with any domain without manual editing. For
+production hardening, replace the wildcard with your exact `PUBLIC_ORIGIN` in
+`config/keycloak/browser-lab-realm.json` **before the first startup** (Keycloak
+imports the realm only when its database is empty).
+
+### 5. Remove direct port exposure (optional)
+
+If all traffic must go through the reverse proxy, comment out or remove the
+`LAB_DIRECT_PORT` mapping in `docker-compose.yml`:
+
+```yaml
+lab:
+  # ports:
+  #   - "${LAB_DIRECT_PORT:-9998}:8080"
+```
+
+## VM Network Relay
+
+The Compose stack includes a v86-compatible WebSocket relay:
+
+```yaml
+  v86-relay:
+    image: ${V86_RELAY_IMAGE:-bellenottelling/websockproxy:latest}
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun
+```
+
+Both nginx entrypoints proxy `/ws/v86/` to that relay:
+
+- Direct lab URL: `http://localhost:9998/ws/v86/`
+- SSO gateway URL: `${PUBLIC_ORIGIN}/ws/v86/`
+
+The frontend chooses `ws://` or `wss://` from the current page scheme. For HTTPS
+deployments, make sure the external reverse proxy forwards WebSocket upgrade
+headers for `/ws/v86/`.
+
+See [`network-relay.md`](network-relay.md) for relay alternatives and TLS setup.
+
 ## Course Progress
 
 Lesson completion is application data, not Keycloak data. The gateway authenticates
@@ -93,7 +195,7 @@ mode is useful for development, but it is not shared across devices or browsers.
 - Replace all default passwords and the OAuth client secret.
 - Replace `OAUTH2_PROXY_COOKIE_SECRET`.
 - Put TLS in front of `gateway` and set `PUBLIC_ORIGIN=https://your-host`.
-- Set `--cookie-secure=true` for oauth2-proxy when using HTTPS.
+- Set `OAUTH2_PROXY_COOKIE_SECURE=true` when using HTTPS.
 - Remove the direct `LAB_DIRECT_PORT` mapping if all access must go through SSO.
 - For a real production Keycloak image, follow Keycloak's optimized container
   build process and run `start --optimized`.

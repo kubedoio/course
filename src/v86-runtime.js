@@ -5,8 +5,8 @@
  * Exposes:
  *   V86Runtime.bootVm()    — async; validates assets and starts the VM
  *   V86Runtime.resetVm()   — reboots the running VM
- *   V86Runtime.saveState() — serialises VM memory to localStorage
- *   V86Runtime.restoreState() — deserialises VM memory from localStorage
+ *   V86Runtime.saveState() — serialises VM memory to IndexedDB
+ *   V86Runtime.restoreState() — deserialises VM memory from IndexedDB
  *   V86Runtime.sendCommand(command, options) — sends text to the VM console
  */
 
@@ -24,6 +24,11 @@
 
     // Gate to prevent double-boot clicks.
     var bootInProgress = false;
+
+    var STATE_DB_NAME = "browser_linux_lab_vm_state";
+    var STATE_DB_VERSION = 1;
+    var STATE_STORE_NAME = "snapshots";
+    var STATE_KEY = "latest";
 
     /**
      * bootVm()
@@ -234,14 +239,15 @@
     /**
      * saveState()
      * Captures the full VM state (RAM, CPU registers, devices) and stores it
-     * as a base64 string in localStorage.
-     *
-     * NOTE: For large VMs this can be several hundred MB; localStorage is
-     * limited to ~5-10 MB in most browsers, so this is best-effort.
+     * in IndexedDB. Full VM snapshots are far too large for localStorage.
      */
     function saveState() {
         if (!emulator) {
             window.LabState.addLog("No VM running; nothing to save.");
+            return;
+        }
+        if (!window.indexedDB) {
+            window.LabState.addLog("State save failed: IndexedDB is not available in this browser.");
             return;
         }
         window.LabState.addLog("Saving VM state...");
@@ -250,25 +256,18 @@
                 window.LabState.addLog("Save state error: " + error);
                 return;
             }
-            try {
-                var bytes = new Uint8Array(stateArrayBuffer);
-                var binary = "";
-                var len = bytes.byteLength;
-                for (var i = 0; i < len; i++) {
-                    binary += String.fromCharCode(bytes[i]);
-                }
-                var b64 = btoa(binary);
-                localStorage.setItem("v86_saved_state", b64);
-                window.LabState.addLog("State saved (" + b64.length + " base64 chars).");
-            } catch (e) {
+            saveStateToDb(stateArrayBuffer).then(function() {
+                var sizeMb = Math.round((stateArrayBuffer.byteLength / 1024 / 1024) * 10) / 10;
+                window.LabState.addLog("State saved to IndexedDB (" + sizeMb + " MB).");
+            }).catch(function(e) {
                 window.LabState.addLog("State save failed: " + e.message);
-            }
+            });
         });
     }
 
     /**
      * restoreState()
-     * Loads a previously saved VM state from localStorage back into the
+     * Loads a previously saved VM state from IndexedDB back into the
      * active emulator instance. The guest resumes exactly where it left off.
      */
     function restoreState() {
@@ -276,26 +275,84 @@
             window.LabState.addLog("No VM running; cannot restore state.");
             return;
         }
-        var b64 = localStorage.getItem("v86_saved_state");
-        if (!b64) {
-            window.LabState.addLog("No saved state found in localStorage.");
+        if (!window.indexedDB) {
+            window.LabState.addLog("State restore failed: IndexedDB is not available in this browser.");
             return;
         }
         window.LabState.addLog("Restoring VM state...");
-        try {
-            var binary = atob(b64);
-            var len = binary.length;
-            var bytes = new Uint8Array(len);
-            for (var i = 0; i < len; i++) {
-                bytes[i] = binary.charCodeAt(i);
+        loadStateFromDb().then(function(stateArrayBuffer) {
+            if (!stateArrayBuffer) {
+                window.LabState.addLog("No saved state found in IndexedDB.");
+                return;
             }
-            emulator.restore_state(bytes.buffer);
+            emulator.restore_state(stateArrayBuffer);
             window.LabState.addLog("State restored successfully.");
             // After a restore we assume at least Alpine was up when saved.
             window.LabState.setState("alpine_ready");
-        } catch (e) {
+        }).catch(function(e) {
             window.LabState.addLog("State restore failed: " + e.message);
-        }
+        });
+    }
+
+    function openStateDb() {
+        return new Promise(function(resolve, reject) {
+            var request = indexedDB.open(STATE_DB_NAME, STATE_DB_VERSION);
+            request.onupgradeneeded = function(event) {
+                var db = event.target.result;
+                if (!db.objectStoreNames.contains(STATE_STORE_NAME)) {
+                    db.createObjectStore(STATE_STORE_NAME);
+                }
+            };
+            request.onsuccess = function(event) {
+                resolve(event.target.result);
+            };
+            request.onerror = function(event) {
+                reject(event.target.error || new Error("IndexedDB open failed"));
+            };
+            request.onblocked = function() {
+                reject(new Error("IndexedDB upgrade is blocked by another open tab"));
+            };
+        });
+    }
+
+    function saveStateToDb(stateArrayBuffer) {
+        return withStateStore("readwrite", function(store) {
+            return store.put(stateArrayBuffer, STATE_KEY);
+        });
+    }
+
+    function loadStateFromDb() {
+        return withStateStore("readonly", function(store) {
+            return store.get(STATE_KEY);
+        });
+    }
+
+    function withStateStore(mode, operation) {
+        return openStateDb().then(function(db) {
+            return new Promise(function(resolve, reject) {
+                var tx = db.transaction(STATE_STORE_NAME, mode);
+                var store = tx.objectStore(STATE_STORE_NAME);
+                var request = operation(store);
+
+                request.onsuccess = function(event) {
+                    resolve(event.target.result || null);
+                };
+                request.onerror = function(event) {
+                    reject(event.target.error || new Error("IndexedDB operation failed"));
+                };
+                tx.oncomplete = function() {
+                    db.close();
+                };
+                tx.onabort = function(event) {
+                    db.close();
+                    reject(event.target.error || new Error("IndexedDB transaction aborted"));
+                };
+                tx.onerror = function(event) {
+                    db.close();
+                    reject(event.target.error || new Error("IndexedDB transaction failed"));
+                };
+            });
+        });
     }
 
     /**
@@ -342,6 +399,43 @@
         return { ok: true };
     }
 
+    /**
+     * verifyCommand(command, expectedOutput, timeoutMs)
+     * Sends a command silently and waits for a specific string in the serial buffer.
+     * Useful for automated lab validation.
+     */
+    function verifyCommand(command, expectedOutput, timeoutMs) {
+        timeoutMs = timeoutMs || 5000;
+        if (!emulator) return Promise.reject(new Error("VM not running"));
+
+        return new Promise(function(resolve, reject) {
+            var timeout = setTimeout(function() {
+                emulator.remove_listener("serial0-output-char", listener);
+                reject(new Error("Verification timed out"));
+            }, timeoutMs);
+
+            var listener = function() {
+                if (serialBuffer.indexOf(expectedOutput) !== -1) {
+                    clearTimeout(timeout);
+                    emulator.remove_listener("serial0-output-char", listener);
+                    resolve(true);
+                }
+            };
+
+            emulator.add_listener("serial0-output-char", listener);
+            
+            // Send command with a trailing newline to execute
+            var text = String(command);
+            if (text.charAt(text.length - 1) !== "\n") text += "\n";
+            
+            if (typeof emulator.serial0_send === "function") {
+                emulator.serial0_send(text);
+            } else {
+                emulator.keyboard_send_text(text);
+            }
+        });
+    }
+
     // Expose public API on the global window object.
     window.V86Runtime = {
         bootVm: bootVm,
@@ -349,6 +443,7 @@
         saveState: saveState,
         restoreState: restoreState,
         getEmulator: getEmulator,
-        sendCommand: sendCommand
+        sendCommand: sendCommand,
+        verifyCommand: verifyCommand
     };
 })();

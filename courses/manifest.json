@@ -34,28 +34,284 @@
         "2020-01-01-linux101-bolum4-2.markdown",
         "2020-01-01-linux101-bolum5.markdown"
       ],
+      "sections": [
+        {
+          "title": "The Shell Environment",
+          "lessons": [
+            {
+              "id": "linux-shell-basics",
+              "title": "Navigation & Shell Basics",
+              "path": "linux/shell-basics.md",
+              "duration_minutes": 15,
+              "vm_compatible": true,
+              "tags": [
+                "shell",
+                "navigation"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Working with Files",
+          "lessons": [
+            {
+              "id": "linux-file-ops",
+              "title": "Files, Directories & Permissions",
+              "path": "linux/file-ops.md",
+              "duration_minutes": 20,
+              "vm_compatible": true,
+              "tags": [
+                "files",
+                "permissions"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "System & Networking",
+          "lessons": [
+            {
+              "id": "linux-process-network",
+              "title": "Processes & Networking",
+              "path": "linux/process-network.md",
+              "duration_minutes": 25,
+              "vm_compatible": true,
+              "tags": [
+                "process",
+                "networking"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Complete Source Archive",
+          "lessons": [
+            {
+              "id": "linux-source-2016-10-25-beginner-linux",
+              "title": "Complete Source: Docker for Beginners - Linux",
+              "path": "linux/complete/2016-10-25-beginner-linux.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-landing",
+              "title": "Complete Source: Linux 101 Landing",
+              "path": "linux/complete/2020-01-01-linux101-landing.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum1",
+              "title": "Complete Source: Operating Systems and Computers",
+              "path": "linux/complete/2020-01-01-linux101-bolum1.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum2-long",
+              "title": "Complete Source: Shell, Directories, and Files",
+              "path": "linux/complete/2020-01-01-linux101-bolum2-long.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum2-1",
+              "title": "Source Segment: Shell and Directory Basics",
+              "path": "linux/complete/2020-01-01-linux101-bolum2-1.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum2-2",
+              "title": "Source Segment: Info, Man, Directories, and Files",
+              "path": "linux/complete/2020-01-01-linux101-bolum2-2.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum2-3",
+              "title": "Source Segment: Text File Operations",
+              "path": "linux/complete/2020-01-01-linux101-bolum2-3.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum2-4",
+              "title": "Source Segment: File Operations and Quiz",
+              "path": "linux/complete/2020-01-01-linux101-bolum2-4.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum3-long",
+              "title": "Complete Source: Hardware, Disks, Packages, Processes",
+              "path": "linux/complete/2020-01-01-linux101-bolum3-long.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum3-1",
+              "title": "Source Segment: Hardware and Boot",
+              "path": "linux/complete/2020-01-01-linux101-bolum3-1.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum3-2",
+              "title": "Source Segment: Filesystems and Packages",
+              "path": "linux/complete/2020-01-01-linux101-bolum3-2.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum3-3",
+              "title": "Source Segment: Processes and Quiz",
+              "path": "linux/complete/2020-01-01-linux101-bolum3-3.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum4-long",
+              "title": "Complete Source: Users, Vim, and Networking",
+              "path": "linux/complete/2020-01-01-linux101-bolum4-long.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum4-1",
+              "title": "Source Segment: Users, Vim, and Network Basics",
+              "path": "linux/complete/2020-01-01-linux101-bolum4-1.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum4-2",
+              "title": "Source Segment: Remote Access and Quiz",
+              "path": "linux/complete/2020-01-01-linux101-bolum4-2.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            },
+            {
+              "id": "linux-source-2020-01-01-linux101-bolum5",
+              "title": "Complete Source: Scripts and Linux Examples",
+              "path": "linux/complete/2020-01-01-linux101-bolum5.md",
+              "duration_minutes": 45,
+              "vm_compatible": "source-material",
+              "notes": "Original Linux course material. Some examples may be theory-only or need adaptation for Alpine/v86.",
+              "tags": [
+                "linux",
+                "complete-source"
+              ]
+            }
+          ]
+        }
+      ],
       "lessons": [
         {
-          "id": "linux-shell-files",
-          "title": "Shell, Files, and Permissions",
-          "path": "linux/shell-files.md",
-          "duration_minutes": 20,
+          "id": "linux-shell-basics",
+          "title": "Navigation & Shell Basics",
+          "path": "linux/shell-basics.md",
+          "duration_minutes": 15,
           "vm_compatible": true,
           "tags": [
             "shell",
+            "navigation"
+          ]
+        },
+        {
+          "id": "linux-file-ops",
+          "title": "Files, Directories & Permissions",
+          "path": "linux/file-ops.md",
+          "duration_minutes": 20,
+          "vm_compatible": true,
+          "tags": [
             "files",
             "permissions"
           ]
         },
         {
           "id": "linux-process-network",
-          "title": "Processes, Packages, and Networking",
+          "title": "Processes & Networking",
           "path": "linux/process-network.md",
           "duration_minutes": 25,
           "vm_compatible": true,
           "tags": [
             "process",
-            "packages",
             "networking"
           ]
         },
@@ -262,6 +518,25 @@
       "source_files": [
         "2024-03-29-git101en.markdown"
       ],
+      "sections": [
+        {
+          "title": "Local Workflow",
+          "lessons": [
+            {
+              "id": "git-local-workflow",
+              "title": "Local Git Workflow",
+              "path": "git/local-workflow.md",
+              "duration_minutes": 20,
+              "vm_compatible": true,
+              "tags": [
+                "git",
+                "commit",
+                "branch"
+              ]
+            }
+          ]
+        }
+      ],
       "lessons": [
         {
           "id": "git-local-workflow",
@@ -288,6 +563,42 @@
         "2020-01-01-docker101-bolum2.markdown",
         "2020-01-01-docker101-bolum3.markdown",
         "2020-01-01-docker101-bolum4.markdown"
+      ],
+      "sections": [
+        {
+          "title": "Core Concepts",
+          "lessons": [
+            {
+              "id": "docker-containers-images",
+              "title": "Containers and Images",
+              "path": "docker/containers-images.md",
+              "duration_minutes": 25,
+              "vm_compatible": true,
+              "tags": [
+                "docker",
+                "images",
+                "containers"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Advanced Usage",
+          "lessons": [
+            {
+              "id": "docker-build-network",
+              "title": "Builds, Volumes, and Networking",
+              "path": "docker/build-network.md",
+              "duration_minutes": 30,
+              "vm_compatible": true,
+              "tags": [
+                "dockerfile",
+                "volumes",
+                "networking"
+              ]
+            }
+          ]
+        }
       ],
       "lessons": [
         {
@@ -324,6 +635,37 @@
       "vm_profile": "alpine-linux",
       "source_files": [
         "2021-01-01-scripting101en.markdown"
+      ],
+      "sections": [
+        {
+          "title": "Automation Basics",
+          "lessons": [
+            {
+              "id": "scripting-basics",
+              "title": "Bash Script Basics",
+              "path": "scripting/basics.md",
+              "duration_minutes": 25,
+              "vm_compatible": true,
+              "tags": [
+                "bash",
+                "variables",
+                "arguments"
+              ]
+            },
+            {
+              "id": "scripting-control-flow",
+              "title": "Control Flow and File Tests",
+              "path": "scripting/control-flow.md",
+              "duration_minutes": 30,
+              "vm_compatible": true,
+              "tags": [
+                "if",
+                "loops",
+                "file-tests"
+              ]
+            }
+          ]
+        }
       ],
       "lessons": [
         {
@@ -363,6 +705,43 @@
         "2024-04-01-db101en-section2.markdown",
         "2024-04-01-db101en-section3.markdown"
       ],
+      "sections": [
+        {
+          "title": "SQL & Relational",
+          "lessons": [
+            {
+              "id": "database-sql-basics",
+              "title": "Relational Databases and SQL",
+              "path": "database/sql-basics.md",
+              "duration_minutes": 25,
+              "vm_compatible": true,
+              "tags": [
+                "sql",
+                "mysql",
+                "relational"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Theory & Operations",
+          "lessons": [
+            {
+              "id": "database-operations-concepts",
+              "title": "Operations and Replication Concepts",
+              "path": "database/operations-concepts.md",
+              "duration_minutes": 20,
+              "vm_compatible": "theory-only",
+              "notes": "Heavy MySQL replication labs are theory-only for the browser VM milestone.",
+              "tags": [
+                "backup",
+                "replication",
+                "operations"
+              ]
+            }
+          ]
+        }
+      ],
       "lessons": [
         {
           "id": "database-sql-basics",
@@ -400,6 +779,26 @@
       "source_files": [
         "2020-01-01-k8s101-bolum1.markdown",
         "2018-04-04-kubernetes-workshop.markdown"
+      ],
+      "sections": [
+        {
+          "title": "Core Objects",
+          "lessons": [
+            {
+              "id": "kubernetes-core-objects",
+              "title": "Core Kubernetes Objects",
+              "path": "kubernetes/core-objects.md",
+              "duration_minutes": 25,
+              "vm_compatible": "theory-only",
+              "notes": "Running a Kubernetes control plane is out of scope for the current browser VM.",
+              "tags": [
+                "pods",
+                "deployments",
+                "services"
+              ]
+            }
+          ]
+        }
       ],
       "lessons": [
         {

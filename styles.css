@@ -57,10 +57,49 @@ html, body {
 
 /* Main layout: full viewport, flex row */
 .layout {
-    display: grid;
-    grid-template-columns: minmax(360px, 55vw) minmax(300px, 1fr);
+    display: flex;
     height: 100vh;
     width: 100vw;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.layout.sidebar-collapsed .sidebar {
+    width: 0;
+    padding: 0;
+    border-right: none;
+    overflow: hidden;
+}
+
+.layout.sidebar-collapsed .sidebar > * {
+    display: none;
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 100;
+    background: var(--sidebar-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    border-radius: 6px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: left 0.3s ease;
+}
+
+.layout.sidebar-collapsed .sidebar-toggle {
+    left: 12px;
+}
+
+.layout:not(.sidebar-collapsed) .sidebar-toggle {
+    left: calc(var(--sidebar-width) - 42px);
 }
 
 /* ============================================
@@ -68,16 +107,24 @@ html, body {
    ============================================ */
 
 .sidebar {
-    width: auto;
-    min-width: 0;
+    width: var(--sidebar-width, 50vw);
+    min-width: 360px;
     background-color: var(--sidebar-color);
     border-right: 1px solid var(--border-color);
-    display: grid;
-    grid-template-columns: 260px minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-    gap: 0 18px;
+    display: flex;
+    flex-direction: column;
     padding: 18px;
     overflow: hidden;
+    transition: width 0.3s ease, padding 0.3s ease;
+    flex-shrink: 0;
+}
+
+.curriculum-container {
+    display: grid;
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 0 18px;
+    flex-grow: 1;
+    min-height: 0;
 }
 
 .sidebar h2 {
@@ -414,8 +461,8 @@ html, body {
 }
 
 .course-group-title {
-    display: grid;
-    gap: 4px;
+    display: flex;
+    flex-direction: column;
     width: 100%;
     background: transparent;
     border: 0;
@@ -425,10 +472,25 @@ html, body {
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.4px;
-    margin: 0 0 8px;
+    margin: 0 0 12px;
     padding: 0;
     text-align: left;
     text-transform: uppercase;
+}
+
+.course-progress-container {
+    width: 100%;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+}
+
+.course-progress-bar {
+    height: 100%;
+    background: var(--success-text);
+    transition: width 0.4s ease;
 }
 
 .course-group-title small {
@@ -437,11 +499,35 @@ html, body {
     font-weight: 600;
     letter-spacing: 0;
     text-transform: none;
+    margin-top: 4px;
 }
 
-.course-lessons {
+.lesson-link.is-completed .lesson-state {
+    background: var(--success-bg);
+    border-color: var(--success-text);
+    color: var(--success-text);
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.2);
+}
+
+.curriculum-section {
+    margin-bottom: 12px;
+}
+
+.curriculum-section-title {
+    color: var(--text-color);
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    padding: 0 4px;
+    opacity: 0.8;
+}
+
+.curriculum-section-lessons {
     display: grid;
     gap: 4px;
+    padding-left: 8px;
+    border-left: 1px solid var(--border-color);
+    margin-left: 4px;
 }
 
 .lesson-link {
@@ -889,8 +975,38 @@ header {
     color: var(--btn-secondary-text);
 }
 
-.btn-secondary:hover {
-    background: #64748b;
+.btn-success {
+    background: var(--success-bg);
+    color: var(--success-text);
+    border: 1px solid var(--success-text);
+}
+
+.verify-block {
+    background: rgba(56, 189, 248, 0.05);
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    margin: 20px 0;
+    overflow: hidden;
+}
+
+.verify-header {
+    background: rgba(56, 189, 248, 0.1);
+    color: var(--accent-color);
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.verify-body {
+    padding: 16px;
+}
+
+.verify-body p {
+    margin: 0 0 12px 0;
+    font-size: 0.85rem;
+    color: var(--text-color);
 }
 
 /* Terminal wrapper */
@@ -1000,10 +1116,79 @@ header {
    Responsive: mobile stacking
    ============================================ */
 
-@media (max-width: 768px) {
-    html, body {
-        overflow: auto;
-    }
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.toast {
+    background: var(--sidebar-color);
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--accent-color);
+    border-radius: 6px;
+    color: var(--text-color);
+    padding: 12px 18px;
+    font-size: 0.9rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    min-width: 240px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: toast-in 0.3s ease forwards;
+}
+
+.toast.toast-success {
+    border-left-color: var(--success-text);
+}
+
+.toast-icon {
+    font-size: 1.2rem;
+}
+
+@keyframes toast-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Lesson Navigation & Breadcrumbs */
+.lesson-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.breadcrumb-separator {
+    color: var(--border-color);
+    font-size: 0.9rem;
+}
+
+.lesson-breadcrumbs .current {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.lesson-footer-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border-color);
+}
+
+.lesson-footer-nav .btn {
+    min-width: 120px;
+}
 
     .layout {
         display: flex;
@@ -1055,5 +1240,8 @@ header {
     .header-buttons {
         flex-wrap: wrap;
         justify-content: center;
+    }
+}
+ justify-content: center;
     }
 }

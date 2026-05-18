@@ -213,19 +213,16 @@ See [`docs/vm-image-build.md`](docs/vm-image-build.md) for the complete Dockerfi
 
 ## Network Relay Setup
 
-The VM has **no outbound internet by default**. To enable it, a WebSocket relay must be running.
+The VM needs a WebSocket relay for outbound internet. Docker Compose starts one
+by default; non-Compose deployments must provide their own.
 
-### Quick Start (Docker)
+### Docker Compose Relay
 
-```bash
-docker run -d --name v86-relay \
-  -p 9090:80 \
-  --cap-add NET_ADMIN \
-  --device /dev/net/tun \
-  bellenottelling/websockproxy
-```
+The Compose stack includes a `v86-relay` service and proxies it at `/ws/v86/`
+for both the direct lab and SSO gateway URLs. The relay needs `NET_ADMIN` and
+`/dev/net/tun`, so the host must provide TUN device support.
 
-Then proxy it through nginx (recommended) or connect directly if port 9090 is open:
+For a manual deployment, run a relay and proxy it through nginx:
 
 ```nginx
 location /ws/v86/ {
@@ -238,11 +235,12 @@ location /ws/v86/ {
 }
 ```
 
-Update `src/v86-runtime.js`:
+The frontend connects through the same origin:
 ```javascript
 net_device: {
     type: "virtio",
-    relay_url: "ws://" + window.location.hostname + "/ws/v86/",
+    relay_url: (window.location.protocol === "https:" ? "wss://" : "ws://") +
+        window.location.host + "/ws/v86/",
 }
 ```
 
@@ -322,10 +320,10 @@ See [`docs/security-notes.md`](docs/security-notes.md) for risks and production 
 | **Boot time** | 30–120 seconds depending on CPU and browser |
 | **Performance** | ~10–50% of native speed (JIT-translated emulation) |
 | **RAM** | 512 MB guest; browser tab ceiling ~2–4 GB |
-| **State snapshots** | Best-effort; `localStorage` limit ~5–10 MB |
+| **State snapshots** | Best-effort; stored in browser IndexedDB |
 | **Architecture** | 32-bit x86 only; containers must be `i386/...` |
 | **Persistence** | VM is ephemeral by default; changes lost on refresh |
-| **Network** | Requires WebSocket relay for outbound internet |
+| **Network** | Compose includes WebSocket relay for outbound internet |
 
 ---
 

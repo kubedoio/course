@@ -70,25 +70,51 @@ COURSES = [
         "source_files": [
             source_file for source_file, _title in LINUX_COMPLETE_SOURCES
         ],
-        "lessons": [
+        "sections": [
             {
-                "id": "linux-shell-files",
-                "title": "Shell, Files, and Permissions",
-                "path": "linux/shell-files.md",
-                "duration_minutes": 20,
-                "vm_compatible": True,
-                "tags": ["shell", "files", "permissions"],
+                "title": "The Shell Environment",
+                "lessons": [
+                    {
+                        "id": "linux-shell-basics",
+                        "title": "Navigation & Shell Basics",
+                        "path": "linux/shell-basics.md",
+                        "duration_minutes": 15,
+                        "vm_compatible": True,
+                        "tags": ["shell", "navigation"],
+                    }
+                ]
             },
             {
-                "id": "linux-process-network",
-                "title": "Processes, Packages, and Networking",
-                "path": "linux/process-network.md",
-                "duration_minutes": 25,
-                "vm_compatible": True,
-                "tags": ["process", "packages", "networking"],
+                "title": "Working with Files",
+                "lessons": [
+                    {
+                        "id": "linux-file-ops",
+                        "title": "Files, Directories & Permissions",
+                        "path": "linux/file-ops.md",
+                        "duration_minutes": 20,
+                        "vm_compatible": True,
+                        "tags": ["files", "permissions"],
+                    }
+                ]
             },
+            {
+                "title": "System & Networking",
+                "lessons": [
+                    {
+                        "id": "linux-process-network",
+                        "title": "Processes & Networking",
+                        "path": "linux/process-network.md",
+                        "duration_minutes": 25,
+                        "vm_compatible": True,
+                        "tags": ["process", "networking"],
+                    }
+                ]
+            },
+            {
+                "title": "Complete Source Archive",
+                "lessons": linux_complete_lessons()
+            }
         ]
-        + linux_complete_lessons(),
     },
     {
         "id": "git",
@@ -97,16 +123,21 @@ COURSES = [
         "level": "beginner",
         "vm_profile": "alpine-linux",
         "source_files": ["2024-03-29-git101en.markdown"],
-        "lessons": [
+        "sections": [
             {
-                "id": "git-local-workflow",
-                "title": "Local Git Workflow",
-                "path": "git/local-workflow.md",
-                "duration_minutes": 20,
-                "vm_compatible": True,
-                "tags": ["git", "commit", "branch"],
+                "title": "Local Workflow",
+                "lessons": [
+                    {
+                        "id": "git-local-workflow",
+                        "title": "Local Git Workflow",
+                        "path": "git/local-workflow.md",
+                        "duration_minutes": 20,
+                        "vm_compatible": True,
+                        "tags": ["git", "commit", "branch"],
+                    }
+                ]
             }
-        ],
+        ]
     },
     {
         "id": "docker",
@@ -120,24 +151,34 @@ COURSES = [
             "2020-01-01-docker101-bolum3.markdown",
             "2020-01-01-docker101-bolum4.markdown",
         ],
-        "lessons": [
+        "sections": [
             {
-                "id": "docker-containers-images",
-                "title": "Containers and Images",
-                "path": "docker/containers-images.md",
-                "duration_minutes": 25,
-                "vm_compatible": True,
-                "tags": ["docker", "images", "containers"],
+                "title": "Core Concepts",
+                "lessons": [
+                    {
+                        "id": "docker-containers-images",
+                        "title": "Containers and Images",
+                        "path": "docker/containers-images.md",
+                        "duration_minutes": 25,
+                        "vm_compatible": True,
+                        "tags": ["docker", "images", "containers"],
+                    }
+                ]
             },
             {
-                "id": "docker-build-network",
-                "title": "Builds, Volumes, and Networking",
-                "path": "docker/build-network.md",
-                "duration_minutes": 30,
-                "vm_compatible": True,
-                "tags": ["dockerfile", "volumes", "networking"],
-            },
-        ],
+                "title": "Advanced Usage",
+                "lessons": [
+                    {
+                        "id": "docker-build-network",
+                        "title": "Builds, Volumes, and Networking",
+                        "path": "docker/build-network.md",
+                        "duration_minutes": 30,
+                        "vm_compatible": True,
+                        "tags": ["dockerfile", "volumes", "networking"],
+                    }
+                ]
+            }
+        ]
     },
     {
         "id": "scripting",
@@ -146,24 +187,29 @@ COURSES = [
         "level": "beginner",
         "vm_profile": "alpine-linux",
         "source_files": ["2021-01-01-scripting101en.markdown"],
-        "lessons": [
+        "sections": [
             {
-                "id": "scripting-basics",
-                "title": "Bash Script Basics",
-                "path": "scripting/basics.md",
-                "duration_minutes": 25,
-                "vm_compatible": True,
-                "tags": ["bash", "variables", "arguments"],
-            },
-            {
-                "id": "scripting-control-flow",
-                "title": "Control Flow and File Tests",
-                "path": "scripting/control-flow.md",
-                "duration_minutes": 30,
-                "vm_compatible": True,
-                "tags": ["if", "loops", "file-tests"],
-            },
-        ],
+                "title": "Automation Basics",
+                "lessons": [
+                    {
+                        "id": "scripting-basics",
+                        "title": "Bash Script Basics",
+                        "path": "scripting/basics.md",
+                        "duration_minutes": 25,
+                        "vm_compatible": True,
+                        "tags": ["bash", "variables", "arguments"],
+                    },
+                    {
+                        "id": "scripting-control-flow",
+                        "title": "Control Flow and File Tests",
+                        "path": "scripting/control-flow.md",
+                        "duration_minutes": 30,
+                        "vm_compatible": True,
+                        "tags": ["if", "loops", "file-tests"],
+                    }
+                ]
+            }
+        ]
     },
     {
         "id": "database",
@@ -176,25 +222,35 @@ COURSES = [
             "2024-04-01-db101en-section2.markdown",
             "2024-04-01-db101en-section3.markdown",
         ],
-        "lessons": [
+        "sections": [
             {
-                "id": "database-sql-basics",
-                "title": "Relational Databases and SQL",
-                "path": "database/sql-basics.md",
-                "duration_minutes": 25,
-                "vm_compatible": True,
-                "tags": ["sql", "mysql", "relational"],
+                "title": "SQL & Relational",
+                "lessons": [
+                    {
+                        "id": "database-sql-basics",
+                        "title": "Relational Databases and SQL",
+                        "path": "database/sql-basics.md",
+                        "duration_minutes": 25,
+                        "vm_compatible": True,
+                        "tags": ["sql", "mysql", "relational"],
+                    }
+                ]
             },
             {
-                "id": "database-operations-concepts",
-                "title": "Operations and Replication Concepts",
-                "path": "database/operations-concepts.md",
-                "duration_minutes": 20,
-                "vm_compatible": "theory-only",
-                "notes": "Heavy MySQL replication labs are theory-only for the browser VM milestone.",
-                "tags": ["backup", "replication", "operations"],
-            },
-        ],
+                "title": "Theory & Operations",
+                "lessons": [
+                    {
+                        "id": "database-operations-concepts",
+                        "title": "Operations and Replication Concepts",
+                        "path": "database/operations-concepts.md",
+                        "duration_minutes": 20,
+                        "vm_compatible": "theory-only",
+                        "notes": "Heavy MySQL replication labs are theory-only for the browser VM milestone.",
+                        "tags": ["backup", "replication", "operations"],
+                    }
+                ]
+            }
+        ]
     },
     {
         "id": "kubernetes",
@@ -203,17 +259,22 @@ COURSES = [
         "level": "beginner",
         "vm_profile": "theory-only",
         "source_files": ["2020-01-01-k8s101-bolum1.markdown", "2018-04-04-kubernetes-workshop.markdown"],
-        "lessons": [
+        "sections": [
             {
-                "id": "kubernetes-core-objects",
-                "title": "Core Kubernetes Objects",
-                "path": "kubernetes/core-objects.md",
-                "duration_minutes": 25,
-                "vm_compatible": "theory-only",
-                "notes": "Running a Kubernetes control plane is out of scope for the current browser VM.",
-                "tags": ["pods", "deployments", "services"],
+                "title": "Core Objects",
+                "lessons": [
+                    {
+                        "id": "kubernetes-core-objects",
+                        "title": "Core Kubernetes Objects",
+                        "path": "kubernetes/core-objects.md",
+                        "duration_minutes": 25,
+                        "vm_compatible": "theory-only",
+                        "notes": "Running a Kubernetes control plane is out of scope for the current browser VM.",
+                        "tags": ["pods", "deployments", "services"],
+                    }
+                ]
             }
-        ],
+        ]
     },
 ]
 
@@ -282,6 +343,11 @@ def clean_inline(value: str) -> str:
 
 
 def build_manifest() -> dict:
+    # Flatten sections back into lessons for legacy compatibility
+    for course in COURSES:
+        if "sections" in course:
+            course["lessons"] = [l for s in course["sections"] for l in s["lessons"]]
+
     return {
         "schema_version": 1,
         "generated_by": "scripts/build-course-data.py",

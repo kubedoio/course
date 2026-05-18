@@ -90,7 +90,8 @@ class ProgressHandler(BaseHTTPRequestHandler):
     def handle_progress_update(self):
         path = urlparse(self.path).path
         parts = [unquote(part) for part in path.split("/") if part]
-        if len(parts) != 5 or parts[:3] != ["api", "progress", "lessons"]:
+        is_complete_route = len(parts) == 6 and parts[5] == "complete"
+        if len(parts) not in (5, 6) or parts[:3] != ["api", "progress", "lessons"] or (len(parts) == 6 and not is_complete_route):
             self.write_json(404, {"error": "not_found"})
             return
 
@@ -102,7 +103,7 @@ class ProgressHandler(BaseHTTPRequestHandler):
         lesson_id = parts[4]
         payload = self.read_json_body()
         status = payload.get("status")
-        if path.endswith("/complete"):
+        if is_complete_route:
             status = "completed"
         if status not in ("in_progress", "completed"):
             self.write_json(400, {"error": "invalid_status"})

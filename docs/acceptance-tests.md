@@ -178,7 +178,7 @@ This is the definitive end-to-end test: it verifies that the Docker daemon is ru
 |------------|---------|
 | **Boot time** | 30–120 seconds depending on host CPU and browser. WebAssembly JIT compilation and single-threaded emulation make startup slower than native VMs. |
 | **No persistent storage** | All changes inside the VM are lost on page reload unless you explicitly save and restore emulator state using v86's save/restore APIs. |
-| **Network requires external relay** | Internet access is not available unless a `network_relay_url` is configured. See [`network-relay.md`](network-relay.md). |
+| **Network requires relay** | Compose includes `v86-relay`; non-Compose deployments need an equivalent WebSocket relay. See [`network-relay.md`](network-relay.md). |
 | **Docker images must be x86/i386 compatible** | v86 emulates a 32-bit x86 CPU. You cannot run `amd64`, `arm64`, or other architecture images. Always use `i386/...` prefixes or multi-arch manifests that include `386`. |
 | **Performance is slower than native VMs** | CPU-intensive tasks (compilation, large image builds) will run significantly slower than on native hardware or hardware-assisted virtualization (KVM, Hyper-V). |
 

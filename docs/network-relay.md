@@ -47,18 +47,24 @@ Uses the **Wisp** protocol to tunnel TCP and UDP over WebSockets. This is the st
 
 ## Configuring the Relay
 
-To enable networking, edit `src/v86-runtime.js` and uncomment or set the `network_relay_url` property:
+The Compose deployment exposes the relay on the same origin at `/ws/v86/`, and
+the frontend configures v86 with `net_device.relay_url`:
 
 ```javascript
 const emulator = new V86({
     // ... other options ...
 
-    // Uncomment the next line and replace with your Wisp relay URL:
-    // network_relay_url: "wss://relay.example.com",
+    net_device: {
+        type: "virtio",
+        relay_url: (window.location.protocol === "https:" ? "wss://" : "ws://") +
+            window.location.host + "/ws/v86/",
+    },
 });
 ```
 
-> **Current state**: Networking is **NOT** configured by default in this build. The `network_relay_url` line is commented out. You must uncomment it and provide a valid relay endpoint before the VM will have internet access.
+> **Current state**: Docker Compose starts a local `v86-relay` service and
+> exposes it through `/ws/v86/`. For non-Compose deployments, provide your own
+> relay endpoint and set the frontend relay URL accordingly.
 
 ### Example Configuration
 
@@ -75,7 +81,10 @@ const emulator = new V86({
     autostart: false,
     memory_size: 512 << 20,
     vga_memory_size: 8 << 20,
-    network_relay_url: "wss://relay.example.com",  // <-- Enable here
+    net_device: {
+        type: "virtio",
+        relay_url: "wss://relay.example.com/ws/v86/",
+    },
 });
 ```
 
@@ -130,7 +139,10 @@ wisp-server-go -bind 0.0.0.0:5001
 Then configure the VM with:
 
 ```javascript
-network_relay_url: "ws://your-server-ip:5001"
+net_device: {
+    type: "virtio",
+    relay_url: "wisp://your-server-ip:5001",
+}
 ```
 
 > Note: Use `wss://` (WebSocket over TLS) in production. For local testing, `ws://` is acceptable.

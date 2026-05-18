@@ -12,6 +12,11 @@
     <div id="capability-warnings"></div>
 
     <div class="layout">
+        <!-- Sidebar Toggle (Mobile and Desktop) -->
+        <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle curriculum">
+            <span class="toggle-icon">☰</span>
+        </button>
+
         <!-- Left Panel: Course navigation and lesson content -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -21,8 +26,10 @@
                 </div>
             </div>
 
-            <nav class="course-tree" id="course-tree" aria-label="Course lessons"></nav>
-            <section class="lesson-viewer" id="lesson-viewer" aria-live="polite"></section>
+            <div class="curriculum-container">
+                <nav class="course-tree" id="course-tree" aria-label="Course lessons"></nav>
+                <section class="lesson-viewer" id="lesson-viewer" aria-live="polite"></section>
+            </div>
         </aside>
 
         <!-- Right Panel: Terminal & Controls -->
